@@ -1,0 +1,29 @@
+<div class="visualizador-container" style="display: flex; flex-direction: column; height: 100vh; background-color: #1e1e1e; color: white; font-family: sans-serif;">
+
+  <header class="toolbar-vis" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background-color: #2d2d2d; border-bottom: 1px solid #3d3d3d;">
+    <div class="group-left">
+      <input type="file" #fileInputVis style="display: none" accept=".pdf" (change)="onFileSelected($event)"/>
+      <button style="background-color: #673ab7; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;" (click)="fileInputVis.click()">📂 Abrir PDF para Leitura</button>
+    </div>
+
+    <div class="group-right" style="display: flex; align-items: center; gap: 15px;">
+      <button [disabled]="paginaAtual <= 1" style="background: #444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;" (click)="mudarPagina(-1)">◀ Voltar</button>
+      <span style="font-size: 14px; font-weight: 500;">
+        {{ pdfCarregado ? 'Página ' + paginaAtual + ' de ' + totalPaginas : 'Nenhum arquivo aberto' }}
+      </span>
+      <button [disabled]="paginaAtual >= totalPaginas" style="background: #444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;" (click)="mudarPagina(1)">Avançar ▶</button>
+    </div>
+  </header>
+
+  <div class="pdf-display-area" style="flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 20px; overflow-y: auto; background-color: #121212;">
+    <div style="box-shadow: 0 4px 15px rgba(0,0,0,0.5); background: white; border-radius: 4px; display: inline-block;">
+      <canvas #pdfCanvasVis [style.display]="pdfCarregado ? 'block' : 'none'"></canvas>
+    </div>
+
+    <div *ngIf="!pdfCarregado" style="margin-top: 50px; text-align: center; color: #888;">
+      <p style="font-size: 18px;">Nenhum PDF selecionado para visualização.</p>
+      <p style="font-size: 14px;">Clique no botão acima para carregar o documento em modo de leitura.</p>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,71 @@
+<div class="word-editor-container">
+
+  <header class="word-toolbar-panel">
+    <div class="top-actions">
+      <div class="file-group">
+        <input type="file" #fileInputWord style="display: none" accept=".pdf" (change)="onFileSelected($event)"/>
+        <button class="btn-word-file btn-green" (click)="fileInputWord.click()">📂 Abrir PDF</button>
+        <button class="btn-word-file btn-blue" [disabled]="!pdfCarregado" (click)="indexSpanSelecionado = null; exportarPdf()">💾 Salvar Documento</button>
+      </div>
+
+      <div class="paginacao-group">
+        <button [disabled]="paginaAtual <= 1" class="btn-word-nav" (click)="mudarPagina(-1)">◀ Anterior</button>
+        <span class="page-count-text">{{ pdfCarregado ? 'Página ' + paginaAtual + ' de ' + totalPaginas : 'Nenhum PDF aberto' }}</span>
+        <button [disabled]="paginaAtual >= totalPaginas" class="btn-word-nav" (click)="mudarPagina(1)">Próxima ▶</button>
+      </div>
+    </div>
+
+    <div class="quill-top-bar" [style.pointer-events]="pdfCarregado ? 'auto' : 'none'">
+      <quill-editor
+        [(ngModel)]="textoDoSpanSelecionado"
+        [modules]="quillModules"
+        (onContentChanged)="atualizarTextoEmTempoReal()"
+        [styles]="{display: 'none'}"
+        id="top-quill-editor">
+      </quill-editor>
+    </div>
+  </header>
+
+  <div class="word-document-area">
+    <div class="document-page-shadow">
+
+      <canvas #pdfCanvas style="display: block; position: relative; z-index: 1;"></canvas>
+
+  <div class="word-text-layer" *ngIf="pdfCarregado && spansDaPagina.length > 0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; pointer-events: none;">
+        <div
+          *ngFor="let span of spansDaPagina; let i = index"
+          class="interactive-word-cell"
+          [class.active-cell]="indexSpanSelecionado === i"
+          [style.left.px]="span.bbox[0]"
+          [style.top.px]="span.bbox[1]"
+          [style.width.px]="span.bbox[2] - span.bbox[0]"
+          [style.height.px]="span.bbox[3] - span.bbox[1]"
+          (click)="focarEEditarSpan(i); $event.stopPropagation()"
+          style="pointer-events: auto;">
+
+          <div *ngIf="span.modificado && indexSpanSelecionado !== i" class="white-mask-patch"></div>
+
+          <input
+            *ngIf="indexSpanSelecionado === i"
+            [(ngModel)]="span.text"
+            (input)="atualizarTextoDiretoNaFolha(span.text)"
+            class="word-inline-input"
+            autofocus />
+
+          <span
+            *ngIf="indexSpanSelecionado !== i"
+            [innerHTML]="span.text"
+            class="text-render-span"
+            [class.texto-modificado]="span.modificado">
+          </span>
+        </div>
+      </div>
+
+      <div *ngIf="!pdfCarregado" class="empty-document-msg">
+        Nenhum documento aberto. Clique em "Abrir PDF" para começar.
+      </div>
+
+    </div>
+  </div>
+
+</div>

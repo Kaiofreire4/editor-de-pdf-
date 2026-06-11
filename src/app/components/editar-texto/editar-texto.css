@@ -1,0 +1,157 @@
+.word-editor-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 40px);
+  box-sizing: border-box;
+  background-color: #f3f3f3;
+}
+
+.word-toolbar-panel {
+  background-color: #ffffff;
+  border-bottom: 1px solid #dadce0;
+  padding: 10px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.top-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-word-file {
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+}
+.btn-green { background-color: #107c41; }
+.btn-blue { background-color: #1a73e8; }
+.btn-blue:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-word-nav {
+  background: #e0e0e0;
+  border: 1px solid #ccc;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #333;
+}
+.btn-word-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+.page-count-text { font-weight: 500; font-size: 14px; color: #333; }
+
+/* BARRA DO QUILL NO TOPO HORIZONTAL */
+::ng-deep #top-quill-editor .ql-toolbar.ql-snow {
+  background-color: #f8f9fa !important;
+  border: 1px solid #dadce0 !important;
+  border-radius: 4px !important;
+  padding: 6px 12px !important;
+  display: block !important;
+  text-align: left !important;
+}
+
+::ng-deep #top-quill-editor .ql-toolbar.ql-snow .ql-formats {
+  margin-right: 15px !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+}
+
+::ng-deep #top-quill-editor .ql-toolbar.ql-snow .ql-formats button svg {
+  width: 16px !important;
+  height: 16px !important;
+  stroke: #444444 !important;
+}
+
+.word-document-area {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background-color: #f3f3f3;
+}
+
+.document-page-shadow {
+  position: relative !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  background-color: #ffffff;
+  display: inline-block;
+}
+
+.word-text-layer {
+  position: absolute !important;
+  pointer-events: none;
+}
+
+/* CADA BLOCO DE TEXTO INTERATIVO */
+.interactive-word-cell {
+  position: absolute !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+  cursor: text !important;
+  background-color: transparent;
+}
+
+.interactive-word-cell:hover {
+  border: 1px dashed #1a73e8 !important;
+  background-color: rgba(26, 115, 232, 0.05) !important;
+}
+
+.active-cell {
+  outline: 2px solid #1a73e8 !important;
+  background-color: #ffffff !important;
+  z-index: 100 !important;
+}
+
+/* O INPUT DIRETO NA FOLHA */
+.word-inline-input {
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  outline: none !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 13px !important;
+  padding: 0 2px !important;
+  margin: 0 !important;
+}
+
+/* O estilo do span base (Oculto para preservar o PDF original) */
+.text-render-span {
+  color: #000000 !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 13px !important;
+  white-space: nowrap !important;
+  pointer-events: none;
+  opacity: 0 !important;
+}
+
+/* QUANDO FOR MODIFICADO: Torna o texto visível e joga ele para a camada de cima */
+.texto-modificado {
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* A CORREÇÃO DE OURO: Um tapa-buraco branco que cresce infinitamente para a direita,
+   garantindo que qualquer resto de texto original suma da tela */
+.white-mask-patch {
+  position: absolute !important;
+  top: -1px !important;
+  left: -2px !important;
+  height: calc(100% + 2px) !important;
+  width: 1000% !important; /* Estica cobrindo toda a linha horizontal */
+  max-width: 500px !important;
+  background-color: #ffffff !important;
+  z-index: 5 !important;
+  pointer-events: none;
+}

@@ -1,0 +1,52 @@
+<div class="organizar-container">
+  <h2>Juntar e Cortar PDFs</h2>
+
+  <div class="card card-blue">
+    <h3>📂 Juntar PDFs</h3>
+    <p>Selecione múltiplos arquivos para unir em um só.</p>
+
+    <input
+      type="file"
+      id="input-juntar"
+      multiple
+      accept=".pdf"
+      (change)="onArquivosJuntarSelecionados($event)"
+    />
+
+    <div class="lista-arquivos" *ngIf="arquivosParaJuntar.length > 0">
+      <p><strong>Arquivos selecionados:</strong></p>
+      <ul>
+        <li *ngFor="let arq of arquivosParaJuntar">📄 {{ arq.name }}</li>
+      </ul>
+    </div>
+
+    <button class="btn btn-blue" (click)="juntarPdfs()">Escolher Arquivos e Juntar</button>
+  </div>
+
+  <div class="card card-green">
+    <h3>✂️ Cortar Páginas</h3>
+    <p>Escolha um PDF e defina o intervalo de páginas que deseja extrair.</p>
+
+    <input
+      type="file"
+      id="input-cortar"
+      accept=".pdf"
+      (change)="onArquivoCortarSelecionado($event)"
+    />
+
+    <p class="arquivo-selecionado" *ngIf="arquivoParaCortar">
+      Selecionado: <strong>{{ arquivoParaCortar.name }}</strong>
+    </p>
+
+    <div class="inputs-intervalo">
+      <label>Da página:
+        <input type="number" [(ngModel)]="paginaDe" min="1" />
+      </label>
+      <label>até:
+        <input type="number" [(ngModel)]="paginaAte" min="1" />
+      </label>
+    </div>
+
+    <button class="btn btn-green" (click)="cortarPdf()">Recortar PDF</button>
+  </div>
+</div>

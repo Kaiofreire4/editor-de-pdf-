@@ -1,0 +1,84 @@
+.organizar-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+h2 {
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.card {
+  background-color: #2d2d2d;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 25px;
+  border: 1px solid #3d3d3d;
+}
+
+.card-blue h3 { color: #2196F3; margin-top: 0; }
+.card-green h3 { color: #4CAF50; margin-top: 0; }
+
+p {
+  color: #aaaaaa;
+  font-size: 0.95rem;
+}
+
+input[type="file"] {
+  display: block;
+  margin: 15px 0;
+  color: #fff;
+}
+
+.lista-arquivos ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.lista-arquivos li {
+  background-color: #212121;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+
+.inputs-intervalo {
+  display: flex;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.inputs-intervalo label {
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.inputs-intervalo input {
+  background-color: #212121;
+  border: 1px solid #424242;
+  color: #fff;
+  padding: 6px;
+  border-radius: 4px;
+  width: 60px;
+  margin-left: 5px;
+  text-align: center;
+}
+
+.btn {
+  width: 100%;
+  border: none;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.btn-blue { background-color: #2196F3; }
+.btn-blue:hover { background-color: #1976D2; }
+
+.btn-green { background-color: #4CAF50; }
+.btn-green:hover { background-color: #388E3C; }

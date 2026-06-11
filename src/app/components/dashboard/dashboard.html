@@ -1,0 +1,14 @@
+<div class="app-container">
+  <nav class="sidebar">
+    <div class="logo">PDF Master v2</div>
+    <button [class.active]="abaAtiva === 'organizar'" (click)="mudarAba('organizar')">📦 Organizar Páginas</button>
+    <button [class.active]="abaAtiva === 'editar'" (click)="mudarAba('editar')">✍️ Editar Texto</button>
+    <button [class.active]="abaAtiva === 'visualizar'" (click)="mudarAba('visualizar')">👁️ Visualizar PDF</button>
+  </nav>
+
+  <main class="content-area">
+    <app-organizar-pdf *ngIf="abaAtiva === 'organizar'"></app-organizar-pdf>
+    <app-editar-texto *ngIf="abaAtiva === 'editar'"></app-editar-texto>
+    <app-visualizar-pdf *ngIf="abaAtiva === 'visualizar'"></app-visualizar-pdf>
+  </main>
+</div>

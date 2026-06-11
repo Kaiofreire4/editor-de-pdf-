@@ -1,0 +1,53 @@
+.app-container {
+  display: flex;
+  height: 100vh;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #2d2d2d;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 10px;
+  border-right: 1px solid #3d3d3d;
+}
+
+.logo {
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 30px;
+  color: #00adb5;
+}
+
+.sidebar button {
+  background: none;
+  border: none;
+  color: #aaaaaa;
+  padding: 12px 15px;
+  text-align: left;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-bottom: 8px;
+  transition: 0.2s;
+}
+
+.sidebar button:hover {
+  background-color: #3d3d3d;
+  color: #fff;
+}
+
+.sidebar button.active {
+  background-color: #00adb5;
+  color: #fff;
+}
+
+.content-area {
+  flex: 1;
+  padding: 20px;
+  background-color: #1e1e1e;
+}
