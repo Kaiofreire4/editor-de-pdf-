@@ -4,11 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { QuillModule } from 'ngx-quill';
 import * as pdfjsLib from 'pdfjs-dist';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
-
 @Component({
   selector: 'app-editar-texto',
   standalone: true,
@@ -24,7 +19,7 @@ export class EditarTextoComponent {
   paginaAtual: number = 1;
   totalPaginas: number = 0;
   pdfDoc: any = null;
-  escala: number = 1.5; // Mantém o zoom e nitidez perfeitos do Canvas
+  escala: number = 1.5;
 
   spansDaPagina: any[] = [];
   textoDoSpanSelecionado: string = '';
@@ -48,6 +43,10 @@ export class EditarTextoComponent {
     this.arquivoSelecionado = file;
 
     try {
+      const versao = pdfjsLib.version;
+      const extensao = versao.startsWith('4') ? 'mjs' : 'js';
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${versao}/pdf.worker.min.${extensao}`;
+
       const fileUrl = URL.createObjectURL(file);
       this.pdfDoc = await pdfjsLib.getDocument({ url: fileUrl }).promise;
       this.totalPaginas = this.pdfDoc.numPages;
@@ -77,7 +76,6 @@ export class EditarTextoComponent {
       const renderContext = { canvasContext: context, viewport: viewport };
       await page.render(renderContext).promise;
 
-      // Reseta a seleção ao mudar de página para não bugar o input
       this.indexSpanSelecionado = null;
       this.textoDoSpanSelecionado = '';
 
@@ -95,7 +93,6 @@ export class EditarTextoComponent {
     formData.append('page', (numPagina - 1).toString());
 
     try {
-      // CORREÇÃO: Apontando para o endpoint correto da sua API do Python (/extrair-textos)
       const resposta = await fetch('http://127.0.0.1:8000/extrair-textos', {
         method: 'POST',
         body: formData
@@ -105,21 +102,21 @@ export class EditarTextoComponent {
         const dados = await resposta.json();
         this.spansDaPagina = dados.spans.map((span: any) => ({
           text: span.text,
-          textoOriginal: span.text, // Âncora para substituição do Python
+          textoOriginal: span.text,
           bbox: [
             span.bbox[0] * this.escala,
             span.bbox[1] * this.escala,
             span.bbox[2] * this.escala,
             span.bbox[3] * this.escala
           ],
-          modificado: false // Começa como false para evitar textos fantasmas duplicados
+          modificado: false
         }));
         this.pdfCarregado = true;
         return;
       }
     } catch (error) {
-      console.error('API Python desconectada. Certifique-se de ligar o terminal do backend.');
-      alert('Erro: O servidor Python está offline! Ligue-o no terminal.');
+      console.error('API desconectada. Certifique-se de ligar o terminal do backend.');
+      alert('Erro: O servidor da API está offline! Ligue-o no terminal.');
     }
   }
 
@@ -133,7 +130,6 @@ export class EditarTextoComponent {
       const span = this.spansDaPagina[this.indexSpanSelecionado];
       span.text = novoTexto;
 
-      // Validação inteligente: Se o texto for diferente do original, ativa o patch de máscara branca
       if (novoTexto.trim() !== span.textoOriginal.trim()) {
         span.modificado = true;
       } else {
@@ -167,7 +163,6 @@ export class EditarTextoComponent {
   async exportarPdf() {
     if (!this.arquivoSelecionado) return;
 
-    // Filtra enviando apenas os blocos que sofreram alterações reais
     const spansModificados = this.spansDaPagina
       .filter(span => span.modificado)
       .map(span => ({
@@ -199,10 +194,10 @@ export class EditarTextoComponent {
         link.download = 'pdf_editado_master.pdf';
         link.click();
       } else {
-        alert('Erro ao processar o salvamento no Python.');
+        alert('Erro ao processar o salvamento na API.');
       }
     } catch (error) {
-      alert('Erro ao falar com o Python.');
+      alert('Erro ao falar com a API.');
     }
   }
 

@@ -1,96 +1,269 @@
-.word-editor-container {
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 40px);
+* {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
-  background-color: #f3f3f3;
 }
 
-.word-toolbar-panel {
-  background-color: #ffffff;
-  border-bottom: 1px solid #dadce0;
-  padding: 10px 20px;
+.google-docs-editor {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+  height: 100vh;
+  background-color: #f8f9fa;
+  font-family: Arial, sans-serif;
 }
 
-.top-actions {
+/* BARRA SUPERIOR COM MENU */
+.top-menu-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 8px 20px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #dadce0;
+  height: 60px;
 }
 
-.btn-word-file {
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
+.menu-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.doc-title {
+  font-size: 22px;
+  font-weight: 400;
+  color: #202124;
   cursor: pointer;
-  font-weight: bold;
-  color: white;
-}
-.btn-green { background-color: #107c41; }
-.btn-blue { background-color: #1a73e8; }
-.btn-blue:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.btn-word-nav {
-  background: #e0e0e0;
-  border: 1px solid #ccc;
-  padding: 5px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  color: #333;
-}
-.btn-word-nav:disabled { opacity: 0.3; cursor: not-allowed; }
-.page-count-text { font-weight: 500; font-size: 14px; color: #333; }
-
-/* BARRA DO QUILL NO TOPO HORIZONTAL */
-::ng-deep #top-quill-editor .ql-toolbar.ql-snow {
-  background-color: #f8f9fa !important;
-  border: 1px solid #dadce0 !important;
-  border-radius: 4px !important;
-  padding: 6px 12px !important;
-  display: block !important;
-  text-align: left !important;
 }
 
-::ng-deep #top-quill-editor .ql-toolbar.ql-snow .ql-formats {
-  margin-right: 15px !important;
-  display: inline-block !important;
-  vertical-align: middle !important;
-}
-
-::ng-deep #top-quill-editor .ql-toolbar.ql-snow .ql-formats button svg {
-  width: 16px !important;
-  height: 16px !important;
-  stroke: #444444 !important;
-}
-
-.word-document-area {
+.menu-items {
+  display: flex;
+  gap: 0;
   flex: 1;
-  padding: 30px;
+  margin-left: 30px;
+}
+
+.menu-btn {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #3c4043;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.menu-btn:hover {
+  background-color: #f1f3f4;
+  border-radius: 2px;
+}
+
+.top-right-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-btn-share,
+.icon-btn-menu {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 18px;
+  border-radius: 50%;
+}
+
+.icon-btn-share:hover,
+.icon-btn-menu:hover {
+  background-color: #f1f3f4;
+}
+
+/* BARRA DE FERRAMENTAS */
+.toolbar-area {
+  display: flex;
+  align-items: center;
+  padding: 8px 20px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #dadce0;
+  gap: 8px;
+}
+
+.toolbar-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tool-btn {
+  background: none;
+  border: 1px solid transparent;
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: 2px;
+  font-size: 14px;
+  color: #3c4043;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.tool-btn:hover {
+  background-color: #f1f3f4;
+  border: 1px solid #dadce0;
+}
+
+.font-select,
+.font-size-select {
+  padding: 4px 8px;
+  border: 1px solid #dadce0;
+  border-radius: 2px;
+  font-size: 13px;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+.font-select {
+  min-width: 100px;
+}
+
+.font-size-select {
+  min-width: 50px;
+}
+
+.separator {
+  width: 1px;
+  height: 24px;
+  background-color: #dadce0;
+  margin: 0 4px;
+}
+
+.tool-btn-save {
+  background-color: #1f73e6;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-left: auto;
+}
+
+.tool-btn-save:hover:not(:disabled) {
+  background-color: #1665d9;
+}
+
+.tool-btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* CONTAINER PRINCIPAL */
+.main-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* SIDEBAR ESQUERDO */
+.sidebar-guides {
+  width: 200px;
+  background-color: #ffffff;
+  border-right: 1px solid #dadce0;
+  padding: 12px 0;
   overflow-y: auto;
+}
+
+.guides-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 12px 12px;
+  border-bottom: 1px solid #dadce0;
+}
+
+.guides-header h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #202124;
+}
+
+.add-guide-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #5f6368;
+}
+
+.guide-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  color: #5f6368;
+  font-size: 13px;
+}
+
+.guide-item:hover {
+  background-color: #f1f3f4;
+}
+
+.guide-item.active {
+  background-color: #e8f0fe;
+  color: #1f73e6;
+  font-weight: 500;
+}
+
+.guide-icon {
+  font-size: 16px;
+}
+
+.guide-help-text {
+  padding: 12px;
+  font-size: 12px;
+  color: #9aa0a6;
+  font-style: italic;
+  margin-top: 20px;
+}
+
+/* ÁREA DE EDIÇÃO */
+.document-editor-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.page-container {
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  background-color: #f3f3f3;
+  padding: 30px 20px;
+  overflow-y: auto;
+  background-color: #f8f9fa;
+  position: relative;
 }
 
-.document-page-shadow {
-  position: relative !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+.pdf-canvas {
+  display: block;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   background-color: #ffffff;
-  display: inline-block;
 }
 
-.word-text-layer {
+.pdf-text-layer {
   position: absolute !important;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
   pointer-events: none;
 }
 
-/* CADA BLOCO DE TEXTO INTERATIVO */
-.interactive-word-cell {
+/* BLOCO DE TEXTO EDITÁVEL */
+.editable-text-block {
   position: absolute !important;
   box-sizing: border-box !important;
   display: flex !important;
@@ -98,60 +271,124 @@
   white-space: nowrap !important;
   cursor: text !important;
   background-color: transparent;
+  pointer-events: auto;
 }
 
-.interactive-word-cell:hover {
-  border: 1px dashed #1a73e8 !important;
-  background-color: rgba(26, 115, 232, 0.05) !important;
+.editable-text-block:hover:not(.active) {
+  background-color: rgba(26, 115, 232, 0.08) !important;
+  border: 1px solid rgba(26, 115, 232, 0.3) !important;
 }
 
-.active-cell {
-  outline: 2px solid #1a73e8 !important;
-  background-color: #ffffff !important;
+.editable-text-block.active {
+  outline: 2px solid #1f73e6 !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
   z-index: 100 !important;
 }
 
-/* O INPUT DIRETO NA FOLHA */
-.word-inline-input {
+.inline-text-input {
   width: 100% !important;
   height: 100% !important;
   border: none !important;
   outline: none !important;
-  background-color: #ffffff !important;
+  background-color: transparent !important;
   color: #000000 !important;
-  font-family: Arial, Helvetica, sans-serif !important;
+  font-family: Arial, sans-serif !important;
   font-size: 13px !important;
   padding: 0 2px !important;
   margin: 0 !important;
 }
 
-/* O estilo do span base (Oculto para preservar o PDF original) */
-.text-render-span {
+.text-content {
   color: #000000 !important;
-  font-family: Arial, Helvetica, sans-serif !important;
+  font-family: Arial, sans-serif !important;
   font-size: 13px !important;
   white-space: nowrap !important;
   pointer-events: none;
   opacity: 0 !important;
 }
 
-/* QUANDO FOR MODIFICADO: Torna o texto visível e joga ele para a camada de cima */
-.texto-modificado {
+.text-content.modified {
   opacity: 1 !important;
   position: relative !important;
   z-index: 10 !important;
 }
 
-/* A CORREÇÃO DE OURO: Um tapa-buraco branco que cresce infinitamente para a direita,
-   garantindo que qualquer resto de texto original suma da tela */
-.white-mask-patch {
+.white-mask {
   position: absolute !important;
   top: -1px !important;
   left: -2px !important;
   height: calc(100% + 2px) !important;
-  width: 1000% !important; /* Estica cobrindo toda a linha horizontal */
+  width: 1000% !important;
   max-width: 500px !important;
   background-color: #ffffff !important;
   z-index: 5 !important;
   pointer-events: none;
 }
+
+.empty-state {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #9aa0a6;
+  font-size: 14px;
+  text-align: center;
+  max-width: 300px;
+}
+
+/* PAGINAÇÃO INFERIOR */
+.pagination-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background-color: #ffffff;
+  border-top: 1px solid #dadce0;
+}
+
+.nav-btn {
+  background-color: #f1f3f4;
+  border: 1px solid #dadce0;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #3c4043;
+  font-weight: 500;
+}
+
+.nav-btn:hover:not(:disabled) {
+  background-color: #dadce0;
+}
+
+.nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-size: 13px;
+  color: #5f6368;
+  font-weight: 500;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #999;
+}
+

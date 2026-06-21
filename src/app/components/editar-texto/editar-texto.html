@@ -1,71 +1,137 @@
-<div class="word-editor-container">
-
-  <header class="word-toolbar-panel">
-    <div class="top-actions">
-      <div class="file-group">
-        <input type="file" #fileInputWord style="display: none" accept=".pdf" (change)="onFileSelected($event)"/>
-        <button class="btn-word-file btn-green" (click)="fileInputWord.click()">📂 Abrir PDF</button>
-        <button class="btn-word-file btn-blue" [disabled]="!pdfCarregado" (click)="indexSpanSelecionado = null; exportarPdf()">💾 Salvar Documento</button>
-      </div>
-
-      <div class="paginacao-group">
-        <button [disabled]="paginaAtual <= 1" class="btn-word-nav" (click)="mudarPagina(-1)">◀ Anterior</button>
-        <span class="page-count-text">{{ pdfCarregado ? 'Página ' + paginaAtual + ' de ' + totalPaginas : 'Nenhum PDF aberto' }}</span>
-        <button [disabled]="paginaAtual >= totalPaginas" class="btn-word-nav" (click)="mudarPagina(1)">Próxima ▶</button>
-      </div>
+<div class="google-docs-editor">
+  <!-- BARRA SUPERIOR COM MENU -->
+  <header class="top-menu-bar">
+    <div class="menu-left">
+      <h1 class="doc-title">Documento PDF</h1>
+      <input type="file" #fileInputWord style="display: none" accept=".pdf" (change)="onFileSelected($event)"/>
     </div>
 
-    <div class="quill-top-bar" [style.pointer-events]="pdfCarregado ? 'auto' : 'none'">
-      <quill-editor
-        [(ngModel)]="textoDoSpanSelecionado"
-        [modules]="quillModules"
-        (onContentChanged)="atualizarTextoEmTempoReal()"
-        [styles]="{display: 'none'}"
-        id="top-quill-editor">
-      </quill-editor>
+    <nav class="menu-items">
+      <button class="menu-btn">Arquivo</button>
+      <button class="menu-btn">Editar</button>
+      <button class="menu-btn">Ver</button>
+      <button class="menu-btn">Inserir</button>
+      <button class="menu-btn">Formatar</button>
+      <button class="menu-btn">Ferramentas</button>
+    </nav>
+
+    <div class="top-right-actions">
+      <button class="icon-btn-share" title="Compartilhar">👥</button>
+      <button class="icon-btn-menu" title="Menu">⋮</button>
     </div>
   </header>
 
-  <div class="word-document-area">
-    <div class="document-page-shadow">
+  <!-- BARRA DE FERRAMENTAS -->
+  <div class="toolbar-area">
+    <div class="toolbar-buttons">
+      <button class="tool-btn" title="Abrir PDF" (click)="fileInputWord.click()">📂</button>
+      <button class="tool-btn" title="Imprimir">🖨️</button>
+      <button class="tool-btn" title="Desfazer">↶</button>
+      <button class="tool-btn" title="Refazer">↷</button>
 
-      <canvas #pdfCanvas style="display: block; position: relative; z-index: 1;"></canvas>
+      <div class="separator"></div>
 
-  <div class="word-text-layer" *ngIf="pdfCarregado && spansDaPagina.length > 0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; pointer-events: none;">
-        <div
-          *ngFor="let span of spansDaPagina; let i = index"
-          class="interactive-word-cell"
-          [class.active-cell]="indexSpanSelecionado === i"
-          [style.left.px]="span.bbox[0]"
-          [style.top.px]="span.bbox[1]"
-          [style.width.px]="span.bbox[2] - span.bbox[0]"
-          [style.height.px]="span.bbox[3] - span.bbox[1]"
-          (click)="focarEEditarSpan(i); $event.stopPropagation()"
-          style="pointer-events: auto;">
+      <select class="font-select">
+        <option>Arial</option>
+        <option>Times New Roman</option>
+        <option>Courier New</option>
+        <option>Georgia</option>
+      </select>
 
-          <div *ngIf="span.modificado && indexSpanSelecionado !== i" class="white-mask-patch"></div>
+      <select class="font-size-select">
+        <option>8</option>
+        <option>11</option>
+        <option selected>12</option>
+        <option>14</option>
+        <option>16</option>
+      </select>
 
-          <input
-            *ngIf="indexSpanSelecionado === i"
-            [(ngModel)]="span.text"
-            (input)="atualizarTextoDiretoNaFolha(span.text)"
-            class="word-inline-input"
-            autofocus />
+      <div class="separator"></div>
 
-          <span
-            *ngIf="indexSpanSelecionado !== i"
-            [innerHTML]="span.text"
-            class="text-render-span"
-            [class.texto-modificado]="span.modificado">
-          </span>
-        </div>
-      </div>
+      <button class="tool-btn" title="Negrito">B</button>
+      <button class="tool-btn" title="Itálico">I</button>
+      <button class="tool-btn" title="Sublinhado">U</button>
+      <button class="tool-btn" title="Cor do texto">A</button>
+      <button class="tool-btn" title="Cor de preenchimento">🎨</button>
 
-      <div *ngIf="!pdfCarregado" class="empty-document-msg">
-        Nenhum documento aberto. Clique em "Abrir PDF" para começar.
-      </div>
+      <div class="separator"></div>
 
+      <button class="tool-btn" title="Alinhar à esquerda">⬅</button>
+      <button class="tool-btn" title="Centralizar">↔</button>
+      <button class="tool-btn" title="Alinhar à direita">➡</button>
+
+      <div class="separator"></div>
+
+      <button class="tool-btn-save" title="Salvar" [disabled]="!pdfCarregado" (click)="exportarPdf()">💾 Salvar</button>
     </div>
   </div>
 
+  <!-- CONTAINER PRINCIPAL COM SIDEBAR -->
+  <div class="main-container">
+    <!-- SIDEBAR ESQUERDO -->
+    <aside class="sidebar-guides">
+      <div class="guides-header">
+        <h3>Guias no documento</h3>
+        <button class="add-guide-btn">+</button>
+      </div>
+
+      <div class="guide-item active">
+        <span class="guide-icon">📋</span>
+        <span class="guide-text">Guia 1</span>
+      </div>
+
+      <div class="guide-help-text">
+        Os títulos que forem adicionados ao documento aparecerão aqui.
+      </div>
+    </aside>
+
+    <!-- ÁREA DE EDIÇÃO PRINCIPAL -->
+    <main class="document-editor-area">
+      <div class="page-container">
+        <canvas #pdfCanvas class="pdf-canvas"></canvas>
+
+        <div class="pdf-text-layer" *ngIf="pdfCarregado && spansDaPagina.length > 0">
+          <div
+            *ngFor="let span of spansDaPagina; let i = index"
+            class="editable-text-block"
+            [class.active]="indexSpanSelecionado === i"
+            [style.left.px]="span.bbox[0]"
+            [style.top.px]="span.bbox[1]"
+            [style.width.px]="span.bbox[2] - span.bbox[0]"
+            [style.height.px]="span.bbox[3] - span.bbox[1]"
+            (click)="focarEEditarSpan(i); $event.stopPropagation()"
+            >
+
+            <div *ngIf="span.modificado && indexSpanSelecionado !== i" class="white-mask"></div>
+
+            <input
+              *ngIf="indexSpanSelecionado === i"
+              [(ngModel)]="span.text"
+              (input)="atualizarTextoDiretoNaFolha(span.text)"
+              class="inline-text-input"
+              autofocus />
+
+            <span
+              *ngIf="indexSpanSelecionado !== i"
+              [innerHTML]="span.text"
+              class="text-content"
+              [class.modified]="span.modificado">
+            </span>
+          </div>
+        </div>
+
+        <div *ngIf="!pdfCarregado" class="empty-state">
+          Selecione um documento para usar o mesmo estilo visual e estrutura
+        </div>
+      </div>
+
+      <!-- PAGINAÇÃO INFERIOR -->
+      <div class="pagination-footer">
+        <button [disabled]="paginaAtual <= 1" class="nav-btn" (click)="mudarPagina(-1)">◀ Anterior</button>
+        <span class="page-info">{{ pdfCarregado ? 'Página ' + paginaAtual + ' de ' + totalPaginas : 'Nenhum documento' }}</span>
+        <button [disabled]="paginaAtual >= totalPaginas" class="nav-btn" (click)="mudarPagina(1)">Próxima ▶</button>
+      </div>
+    </main>
+  </div>
 </div>
+
