@@ -1,0 +1,44 @@
+.word-visualizar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+.pdf-canvas-vis {
+  display: block;
+}
+
+/* ---------- ESTADO VAZIO ---------- */
+.empty-state {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #7a7a7a;
+  max-width: 340px;
+  padding: 20px;
+}
+
+.empty-icon {
+  font-size: 46px;
+  margin-bottom: 12px;
+}
+
+.empty-title {
+  font-size: 15px;
+  color: #4a4a4a;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.empty-hint {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.empty-hint strong {
+  color: #2b579a;
+}

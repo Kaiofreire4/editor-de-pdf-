@@ -7,8 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "server": "ts-node src/server/api-master.ts",
-    "server:dev": "nodemon --exec ts-node src/server/api-master.ts"
+    "server": "ts-node --project tsconfig.server.json src/server/api-master.ts",
+    "server:dev": "nodemon --exec \"ts-node --project tsconfig.server.json src/server/api-master.ts\""
   },
   "private": true,
   "packageManager": "npm@11.13.0",

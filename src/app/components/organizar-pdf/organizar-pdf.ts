@@ -19,6 +19,32 @@ export class OrganizarPdfComponent {
   paginaDe: number = 1;
   paginaAte: number = 1;
 
+  mensagemStatus: string = 'Pronto';
+
+  get podeJuntar(): boolean {
+    return this.arquivosParaJuntar.length >= 2;
+  }
+
+  get podeCortar(): boolean {
+    return this.arquivoParaCortar !== null;
+  }
+
+  executar() {
+    if (this.podeJuntar) {
+      this.juntarPdfs();
+    } else if (this.podeCortar) {
+      this.cortarPdf();
+    }
+  }
+
+  limpar() {
+    this.arquivosParaJuntar = [];
+    this.arquivoParaCortar = null;
+    this.paginaDe = 1;
+    this.paginaAte = 1;
+    this.mensagemStatus = 'Pronto';
+  }
+
   // Detecta seleção de arquivos para JUNTAR
   onArquivosJuntarSelecionados(event: any) {
     if (event.target.files) {
@@ -45,6 +71,7 @@ export class OrganizarPdfComponent {
 
       const pdfBytes = await pdfDocsJuntos.save();
       this.fazerDownload(pdfBytes, 'pdf_juntado_master.pdf');
+      this.mensagemStatus = `${this.arquivosParaJuntar.length} PDFs juntados com sucesso.`;
       alert('✅ PDFs juntados com sucesso!');
     } catch (error) {
       console.error(error);
@@ -90,6 +117,7 @@ export class OrganizarPdfComponent {
 
       const pdfBytes = await novoPdf.save();
       this.fazerDownload(pdfBytes, 'pdf_recortado_master.pdf');
+      this.mensagemStatus = `Páginas ${this.paginaDe} a ${this.paginaAte} extraídas com sucesso.`;
       alert('✅ PDF cortado com sucesso!');
     } catch (error) {
       console.error(error);

@@ -1,0 +1,152 @@
+.word-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #d9d9d9;
+}
+
+/* ---------- BARRA DE TÍTULO ---------- */
+.title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  background-color: #2b579a;
+  color: #fff;
+  padding: 0 14px;
+  flex-shrink: 0;
+}
+
+.title-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-icon {
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #2b579a 0%, #2b579a 50%, #1e4e9c 50%, #1e4e9c 100%);
+  border: 1.5px solid #fff;
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.35);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.app-name {
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.2px;
+}
+
+.title-divider {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.doc-name {
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.title-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.title-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 2px;
+  padding: 4px 12px;
+  color: rgba(255, 255, 255, 0.9);
+  min-width: 320px;
+  cursor: text;
+}
+
+.search-icon {
+  font-size: 13px;
+}
+
+.search-placeholder {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.title-right {
+  display: flex;
+  align-items: center;
+}
+
+.account-chip {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #1e4e9c;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* ---------- ABAS ---------- */
+.tab-strip {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0 14px;
+  height: 38px;
+  flex-shrink: 0;
+  gap: 2px;
+}
+
+.nav-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 16px;
+  font-size: 13px;
+  color: #4a4a4a;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+.nav-tab:hover {
+  background-color: #f0f2f5;
+}
+
+.nav-tab.active {
+  color: #262626;
+  font-weight: 600;
+  box-shadow: inset 0 -2px 0 #2b579a;
+}
+
+.nav-tab.static {
+  color: #6a6a6a;
+  cursor: default;
+}
+
+/* ---------- ÁREA DE TRABALHO ---------- */
+.document-workspace {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}

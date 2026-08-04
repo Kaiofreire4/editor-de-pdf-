@@ -1,1 +1,262 @@
-/* You can add global styles to this file, and also import other style files */
+/* ============ Estilos globais — Tema Microsoft Word ============ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: 'Segoe UI', 'Calibri', Arial, sans-serif;
+  background-color: #d9d9d9;
+  overflow: hidden;
+  color: #262626;
+}
+
+/* ---------- Faixa de opções (Ribbon) ---------- */
+.word-ribbon {
+  display: flex;
+  align-items: flex-end;
+  background-color: #f3f3f3;
+  border-bottom: 1px solid #d6d6d6;
+  padding: 4px 8px 0;
+  min-height: 86px;
+  user-select: none;
+}
+
+.ribbon-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 2px 10px 4px;
+  min-width: 78px;
+}
+
+.ribbon-group:hover {
+  background-color: #e7eef8;
+}
+
+.ribbon-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 44px;
+}
+
+.ribbon-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 40px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  color: #262626;
+  line-height: 1.15;
+}
+
+.ribbon-btn:hover:not(:disabled) {
+  background-color: #dbe4ee;
+  border-color: #c8d3e0;
+}
+
+.ribbon-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ribbon-btn.small {
+  width: 28px;
+  height: 28px;
+  font-size: 15px;
+}
+
+.ribbon-btn.big {
+  width: 44px;
+  height: 44px;
+  font-size: 22px;
+}
+
+.ribbon-btn .ico {
+  font-size: 20px;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.ribbon-btn .lbl {
+  font-size: 11px;
+}
+
+.ribbon-label {
+  font-size: 11px;
+  color: #666;
+  text-align: center;
+  margin-top: 3px;
+  border-top: 1px solid #d6d6d6;
+  width: 100%;
+  padding-top: 2px;
+  line-height: 1.2;
+}
+
+.ribbon-sep {
+  width: 1px;
+  align-self: stretch;
+  background-color: #d6d6d6;
+  margin: 2px 6px 6px;
+}
+
+/* ---------- Seletores da faixa ---------- */
+.font-select,
+.font-size-select {
+  height: 24px;
+  border: 1px solid #d6d6d6;
+  border-radius: 2px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  color: #262626;
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+.font-select {
+  width: 108px;
+}
+
+.font-size-select {
+  width: 44px;
+}
+
+/* ---------- Régua ---------- */
+.word-ruler {
+  height: 24px;
+  background: linear-gradient(to bottom, #f7f7f7, #e8e8e8);
+  border-bottom: 1px solid #d6d6d6;
+  display: flex;
+  align-items: stretch;
+}
+
+.ruler-left {
+  flex: 0 0 56px;
+  background: #efefef;
+  border-right: 1px solid #d6d6d6;
+}
+
+.ruler-inner {
+  flex: 1;
+  position: relative;
+  background-image: linear-gradient(to right, #b0b0b0 1px, transparent 1px),
+    linear-gradient(to bottom, #b0b0b0 1px, transparent 1px);
+  background-size: 100% 5px, 10% 100%;
+  background-repeat: repeat-x, repeat;
+  background-position: 0 0, 0 0;
+  overflow: hidden;
+}
+
+.ruler-inner::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 7px;
+  background-image: linear-gradient(to right, #9c9c9c 1px, transparent 1px);
+  background-size: 1% 100%;
+}
+
+/* ---------- Área cinza com a página centralizada ---------- */
+.word-canvas-area {
+  flex: 1;
+  overflow-y: auto;
+  background-color: #d9d9d9;
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.word-page {
+  position: relative;
+  display: inline-block;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  margin: 0 auto;
+}
+
+/* ---------- Barra de status ---------- */
+.word-statusbar {
+  height: 26px;
+  background-color: #f3f3f3;
+  border-top: 1px solid #d6d6d6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 12px;
+  color: #444;
+  user-select: none;
+}
+
+.status-left,
+.status-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: default;
+}
+
+.status-item.clickable {
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+
+.status-item.clickable:hover {
+  background-color: #e2e2e2;
+}
+
+.status-item.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.status-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: #444;
+  font-family: inherit;
+  padding: 2px 5px;
+  border-radius: 2px;
+}
+
+.status-btn:hover:not(:disabled) {
+  background-color: #e2e2e2;
+}
+
+.status-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.zoom-value {
+  min-width: 38px;
+  text-align: center;
+}

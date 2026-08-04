@@ -1,137 +1,134 @@
-<div class="google-docs-editor">
-  <!-- BARRA SUPERIOR COM MENU -->
-  <header class="top-menu-bar">
-    <div class="menu-left">
-      <h1 class="doc-title">Documento PDF</h1>
-      <input type="file" #fileInputWord style="display: none" accept=".pdf" (change)="onFileSelected($event)"/>
+<div class="word-editor">
+
+  <!-- FAIXA DE OPÇÕES -->
+  <div class="word-ribbon">
+    <div class="ribbon-group">
+      <div class="ribbon-row">
+        <button class="ribbon-btn"><span class="ico">📋</span><span class="lbl">Colar</span></button>
+        <button class="ribbon-btn"><span class="ico">✂️</span><span class="lbl">Recortar</span></button>
+      </div>
+      <span class="ribbon-label">Área de Transferência</span>
     </div>
 
-    <nav class="menu-items">
-      <button class="menu-btn">Arquivo</button>
-      <button class="menu-btn">Editar</button>
-      <button class="menu-btn">Ver</button>
-      <button class="menu-btn">Inserir</button>
-      <button class="menu-btn">Formatar</button>
-      <button class="menu-btn">Ferramentas</button>
-    </nav>
+    <div class="ribbon-sep"></div>
 
-    <div class="top-right-actions">
-      <button class="icon-btn-share" title="Compartilhar">👥</button>
-      <button class="icon-btn-menu" title="Menu">⋮</button>
+    <div class="ribbon-group">
+      <div class="ribbon-row">
+        <select class="font-select">
+          <option selected>Calibri</option>
+          <option>Arial</option>
+          <option>Times New Roman</option>
+          <option>Courier New</option>
+          <option>Georgia</option>
+        </select>
+        <select class="font-size-select">
+          <option>8</option>
+          <option>9</option>
+          <option>10</option>
+          <option>11</option>
+          <option selected>12</option>
+          <option>14</option>
+          <option>16</option>
+          <option>18</option>
+          <option>20</option>
+          <option>24</option>
+        </select>
+        <button class="ribbon-btn small" title="Negrito"><b>B</b></button>
+        <button class="ribbon-btn small" title="Itálico"><i>I</i></button>
+        <button class="ribbon-btn small" title="Sublinhado"><u>U</u></button>
+        <button class="ribbon-btn small" title="Tachado"><s>S</s></button>
+        <button class="ribbon-btn small" title="Cor do texto">A</button>
+        <button class="ribbon-btn small" title="Realce">🖍</button>
+      </div>
+      <span class="ribbon-label">Fonte</span>
     </div>
-  </header>
 
-  <!-- BARRA DE FERRAMENTAS -->
-  <div class="toolbar-area">
-    <div class="toolbar-buttons">
-      <button class="tool-btn" title="Abrir PDF" (click)="fileInputWord.click()">📂</button>
-      <button class="tool-btn" title="Imprimir">🖨️</button>
-      <button class="tool-btn" title="Desfazer">↶</button>
-      <button class="tool-btn" title="Refazer">↷</button>
+    <div class="ribbon-sep"></div>
 
-      <div class="separator"></div>
+    <div class="ribbon-group">
+      <div class="ribbon-row">
+        <button class="ribbon-btn small" title="Alinhar à esquerda">⫷</button>
+        <button class="ribbon-btn small" title="Centralizar">≡</button>
+        <button class="ribbon-btn small" title="Alinhar à direita">⫸</button>
+        <button class="ribbon-btn small" title="Justificar">☰</button>
+      </div>
+      <span class="ribbon-label">Parágrafo</span>
+    </div>
 
-      <select class="font-select">
-        <option>Arial</option>
-        <option>Times New Roman</option>
-        <option>Courier New</option>
-        <option>Georgia</option>
-      </select>
+    <div class="ribbon-sep"></div>
 
-      <select class="font-size-select">
-        <option>8</option>
-        <option>11</option>
-        <option selected>12</option>
-        <option>14</option>
-        <option>16</option>
-      </select>
-
-      <div class="separator"></div>
-
-      <button class="tool-btn" title="Negrito">B</button>
-      <button class="tool-btn" title="Itálico">I</button>
-      <button class="tool-btn" title="Sublinhado">U</button>
-      <button class="tool-btn" title="Cor do texto">A</button>
-      <button class="tool-btn" title="Cor de preenchimento">🎨</button>
-
-      <div class="separator"></div>
-
-      <button class="tool-btn" title="Alinhar à esquerda">⬅</button>
-      <button class="tool-btn" title="Centralizar">↔</button>
-      <button class="tool-btn" title="Alinhar à direita">➡</button>
-
-      <div class="separator"></div>
-
-      <button class="tool-btn-save" title="Salvar" [disabled]="!pdfCarregado" (click)="exportarPdf()">💾 Salvar</button>
+    <div class="ribbon-group">
+      <div class="ribbon-row">
+        <button class="ribbon-btn big" title="Abrir PDF" (click)="fileInputWord.click()"><span class="ico">📂</span><span class="lbl">Abrir</span></button>
+        <button class="ribbon-btn big" title="Salvar PDF" [disabled]="!pdfCarregado" (click)="exportarPdf()"><span class="ico">💾</span><span class="lbl">Salvar</span></button>
+      </div>
+      <span class="ribbon-label">Documento</span>
     </div>
   </div>
 
-  <!-- CONTAINER PRINCIPAL COM SIDEBAR -->
-  <div class="main-container">
-    <!-- SIDEBAR ESQUERDO -->
-    <aside class="sidebar-guides">
-      <div class="guides-header">
-        <h3>Guias no documento</h3>
-        <button class="add-guide-btn">+</button>
-      </div>
-
-      <div class="guide-item active">
-        <span class="guide-icon">📋</span>
-        <span class="guide-text">Guia 1</span>
-      </div>
-
-      <div class="guide-help-text">
-        Os títulos que forem adicionados ao documento aparecerão aqui.
-      </div>
-    </aside>
-
-    <!-- ÁREA DE EDIÇÃO PRINCIPAL -->
-    <main class="document-editor-area">
-      <div class="page-container">
-        <canvas #pdfCanvas class="pdf-canvas"></canvas>
-
-        <div class="pdf-text-layer" *ngIf="pdfCarregado && spansDaPagina.length > 0">
-          <div
-            *ngFor="let span of spansDaPagina; let i = index"
-            class="editable-text-block"
-            [class.active]="indexSpanSelecionado === i"
-            [style.left.px]="span.bbox[0]"
-            [style.top.px]="span.bbox[1]"
-            [style.width.px]="span.bbox[2] - span.bbox[0]"
-            [style.height.px]="span.bbox[3] - span.bbox[1]"
-            (click)="focarEEditarSpan(i); $event.stopPropagation()"
-            >
-
-            <div *ngIf="span.modificado && indexSpanSelecionado !== i" class="white-mask"></div>
-
-            <input
-              *ngIf="indexSpanSelecionado === i"
-              [(ngModel)]="span.text"
-              (input)="atualizarTextoDiretoNaFolha(span.text)"
-              class="inline-text-input"
-              autofocus />
-
-            <span
-              *ngIf="indexSpanSelecionado !== i"
-              [innerHTML]="span.text"
-              class="text-content"
-              [class.modified]="span.modificado">
-            </span>
-          </div>
-        </div>
-
-        <div *ngIf="!pdfCarregado" class="empty-state">
-          Selecione um documento para usar o mesmo estilo visual e estrutura
-        </div>
-      </div>
-
-      <!-- PAGINAÇÃO INFERIOR -->
-      <div class="pagination-footer">
-        <button [disabled]="paginaAtual <= 1" class="nav-btn" (click)="mudarPagina(-1)">◀ Anterior</button>
-        <span class="page-info">{{ pdfCarregado ? 'Página ' + paginaAtual + ' de ' + totalPaginas : 'Nenhum documento' }}</span>
-        <button [disabled]="paginaAtual >= totalPaginas" class="nav-btn" (click)="mudarPagina(1)">Próxima ▶</button>
-      </div>
-    </main>
+  <!-- RÉGUA -->
+  <div class="word-ruler">
+    <div class="ruler-left"></div>
+    <div class="ruler-inner"></div>
   </div>
+
+  <!-- ÁREA DA PÁGINA -->
+  <div class="word-canvas-area">
+    <div class="word-page">
+      <canvas #pdfCanvas class="pdf-canvas"></canvas>
+
+      <div class="pdf-text-layer" *ngIf="pdfCarregado && spansDaPagina.length > 0">
+        <div
+          *ngFor="let span of spansDaPagina; let i = index"
+          class="editable-text-block"
+          [class.active]="indexSpanSelecionado === i"
+          [style.left.px]="span.bbox[0]"
+          [style.top.px]="span.bbox[1]"
+          [style.width.px]="span.bbox[2] - span.bbox[0]"
+          [style.height.px]="span.bbox[3] - span.bbox[1]"
+          (click)="focarEEditarSpan(i); $event.stopPropagation()"
+          >
+          <div *ngIf="span.modificado && indexSpanSelecionado !== i" class="white-mask"></div>
+
+          <input
+            *ngIf="indexSpanSelecionado === i"
+            [(ngModel)]="span.text"
+            (input)="atualizarTextoDiretoNaFolha(span.text)"
+            class="inline-text-input"
+            autofocus />
+
+          <span
+            *ngIf="indexSpanSelecionado !== i"
+            [innerHTML]="span.text"
+            class="text-content"
+            [class.modified]="span.modificado">
+          </span>
+        </div>
+      </div>
+
+      <div *ngIf="!pdfCarregado" class="empty-state">
+        <div class="empty-icon">📄</div>
+        <p class="empty-title">Selecione um documento para começar a editar</p>
+        <p class="empty-hint">Clique em <strong>Abrir</strong> na faixa de opções para carregar um PDF.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- BARRA DE STATUS -->
+  <div class="word-statusbar">
+    <div class="status-left">
+      <button class="status-btn" [disabled]="!pdfCarregado || paginaAtual <= 1" (click)="mudarPagina(-1)">‹</button>
+      <span class="status-item">{{ pdfCarregado ? 'Página ' + paginaAtual + ' de ' + totalPaginas : 'Pronto' }}</span>
+      <button class="status-btn" [disabled]="!pdfCarregado || paginaAtual >= totalPaginas" (click)="mudarPagina(1)">›</button>
+      <span class="status-item" *ngIf="pdfCarregado">{{ palavraCount }} palavras</span>
+      <span class="status-item" *ngIf="pdfCarregado" (click)="exportarPdf()">Salvo ✓</span>
+    </div>
+    <div class="status-right">
+      <span class="status-item clickable">−</span>
+      <span class="status-item zoom-value">{{ zoomPercent }}%</span>
+      <span class="status-item clickable">＋</span>
+    </div>
+  </div>
+
+  <input type="file" #fileInputWord style="display: none" accept=".pdf" (change)="onFileSelected($event)"/>
 </div>
-

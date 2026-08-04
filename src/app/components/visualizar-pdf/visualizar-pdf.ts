@@ -23,6 +23,31 @@ export class VisualizarPdfComponent {
   pdfDoc: any = null;
   escala: number = 1.5; // Mantém o mesmo zoom e nitidez do editor
 
+  get zoomPercent(): number {
+    return Math.round(this.escala * 100);
+  }
+
+  ajustarZoom(delta: number) {
+    const novaEscala = this.escala + delta;
+    if (novaEscala >= 0.5 && novaEscala <= 3) {
+      this.escala = Math.round(novaEscala * 100) / 100;
+      if (this.pdfCarregado) {
+        this.renderizarPagina(this.paginaAtual);
+      }
+    }
+  }
+
+  imprimir() {
+    if (!this.pdfDoc || !this.canvasRef) return;
+    const dataUrl = this.canvasRef.nativeElement.toDataURL('image/png');
+    const janela = window.open('', '_blank');
+    if (!janela) return;
+    janela.document.write(
+      `<html><head><title>Imprimir PDF</title></head><body style="margin:0;text-align:center"><img src="${dataUrl}" style="max-width:100%"/><script>window.onload=function(){window.print();}<\/script></body></html>`
+    );
+    janela.document.close();
+  }
+
   async onFileSelected(event: any) {
     const file = event.target.files[0];
     if (!file) return;

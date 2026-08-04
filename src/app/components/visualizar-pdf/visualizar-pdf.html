@@ -1,29 +1,51 @@
-<div class="visualizador-container" style="display: flex; flex-direction: column; height: 100vh; background-color: #1e1e1e; color: white; font-family: sans-serif;">
+<div class="word-visualizar">
 
-  <header class="toolbar-vis" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background-color: #2d2d2d; border-bottom: 1px solid #3d3d3d;">
-    <div class="group-left">
-      <input type="file" #fileInputVis style="display: none" accept=".pdf" (change)="onFileSelected($event)"/>
-      <button style="background-color: #673ab7; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;" (click)="fileInputVis.click()">📂 Abrir PDF para Leitura</button>
+  <!-- FAIXA DE OPÇÕES -->
+  <div class="word-ribbon">
+    <div class="ribbon-group">
+      <div class="ribbon-row">
+        <button class="ribbon-btn big" title="Abrir PDF" (click)="fileInputVis.click()"><span class="ico">📂</span><span class="lbl">Abrir</span></button>
+        <button class="ribbon-btn big" title="Imprimir" (click)="imprimir()" [disabled]="!pdfCarregado"><span class="ico">🖨️</span><span class="lbl">Imprimir</span></button>
+      </div>
+      <span class="ribbon-label">Documento</span>
     </div>
 
-    <div class="group-right" style="display: flex; align-items: center; gap: 15px;">
-      <button [disabled]="paginaAtual <= 1" style="background: #444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;" (click)="mudarPagina(-1)">◀ Voltar</button>
-      <span style="font-size: 14px; font-weight: 500;">
-        {{ pdfCarregado ? 'Página ' + paginaAtual + ' de ' + totalPaginas : 'Nenhum arquivo aberto' }}
-      </span>
-      <button [disabled]="paginaAtual >= totalPaginas" style="background: #444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;" (click)="mudarPagina(1)">Avançar ▶</button>
-    </div>
-  </header>
+    <div class="ribbon-sep"></div>
 
-  <div class="pdf-display-area" style="flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 20px; overflow-y: auto; background-color: #121212;">
-    <div style="box-shadow: 0 4px 15px rgba(0,0,0,0.5); background: white; border-radius: 4px; display: inline-block;">
-      <canvas #pdfCanvasVis [style.display]="pdfCarregado ? 'block' : 'none'"></canvas>
-    </div>
-
-    <div *ngIf="!pdfCarregado" style="margin-top: 50px; text-align: center; color: #888;">
-      <p style="font-size: 18px;">Nenhum PDF selecionado para visualização.</p>
-      <p style="font-size: 14px;">Clique no botão acima para carregar o documento em modo de leitura.</p>
+    <div class="ribbon-group">
+      <div class="ribbon-row">
+        <button class="ribbon-btn small" title="Zoom out" (click)="ajustarZoom(-0.25)">−</button>
+        <button class="ribbon-btn small" title="Zoom in" (click)="ajustarZoom(0.25)">＋</button>
+      </div>
+      <span class="ribbon-label">Zoom</span>
     </div>
   </div>
 
+  <!-- ÁREA DA PÁGINA -->
+  <div class="word-canvas-area">
+    <div class="word-page">
+      <canvas #pdfCanvasVis class="pdf-canvas-vis" [style.display]="pdfCarregado ? 'block' : 'none'"></canvas>
+      <div *ngIf="!pdfCarregado" class="empty-state">
+        <div class="empty-icon">👁️</div>
+        <p class="empty-title">Nenhum PDF selecionado para visualização</p>
+        <p class="empty-hint">Clique em <strong>Abrir</strong> na faixa de opções para carregar o documento em modo de leitura.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- BARRA DE STATUS -->
+  <div class="word-statusbar">
+    <div class="status-left">
+      <button class="status-btn" [disabled]="!pdfCarregado || paginaAtual <= 1" (click)="mudarPagina(-1)">‹</button>
+      <span class="status-item">{{ pdfCarregado ? 'Página ' + paginaAtual + ' de ' + totalPaginas : 'Pronto' }}</span>
+      <button class="status-btn" [disabled]="!pdfCarregado || paginaAtual >= totalPaginas" (click)="mudarPagina(1)">›</button>
+    </div>
+    <div class="status-right">
+      <span class="status-item clickable" (click)="ajustarZoom(-0.25)">−</span>
+      <span class="status-item zoom-value">{{ zoomPercent }}%</span>
+      <span class="status-item clickable" (click)="ajustarZoom(0.25)">＋</span>
+    </div>
+  </div>
+
+  <input type="file" #fileInputVis style="display: none" accept=".pdf" (change)="onFileSelected($event)" />
 </div>

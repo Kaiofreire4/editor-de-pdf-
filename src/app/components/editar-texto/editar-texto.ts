@@ -160,6 +160,17 @@ export class EditarTextoComponent {
     }
   }
 
+  get zoomPercent(): number {
+    return Math.round(this.escala * 100);
+  }
+
+  get palavraCount(): number {
+    return this.spansDaPagina.reduce(
+      (total, span) => total + (span.text || '').trim().split(/\s+/).filter(Boolean).length,
+      0
+    );
+  }
+
   async exportarPdf() {
     if (!this.arquivoSelecionado) return;
 
@@ -169,6 +180,7 @@ export class EditarTextoComponent {
         text: span.text,
         textoOriginal: span.textoOriginal,
         htmlFormatado: span.htmlFormatado || `<p>${span.text}</p>`,
+        pageIndex: this.paginaAtual - 1,
         bbox: [
           span.bbox[0] / this.escala,
           span.bbox[1] / this.escala,

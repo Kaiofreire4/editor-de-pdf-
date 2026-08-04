@@ -1,14 +1,39 @@
-<div style="display: flex; height: 100vh; background-color: #121212;">
+<div class="word-app">
 
-  <aside style="width: 200px; background-color: #1e1e1e; padding: 20px; display: flex; flex-direction: column; gap: 15px; border-right: 1px solid #2d2d2d;">
-    <h3 style="color: #00bcd4; margin-top: 0;">PDF Master v2</h3>
+  <!-- BARRA DE TÍTULO ESTILO WORD -->
+  <header class="title-bar">
+    <div class="title-left">
+      <div class="app-icon">W</div>
+      <span class="app-name">PdfMasterWeb</span>
+      <span class="title-divider">-</span>
+      <span class="doc-name">Documento PDF</span>
+    </div>
+    <div class="title-center">
+      <div class="title-search">
+        <span class="search-icon">🔍</span>
+        <span class="search-placeholder">Pesquisar no documento</span>
+      </div>
+    </div>
+    <div class="title-right">
+      <span class="account-chip">K</span>
+    </div>
+  </header>
 
-    <button routerLink="/organizar-pdf" style="background: none; border: none; color: #aaa; text-align: left; cursor: pointer; font-size: 14px;">📦 Organizar Páginas</button>
-    <button routerLink="/editar-texto" style="background: #00bcd4; border: none; color: black; text-align: left; cursor: pointer; font-size: 14px; padding: 8px; border-radius: 4px; font-weight: bold;">✍️ Editar Texto</button>
-    <button routerLink="/visualizar-pdf" style="background: none; border: none; color: #aaa; text-align: left; cursor: pointer; font-size: 14px;">👁️ Visualizar PDF</button>
-  </aside>
+  <!-- ABAS DE NAVEGAÇÃO -->
+  <nav class="tab-strip">
+    <a class="nav-tab" routerLink="/editar-texto" routerLinkActive="active">Página Inicial</a>
+    <a class="nav-tab" routerLink="/organizar-pdf" routerLinkActive="active">Inserir</a>
+    <a class="nav-tab" routerLink="/visualizar-pdf" routerLinkActive="active">Exibir</a>
+    <span class="nav-tab static">Arquivo</span>
+    <span class="nav-tab static">Layout</span>
+    <span class="nav-tab static">Referências</span>
+    <span class="nav-tab static">Correspondências</span>
+    <span class="nav-tab static">Revisão</span>
+    <span class="nav-tab static">Ajuda</span>
+  </nav>
 
-  <main style="flex: 1; overflow: hidden; background-color: #f3f3f3;">
+  <!-- ÁREA DE TRABALHO -->
+  <main class="document-workspace">
     <router-outlet></router-outlet>
   </main>
 

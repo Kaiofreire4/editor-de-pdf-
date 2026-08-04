@@ -1,52 +1,83 @@
-<div class="organizar-container">
-  <h2>Juntar e Cortar PDFs</h2>
+<div class="word-organizar">
 
-  <div class="card card-blue">
-    <h3>📂 Juntar PDFs</h3>
-    <p>Selecione múltiplos arquivos para unir em um só.</p>
-
-    <input
-      type="file"
-      id="input-juntar"
-      multiple
-      accept=".pdf"
-      (change)="onArquivosJuntarSelecionados($event)"
-    />
-
-    <div class="lista-arquivos" *ngIf="arquivosParaJuntar.length > 0">
-      <p><strong>Arquivos selecionados:</strong></p>
-      <ul>
-        <li *ngFor="let arq of arquivosParaJuntar">📄 {{ arq.name }}</li>
-      </ul>
+  <!-- FAIXA DE OPÇÕES -->
+  <div class="word-ribbon">
+    <div class="ribbon-group">
+      <div class="ribbon-row">
+        <button class="ribbon-btn big" title="Juntar PDFs" (click)="inputJuntar.click()"><span class="ico">📚</span><span class="lbl">Juntar</span></button>
+        <button class="ribbon-btn big" title="Cortar páginas" (click)="inputCortar.click()"><span class="ico">✂️</span><span class="lbl">Cortar</span></button>
+      </div>
+      <span class="ribbon-label">Operações</span>
     </div>
 
-    <button class="btn btn-blue" (click)="juntarPdfs()">Escolher Arquivos e Juntar</button>
-  </div>
+    <div class="ribbon-sep"></div>
 
-  <div class="card card-green">
-    <h3>✂️ Cortar Páginas</h3>
-    <p>Escolha um PDF e defina o intervalo de páginas que deseja extrair.</p>
-
-    <input
-      type="file"
-      id="input-cortar"
-      accept=".pdf"
-      (change)="onArquivoCortarSelecionado($event)"
-    />
-
-    <p class="arquivo-selecionado" *ngIf="arquivoParaCortar">
-      Selecionado: <strong>{{ arquivoParaCortar.name }}</strong>
-    </p>
-
-    <div class="inputs-intervalo">
-      <label>Da página:
-        <input type="number" [(ngModel)]="paginaDe" min="1" />
-      </label>
-      <label>até:
-        <input type="number" [(ngModel)]="paginaAte" min="1" />
-      </label>
+    <div class="ribbon-group">
+      <div class="ribbon-row">
+        <button class="ribbon-btn big" title="Executar" [disabled]="!podeJuntar && !podeCortar" (click)="executar()"><span class="ico">▶️</span><span class="lbl">Executar</span></button>
+        <button class="ribbon-btn big" title="Limpar" (click)="limpar()"><span class="ico">🗑️</span><span class="lbl">Limpar</span></button>
+      </div>
+      <span class="ribbon-label">Ações</span>
     </div>
-
-    <button class="btn btn-green" (click)="cortarPdf()">Recortar PDF</button>
   </div>
+
+  <!-- ÁREA DE TRABALHO -->
+  <div class="organizar-workspace">
+    <div class="organizar-cards">
+
+      <div class="word-card">
+        <div class="card-header">
+          <span class="card-icon">📚</span>
+          <div>
+            <h3>Juntar PDFs</h3>
+            <p>Selecione múltiplos arquivos para unir em um único documento.</p>
+          </div>
+        </div>
+
+        <button class="word-btn primary" (click)="inputJuntar.click()">Adicionar arquivos…</button>
+
+        <ul class="arquivo-list" *ngIf="arquivosParaJuntar.length > 0">
+          <li *ngFor="let arq of arquivosParaJuntar">📄 {{ arq.name }}</li>
+        </ul>
+        <p class="arquivo-hint" *ngIf="arquivosParaJuntar.length === 0">Nenhum arquivo adicionado.</p>
+      </div>
+
+      <div class="word-card">
+        <div class="card-header">
+          <span class="card-icon">✂️</span>
+          <div>
+            <h3>Cortar Páginas</h3>
+            <p>Escolha um PDF e defina o intervalo de páginas a extrair.</p>
+          </div>
+        </div>
+
+        <button class="word-btn primary" (click)="inputCortar.click()">Selecionar PDF…</button>
+        <p class="arquivo-hint" *ngIf="arquivoParaCortar">Selecionado: <strong>{{ arquivoParaCortar.name }}</strong></p>
+        <p class="arquivo-hint" *ngIf="!arquivoParaCortar">Nenhum arquivo selecionado.</p>
+
+        <div class="inputs-intervalo">
+          <label>Da página:
+            <input type="number" [(ngModel)]="paginaDe" min="1" />
+          </label>
+          <label>até:
+            <input type="number" [(ngModel)]="paginaAte" min="1" />
+          </label>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BARRA DE STATUS -->
+  <div class="word-statusbar">
+    <div class="status-left">
+      <span class="status-item">{{ mensagemStatus }}</span>
+    </div>
+    <div class="status-right">
+      <span class="status-item">PdfMasterWeb</span>
+    </div>
+  </div>
+
+  <input type="file" #inputJuntar style="display: none" multiple accept=".pdf" (change)="onArquivosJuntarSelecionados($event)" />
+  <input type="file" #inputCortar style="display: none" accept=".pdf" (change)="onArquivoCortarSelecionado($event)" />
 </div>
