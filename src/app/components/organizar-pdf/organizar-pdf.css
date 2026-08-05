@@ -9,8 +9,8 @@
 .organizar-workspace {
   flex: 1;
   overflow-y: auto;
-  background-color: #d9d9d9;
-  padding: 28px;
+  background: radial-gradient(circle at 15% 10%, rgba(101,86,217,.08), transparent 30%), #f5f7fb;
+  padding: 42px 28px;
 }
 
 .organizar-cards {
@@ -26,10 +26,10 @@
   flex: 1 1 360px;
   max-width: 440px;
   background: #fff;
-  border: 1px solid #cfcfcf;
-  border-radius: 4px;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.14);
-  padding: 20px;
+  border: 1px solid #e5e7f0;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(42, 47, 78, .08);
+  padding: 24px;
 }
 
 .card-header {
@@ -39,56 +39,63 @@
 }
 
 .card-icon {
-  font-size: 30px;
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #f0efff;
+  color: #6556d9;
+  font-size: 21px;
   line-height: 1;
 }
 
 .card-header h3 {
   font-size: 16px;
   font-weight: 600;
-  color: #262626;
+  color: #202438;
   margin-bottom: 4px;
 }
 
 .card-header p {
   font-size: 12.5px;
-  color: #666;
+  color: #858b9f;
   line-height: 1.4;
 }
 
 .word-btn {
-  border: 1px solid #adadad;
-  background: linear-gradient(to bottom, #f9f9f9, #ececec);
-  color: #262626;
+  border: 0;
+  background: #f1f2f7;
+  color: #565d73;
   font-family: inherit;
   font-size: 13px;
-  padding: 7px 16px;
-  border-radius: 3px;
+  padding: 10px 16px;
+  border-radius: 7px;
   cursor: pointer;
   font-weight: 500;
 }
 
 .word-btn:hover {
-  border-color: #7f9cc7;
-  background: linear-gradient(to bottom, #f6f9fd, #e2ebf6);
+  background: #e7e5ff;
+  color: #4b3db7;
 }
 
 .word-btn.primary {
-  background: linear-gradient(to bottom, #3f6cb5, #2b579a);
-  border-color: #24508f;
+  background: #6556d9;
+  border-color: #6556d9;
   color: #fff;
 }
 
 .word-btn.primary:hover {
-  background: linear-gradient(to bottom, #3a66ab, #274f8e);
-  border-color: #24508f;
+  background: #4b3db7;
+  border-color: #4b3db7;
 }
 
 .arquivo-list {
   list-style: none;
   margin-top: 14px;
-  border: 1px solid #e0e0e0;
-  border-radius: 3px;
+  border: 1px solid #e5e7f0;
+  border-radius: 8px;
   max-height: 150px;
   overflow-y: auto;
 }
@@ -98,7 +105,7 @@
   font-size: 12.5px;
   color: #333;
   border-bottom: 1px solid #f0f0f0;
-  background: #fafafa;
+  background: #fafbfe;
 }
 
 .arquivo-list li:last-child {
@@ -140,6 +147,6 @@
 }
 
 .inputs-intervalo input:focus {
-  outline: 2px solid #2b579a;
-  border-color: #2b579a;
+  outline: 2px solid rgba(101, 86, 217, .25);
+  border-color: #6556d9;
 }

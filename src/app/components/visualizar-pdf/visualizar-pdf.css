@@ -6,6 +6,10 @@
   min-height: 0;
 }
 
+.word-visualizar .word-canvas-area {
+  background: radial-gradient(circle at 15% 10%, rgba(101,86,217,.08), transparent 30%), #f5f7fb;
+}
+
 .pdf-canvas-vis {
   display: block;
 }
@@ -29,7 +33,7 @@
 
 .empty-title {
   font-size: 15px;
-  color: #4a4a4a;
+  color: #303449;
   margin-bottom: 6px;
   font-weight: 600;
 }
@@ -40,5 +44,5 @@
 }
 
 .empty-hint strong {
-  color: #2b579a;
+  color: #6556d9;
 }

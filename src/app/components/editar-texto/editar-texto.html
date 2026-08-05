@@ -1,134 +1,128 @@
-<div class="word-editor">
+<div class="editor-shell">
+  <aside class="tool-sidebar">
+    <button class="tool-item selected" title="Editar texto"><span class="tool-icon">T</span><span>Editar</span></button>
+    <button class="tool-item" routerLink="/organizar-pdf" title="Organizar páginas"><span class="tool-icon">▦</span><span>Organizar</span></button>
+    <button class="tool-item" routerLink="/visualizar-pdf" title="Visualizar PDF"><span class="tool-icon">◉</span><span>Visualizar</span></button>
+  </aside>
 
-  <!-- FAIXA DE OPÇÕES -->
-  <div class="word-ribbon">
-    <div class="ribbon-group">
-      <div class="ribbon-row">
-        <button class="ribbon-btn"><span class="ico">📋</span><span class="lbl">Colar</span></button>
-        <button class="ribbon-btn"><span class="ico">✂️</span><span class="lbl">Recortar</span></button>
+  <section class="editor-main">
+    <div class="editor-toolbar">
+      <div class="toolbar-heading">
+        <span class="file-badge">PDF</span>
+        <div><strong>{{ arquivoSelecionado?.name || 'Novo documento' }}</strong><small>{{ pdfDisponivel ? totalPaginas + ' páginas' : 'Comece enviando um arquivo' }}</small></div>
       </div>
-      <span class="ribbon-label">Área de Transferência</span>
+      <div class="toolbar-actions">
+        <button class="button secondary" (click)="fileInputWord.click()">＋ Abrir PDF</button>
+        <button class="button primary" [disabled]="!pdfDisponivel" (click)="exportarPdf()">Baixar PDF</button>
+      </div>
     </div>
 
-    <div class="ribbon-sep"></div>
-
-    <div class="ribbon-group">
-      <div class="ribbon-row">
-        <select class="font-select">
-          <option selected>Calibri</option>
-          <option>Arial</option>
-          <option>Times New Roman</option>
-          <option>Courier New</option>
-          <option>Georgia</option>
+    @if (spanAtivo) {
+    <div class="format-toolbar">
+      <div class="format-group">
+        <select class="fmt-select" [ngModel]="spanAtivo.fontFamily" (ngModelChange)="aplicarFonte($event)">
+          @for (f of fontesDisponiveis; track f) {
+            <option [value]="f">{{ f }}</option>
+          }
         </select>
-        <select class="font-size-select">
-          <option>8</option>
-          <option>9</option>
-          <option>10</option>
-          <option>11</option>
-          <option selected>12</option>
-          <option>14</option>
-          <option>16</option>
-          <option>18</option>
-          <option>20</option>
-          <option>24</option>
+        <select class="fmt-select size" [ngModel]="spanAtivo.fontSize" (ngModelChange)="aplicarTamanho($event)">
+          @for (t of tamanhosDisponiveis; track t) {
+            <option [value]="t">{{ t }}</option>
+          }
         </select>
-        <button class="ribbon-btn small" title="Negrito"><b>B</b></button>
-        <button class="ribbon-btn small" title="Itálico"><i>I</i></button>
-        <button class="ribbon-btn small" title="Sublinhado"><u>U</u></button>
-        <button class="ribbon-btn small" title="Tachado"><s>S</s></button>
-        <button class="ribbon-btn small" title="Cor do texto">A</button>
-        <button class="ribbon-btn small" title="Realce">🖍</button>
       </div>
-      <span class="ribbon-label">Fonte</span>
-    </div>
-
-    <div class="ribbon-sep"></div>
-
-    <div class="ribbon-group">
-      <div class="ribbon-row">
-        <button class="ribbon-btn small" title="Alinhar à esquerda">⫷</button>
-        <button class="ribbon-btn small" title="Centralizar">≡</button>
-        <button class="ribbon-btn small" title="Alinhar à direita">⫸</button>
-        <button class="ribbon-btn small" title="Justificar">☰</button>
+      <div class="format-sep"></div>
+      <div class="format-group">
+        <button class="fmt-btn" [class.active]="spanAtivo.bold" (click)="alternarNegrito()" title="Negrito"><b>N</b></button>
+        <button class="fmt-btn" [class.active]="spanAtivo.italic" (click)="alternarItalico()" title="Itálico"><i>I</i></button>
+        <button class="fmt-btn" [class.active]="spanAtivo.underline" (click)="alternarSublinhado()" title="Sublinhado"><u>S</u></button>
       </div>
-      <span class="ribbon-label">Parágrafo</span>
-    </div>
-
-    <div class="ribbon-sep"></div>
-
-    <div class="ribbon-group">
-      <div class="ribbon-row">
-        <button class="ribbon-btn big" title="Abrir PDF" (click)="fileInputWord.click()"><span class="ico">📂</span><span class="lbl">Abrir</span></button>
-        <button class="ribbon-btn big" title="Salvar PDF" [disabled]="!pdfCarregado" (click)="exportarPdf()"><span class="ico">💾</span><span class="lbl">Salvar</span></button>
+      <div class="format-sep"></div>
+      <div class="format-group">
+        @for (c of coresDisponiveis; track c.valor) {
+          <button
+            class="fmt-color-btn"
+            [class.active]="spanAtivo.color === c.valor"
+            [style.background]="c.valor"
+            (click)="aplicarCor(c.valor)"
+            [title]="c.nome">
+          </button>
+        }
       </div>
-      <span class="ribbon-label">Documento</span>
     </div>
-  </div>
+    }
 
-  <!-- RÉGUA -->
-  <div class="word-ruler">
-    <div class="ruler-left"></div>
-    <div class="ruler-inner"></div>
-  </div>
+    <div class="editor-body" (click)="deselecionarSpan($event)">
+      <div class="page-stage">
+        <div class="stage-topbar">
+          <span>{{ pdfDisponivel ? spansDaPagina.length + ' blocos de texto · clique para editar' : 'Seu arquivo fica no seu dispositivo' }}</span>
+          <div class="zoom-controls">
+            <button (click)="alterarZoom(-0.1)" [disabled]="!pdfDisponivel">−</button><span>{{ zoomPercent }}%</span><button (click)="alterarZoom(0.1)" [disabled]="!pdfDisponivel">＋</button>
+          </div>
+        </div>
+        <div class="word-canvas-area">
+          <div class="word-page" [class.has-pdf]="pdfDisponivel">
+            <canvas #pdfCanvas class="pdf-canvas"></canvas>
 
-  <!-- ÁREA DA PÁGINA -->
-  <div class="word-canvas-area">
-    <div class="word-page">
-      <canvas #pdfCanvas class="pdf-canvas"></canvas>
+            <div class="pdf-text-layer" *ngIf="spansDaPagina.length > 0">
+              @for (span of spansDaPagina; track span.id) {
+                <div
+                  class="editable-text-block"
+                  [class.active]="span.id === spanAtivoId"
+                  [class.modified-bg]="span.modificado && span.id !== spanAtivoId"
+                  [style.left.px]="span.x"
+                  [style.top.px]="span.y"
+                  [style.width.px]="span.w"
+                  [style.height.px]="span.h"
+                >
+                  @if (span.id === spanAtivoId) {
+                    <input
+                      [(ngModel)]="span.text"
+                      (input)="marcarModificado(span)"
+                      (keydown.enter)="deselecionarSpan()"
+                      (keydown.escape)="deselecionarSpan()"
+                      class="inline-text-input"
+                      [ngStyle]="getEstiloSpan(span)"
+                      autofocus />
+                  } @else {
+                    <span
+                      class="text-block-label"
+                      [class.modificado]="span.modificado"
+                      [ngStyle]="getEstiloSpan(span)"
+                      (click)="ativarSpan(span.id); $event.stopPropagation()"
+                      (dblclick)="ativarSpan(span.id); $event.stopPropagation()">
+                      {{ span.text }}
+                    </span>
+                  }
+                </div>
+              }
+            </div>
 
-      <div class="pdf-text-layer" *ngIf="pdfCarregado && spansDaPagina.length > 0">
-        <div
-          *ngFor="let span of spansDaPagina; let i = index"
-          class="editable-text-block"
-          [class.active]="indexSpanSelecionado === i"
-          [style.left.px]="span.bbox[0]"
-          [style.top.px]="span.bbox[1]"
-          [style.width.px]="span.bbox[2] - span.bbox[0]"
-          [style.height.px]="span.bbox[3] - span.bbox[1]"
-          (click)="focarEEditarSpan(i); $event.stopPropagation()"
-          >
-          <div *ngIf="span.modificado && indexSpanSelecionado !== i" class="white-mask"></div>
-
-          <input
-            *ngIf="indexSpanSelecionado === i"
-            [(ngModel)]="span.text"
-            (input)="atualizarTextoDiretoNaFolha(span.text)"
-            class="inline-text-input"
-            autofocus />
-
-          <span
-            *ngIf="indexSpanSelecionado !== i"
-            [innerHTML]="span.text"
-            class="text-content"
-            [class.modified]="span.modificado">
-          </span>
+            <div *ngIf="mostrarEstadoVazio" class="empty-state">
+              <div class="upload-icon">↑</div>
+              <p class="empty-title">Edite seu PDF em segundos</p>
+              <p class="empty-hint">Envie um arquivo para começar. Você poderá selecionar e substituir qualquer texto.</p>
+              <button class="button primary upload-button" (click)="fileInputWord.click()">Escolher arquivo PDF</button>
+              <span class="privacy-note">Processamento local · seus arquivos não saem do dispositivo</span>
+            </div>
+          </div>
+        </div>
+        <div class="page-controls">
+          <button (click)="mudarPagina(-1)" [disabled]="!pdfDisponivel || paginaAtual <= 1">‹</button>
+          <span>{{ pdfDisponivel ? paginaAtual + ' / ' + totalPaginas : '1 / 1' }}</span>
+          <button (click)="mudarPagina(1)" [disabled]="!pdfDisponivel || paginaAtual >= totalPaginas">›</button>
         </div>
       </div>
-
-      <div *ngIf="!pdfCarregado" class="empty-state">
-        <div class="empty-icon">📄</div>
-        <p class="empty-title">Selecione um documento para começar a editar</p>
-        <p class="empty-hint">Clique em <strong>Abrir</strong> na faixa de opções para carregar um PDF.</p>
-      </div>
+      <aside class="help-panel" *ngIf="pdfDisponivel">
+        <div class="panel-title">Ferramentas</div>
+        <div class="help-step"><span>1</span><p>Clique sobre um texto para editar.</p></div>
+        <div class="help-step"><span>2</span><p>Use a barra de formatação para ajustar fonte, tamanho e estilo.</p></div>
+        <div class="help-step"><span>3</span><p>Enter ou clique fora para confirmar.</p></div>
+        <div class="help-step"><span>4</span><p>Baixe o PDF quando terminar.</p></div>
+        <div class="edit-summary"><strong>{{ spansModificadosCount }}</strong><span>blocos alterados</span></div>
+      </aside>
     </div>
-  </div>
-
-  <!-- BARRA DE STATUS -->
-  <div class="word-statusbar">
-    <div class="status-left">
-      <button class="status-btn" [disabled]="!pdfCarregado || paginaAtual <= 1" (click)="mudarPagina(-1)">‹</button>
-      <span class="status-item">{{ pdfCarregado ? 'Página ' + paginaAtual + ' de ' + totalPaginas : 'Pronto' }}</span>
-      <button class="status-btn" [disabled]="!pdfCarregado || paginaAtual >= totalPaginas" (click)="mudarPagina(1)">›</button>
-      <span class="status-item" *ngIf="pdfCarregado">{{ palavraCount }} palavras</span>
-      <span class="status-item" *ngIf="pdfCarregado" (click)="exportarPdf()">Salvo ✓</span>
-    </div>
-    <div class="status-right">
-      <span class="status-item clickable">−</span>
-      <span class="status-item zoom-value">{{ zoomPercent }}%</span>
-      <span class="status-item clickable">＋</span>
-    </div>
-  </div>
+  </section>
 
   <input type="file" #fileInputWord style="display: none" accept=".pdf" (change)="onFileSelected($event)"/>
 </div>

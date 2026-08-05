@@ -1,4 +1,16 @@
-/* ============ Estilos globais — Tema Microsoft Word ============ */
+/* ============ Identidade PdfMaster: claro, expressivo e confiável ============ */
+:root {
+  --pm-ink: #202438;
+  --pm-muted: #858b9f;
+  --pm-violet: #6556d9;
+  --pm-violet-deep: #4b3db7;
+  --pm-coral: #ff756d;
+  --pm-mint: #37b47e;
+  --pm-line: #e8ebf2;
+  --pm-surface: #ffffff;
+  --pm-background: #f5f7fb;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -11,18 +23,25 @@ body {
 }
 
 body {
-  font-family: 'Segoe UI', 'Calibri', Arial, sans-serif;
-  background-color: #d9d9d9;
+  font-family: 'Avenir Next', 'Segoe UI', Arial, sans-serif;
+  background: var(--pm-background);
   overflow: hidden;
-  color: #262626;
+  color: var(--pm-ink);
+}
+
+button, input, select { font-family: inherit; }
+
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 3px solid rgba(101, 86, 217, .28);
+  outline-offset: 2px;
 }
 
 /* ---------- Faixa de opções (Ribbon) ---------- */
 .word-ribbon {
   display: flex;
   align-items: flex-end;
-  background-color: #f3f3f3;
-  border-bottom: 1px solid #d6d6d6;
+  background: var(--pm-surface);
+  border-bottom: 1px solid var(--pm-line);
   padding: 4px 8px 0;
   min-height: 86px;
   user-select: none;
@@ -66,8 +85,8 @@ body {
 }
 
 .ribbon-btn:hover:not(:disabled) {
-  background-color: #dbe4ee;
-  border-color: #c8d3e0;
+  background: #f0efff;
+  border-color: #d8d4ff;
 }
 
 .ribbon-btn:disabled {
@@ -178,7 +197,7 @@ body {
 .word-canvas-area {
   flex: 1;
   overflow-y: auto;
-  background-color: #d9d9d9;
+  background: #eef0f5;
   padding: 24px;
   display: flex;
   justify-content: center;
@@ -189,7 +208,7 @@ body {
   position: relative;
   display: inline-block;
   background: #fff;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 26px rgba(36, 40, 59, .13);
   margin: 0 auto;
 }
 

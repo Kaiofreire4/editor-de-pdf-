@@ -1,5 +1,5 @@
 import express from 'express';
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import multer from 'multer';
 import { PDFDocument, PDFPage, PDFFont, rgb, StandardFonts } from 'pdf-lib';
@@ -11,11 +11,37 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import * as path from 'path';
 
-const app = express();
-const upload = multer({ storage: multer.memoryStorage() });
+export const app = express();
 
-app.use(cors());
-app.use(express.json());
+const MAX_PDF_SIZE_BYTES = 25 * 1024 * 1024;
+const allowedOrigins = new Set([
+  'http://localhost:4200',
+  'http://127.0.0.1:4200',
+  ...(process.env['CORS_ORIGIN'] ? process.env['CORS_ORIGIN'].split(',').map((value) => value.trim()) : []),
+]);
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_PDF_SIZE_BYTES, files: 1 },
+  fileFilter: (_req, file, callback) => {
+    if (file.mimetype === 'application/pdf' || file.mimetype === 'application/octet-stream') {
+      callback(null, true);
+      return;
+    }
+    callback(new Error('Somente arquivos PDF são aceitos'));
+  },
+});
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.has(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error('Origem não permitida'));
+  },
+}));
+app.use(express.json({ limit: '100kb' }));
 
 // ---------- Swagger UI ----------
 const swaggerSpec = swaggerJSDoc({
@@ -30,7 +56,7 @@ const swaggerSpec = swaggerJSDoc({
     servers: [{ url: 'http://127.0.0.1:8000' }],
     tags: [{ name: 'PDF', description: 'Operações de edição de PDF' }],
   },
-  apis: [path.join(__dirname, 'api-master.js')],
+  apis: [path.join(__dirname, 'api-master.{js,ts}')],
 });
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -41,6 +67,47 @@ interface Modificacao {
   htmlFormatado?: string;
   bbox?: number[];
   pageIndex?: number;
+}
+
+function parseStrictInteger(value: unknown): number | null {
+  if (typeof value !== 'string' || !/^(0|[1-9]\d*)$/.test(value)) return null;
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) ? parsed : null;
+}
+
+function isPdf(buffer: Buffer): boolean {
+  return buffer.subarray(0, 5).toString('ascii') === '%PDF-';
+}
+
+function isValidBbox(bbox: unknown): bbox is [number, number, number, number] {
+  return Array.isArray(bbox)
+    && bbox.length === 4
+    && bbox.every((value) => typeof value === 'number' && Number.isFinite(value))
+    && bbox[2] > bbox[0]
+    && bbox[3] > bbox[1]
+    && bbox[0] >= 0
+    && bbox[1] >= 0;
+}
+
+function validateModifications(value: unknown, pageCount: number): value is Modificacao[] {
+  if (!Array.isArray(value)) return false;
+
+  return value.every((item) => {
+    if (!item || typeof item !== 'object') return false;
+    const modification = item as Record<string, unknown>;
+    if (typeof modification['text'] !== 'string' || typeof modification['textoOriginal'] !== 'string') return false;
+    if (modification['text'].length > 10_000 || modification['textoOriginal'].length > 10_000) return false;
+
+    if (modification['pageIndex'] !== undefined
+      && (typeof modification['pageIndex'] !== 'number'
+        || !Number.isInteger(modification['pageIndex'])
+        || modification['pageIndex'] < 0
+        || modification['pageIndex'] >= pageCount)) {
+      return false;
+    }
+
+    return modification['bbox'] === undefined || isValidBbox(modification['bbox']);
+  });
 }
 
 interface AlvoTexto {
@@ -121,20 +188,25 @@ function calcularBbox(item: any, pageHeight: number): { x: number; y: number; wi
  *         description: Erro interno ao extrair o texto
  */
 app.post('/extrair-textos', upload.single('file'), async (req: Request, res: Response) => {
+  let pdf: any;
   try {
-    if (!req.file) {
+    if (!req.file || !isPdf(req.file.buffer)) {
       return res.status(400).json({ error: 'Nenhum arquivo enviado' });
     }
 
-    const pageNum = parseInt(req.body.page, 10);
-    if (isNaN(pageNum) || pageNum < 0) {
+    const pageNum = parseStrictInteger(req.body.page);
+    if (pageNum === null) {
       return res.status(400).json({ error: 'Número da página inválido' });
     }
 
-    const pdf = await getDocument({ data: new Uint8Array(req.file.buffer) }).promise;
+    try {
+      pdf = await getDocument({ data: new Uint8Array(req.file.buffer) }).promise;
+    } catch {
+      return res.status(400).json({ error: 'O arquivo enviado não é um PDF válido' });
+    }
 
     if (pageNum >= pdf.numPages) {
-      return res.json({ spans: [] });
+      return res.status(400).json({ error: 'Número da página fora do intervalo do PDF' });
     }
 
     const page = await pdf.getPage(pageNum + 1);
@@ -156,6 +228,9 @@ app.post('/extrair-textos', upload.single('file'), async (req: Request, res: Res
   } catch (error) {
     console.error('Erro ao extrair texto:', error);
     return res.status(500).json({ error: 'Erro ao extrair texto do PDF' });
+  } finally {
+    await pdf?.cleanup?.();
+    await pdf?.destroy?.();
   }
 });
 
@@ -208,15 +283,21 @@ async function localizarTexto(
   }
 
   // Fallback: usa a caixa enviada pelo front quando a busca falhou
-  if (alvos.length === 0 && bbox && bbox.length === 4) {
+  if (alvos.length === 0 && bbox && isValidBbox(bbox)) {
     const idx = pageIndex !== undefined && pageIndex >= 0 ? pageIndex : 0;
-    alvos.push({
-      pageIndex: idx,
-      x: bbox[0],
-      y: bbox[1],
-      width: bbox[2] - bbox[0],
-      height: bbox[3] - bbox[1],
-    });
+    if (idx < numPaginas) {
+      const page = await pdf.getPage(idx + 1);
+      const { width, height } = page.getViewport({ scale: 1 });
+      if (bbox[2] <= width && bbox[3] <= height) {
+        alvos.push({
+          pageIndex: idx,
+          x: bbox[0],
+          y: bbox[1],
+          width: bbox[2] - bbox[0],
+          height: bbox[3] - bbox[1],
+        });
+      }
+    }
   }
 
   return alvos;
@@ -291,19 +372,44 @@ function escreverTexto(page: PDFPage, font: PDFFont, alvo: AlvoTexto, texto: str
  *         description: Erro interno ao salvar o PDF
  */
 app.post('/salvar-pdf', upload.single('file'), async (req: Request, res: Response) => {
+  let pdf: any;
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+    if (!req.file || !isPdf(req.file.buffer)) {
+      return res.status(400).json({ error: 'Um arquivo PDF válido é obrigatório' });
     }
 
-    const modificacoes = JSON.parse(req.body.modificacoes || '[]') as Modificacao[];
+    if (typeof req.body.modificacoes !== 'string' || !req.body.modificacoes.trim()) {
+      return res.status(400).json({ error: 'O campo modificacoes é obrigatório' });
+    }
+
+    let parsedModificacoes: unknown;
+    try {
+      parsedModificacoes = JSON.parse(req.body.modificacoes);
+    } catch {
+      return res.status(400).json({ error: 'O campo modificacoes deve conter um JSON válido' });
+    }
+
     const bytes = new Uint8Array(req.file.buffer);
 
-    const pdfDoc = await PDFDocument.load(bytes);
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    let pdfDoc: PDFDocument;
+    try {
+      pdfDoc = await PDFDocument.load(bytes);
+    } catch {
+      return res.status(400).json({ error: 'O arquivo enviado não é um PDF válido' });
+    }
     const pages = pdfDoc.getPages();
+    if (!validateModifications(parsedModificacoes, pages.length)) {
+      return res.status(400).json({ error: 'Formato de modificacoes inválido' });
+    }
 
-    const pdf = await getDocument({ data: bytes }).promise;
+    const modificacoes = parsedModificacoes;
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+    try {
+      pdf = await getDocument({ data: bytes }).promise;
+    } catch {
+      return res.status(400).json({ error: 'O arquivo enviado não pode ser lido' });
+    }
 
     for (const mudanca of modificacoes) {
       const textoOriginal = (mudanca.textoOriginal || '').trim();
@@ -330,10 +436,44 @@ app.post('/salvar-pdf', upload.single('file'), async (req: Request, res: Respons
   } catch (error) {
     console.error('Erro ao salvar PDF:', error);
     return res.status(500).json({ error: 'Erro ao salvar PDF modificado' });
+  } finally {
+    await pdf?.cleanup?.();
+    await pdf?.destroy?.();
   }
 });
 
-const PORT = process.env['PORT'] || 8000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+app.use((error: unknown, _req: Request, res: Response, next: NextFunction) => {
+  if (res.headersSent) {
+    next(error);
+    return;
+  }
+
+  if (error instanceof multer.MulterError) {
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      res.status(413).json({ error: 'O arquivo PDF excede o limite de 25 MB' });
+      return;
+    }
+    res.status(400).json({ error: 'Upload multipart inválido' });
+    return;
+  }
+
+  if (error instanceof Error && error.message === 'Origem não permitida') {
+    res.status(403).json({ error: 'Origem não permitida' });
+    return;
+  }
+
+  if (error instanceof Error && error.message === 'Somente arquivos PDF são aceitos') {
+    res.status(400).json({ error: error.message });
+    return;
+  }
+
+  console.error('Erro não tratado na API:', error);
+  res.status(500).json({ error: 'Erro interno do servidor' });
 });
+
+const PORT = process.env['PORT'] || 8000;
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+  });
+}
