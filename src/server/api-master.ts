@@ -67,6 +67,12 @@ interface Modificacao {
   htmlFormatado?: string;
   bbox?: number[];
   pageIndex?: number;
+  fontFamily?: string;
+  fontSize?: number;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  color?: string;
 }
 
 function parseStrictInteger(value: unknown): number | null {
@@ -303,6 +309,37 @@ async function localizarTexto(
   return alvos;
 }
 
+function rgbFromHex(hex: string): [number, number, number] {
+  const limpo = hex.replace('#', '');
+  const r = parseInt(limpo.substring(0, 2), 16) / 255;
+  const g = parseInt(limpo.substring(2, 4), 16) / 255;
+  const b = parseInt(limpo.substring(4, 6), 16) / 255;
+  return [r, g, b];
+}
+
+function escolherStandardFont(fonte: string, bold: boolean, italic: boolean): StandardFonts {
+  const base = (fonte || '').toLowerCase();
+
+  if (base.includes('times') || base.includes('georgia')) {
+    if (bold && italic) return StandardFonts.TimesRomanBoldItalic;
+    if (bold) return StandardFonts.TimesRomanBold;
+    if (italic) return StandardFonts.TimesRomanItalic;
+    return StandardFonts.TimesRoman;
+  }
+
+  if (base.includes('courier')) {
+    if (bold && italic) return StandardFonts.CourierBoldOblique;
+    if (bold) return StandardFonts.CourierBold;
+    if (italic) return StandardFonts.CourierOblique;
+    return StandardFonts.Courier;
+  }
+
+  if (bold && italic) return StandardFonts.HelveticaBoldOblique;
+  if (bold) return StandardFonts.HelveticaBold;
+  if (italic) return StandardFonts.HelveticaOblique;
+  return StandardFonts.Helvetica;
+}
+
 // Apaga o texto antigo cobrindo a região com um retângulo branco.
 function apagarTexto(page: PDFPage, alvo: AlvoTexto): void {
   const { height: pageHeight } = page.getSize();
@@ -316,22 +353,41 @@ function apagarTexto(page: PDFPage, alvo: AlvoTexto): void {
   });
 }
 
-// Escreve o novo texto na posição do texto original.
-function escreverTexto(page: PDFPage, font: PDFFont, alvo: AlvoTexto, texto: string): void {
+// Escreve o novo texto na posição do texto original, aplicando formatação.
+function escreverTextoFormatado(
+  page: PDFPage,
+  font: PDFFont,
+  alvo: AlvoTexto,
+  texto: string,
+  fontSizeOverride: number | undefined,
+  colorHex: string | undefined,
+  underline: boolean,
+): void {
   const { height: pageHeight } = page.getSize();
-  // O item.height equivale à altura da linha; a fonte é ~87% disso.
-  const fontSize = Math.max(6, Math.round(alvo.height / 1.15));
-  // O pdf-lib usa a origem no canto inferior esquerdo; converte a linha de base
-  // para centralizar verticalmente o novo texto dentro da caixa apagada.
+  const fontSize = fontSizeOverride && fontSizeOverride > 0
+    ? Math.min(fontSizeOverride, alvo.height * 1.6)
+    : Math.max(6, Math.round(alvo.height / 1.15));
+  const [r, g, b] = colorHex ? rgbFromHex(colorHex) : [0, 0, 0];
   const baseline = pageHeight - alvo.y - fontSize * 0.8;
+
   page.drawText(texto, {
     x: alvo.x + 1,
     y: baseline,
     size: fontSize,
     font,
-    color: rgb(0, 0, 0),
+    color: rgb(r, g, b),
     maxWidth: Math.max(50, alvo.width + 2),
   });
+
+  if (underline) {
+    const linhaY = pageHeight - alvo.y - fontSize * 0.92;
+    page.drawLine({
+      start: { x: alvo.x + 1, y: linhaY },
+      end: { x: alvo.x + Math.max(50, alvo.width + 2), y: linhaY },
+      thickness: Math.max(0.5, fontSize * 0.06),
+      color: rgb(r, g, b),
+    });
+  }
 }
 
 /**
@@ -403,7 +459,15 @@ app.post('/salvar-pdf', upload.single('file'), async (req: Request, res: Respons
     }
 
     const modificacoes = parsedModificacoes;
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+    const cacheFontes = new Map<string, PDFFont>();
+    const obterFonte = async (standardFont: StandardFonts): Promise<PDFFont> => {
+      const chave = String(standardFont);
+      if (!cacheFontes.has(chave)) {
+        cacheFontes.set(chave, await pdfDoc.embedFont(standardFont));
+      }
+      return cacheFontes.get(chave)!;
+    };
 
     try {
       pdf = await getDocument({ data: bytes }).promise;
@@ -420,12 +484,18 @@ app.post('/salvar-pdf', upload.single('file'), async (req: Request, res: Respons
       }
 
       const alvos = await localizarTexto(pdf, textoOriginal, mudanca.pageIndex, mudanca.bbox);
+      const standardFont = escolherStandardFont(
+        mudanca.fontFamily || 'Helvetica',
+        !!mudanca.bold,
+        !!mudanca.italic,
+      );
+      const font = await obterFonte(standardFont);
 
       for (const alvo of alvos) {
         const page = pages[alvo.pageIndex];
         if (!page) continue;
         apagarTexto(page, alvo);
-        escreverTexto(page, font, alvo, textoNovo);
+        escreverTextoFormatado(page, font, alvo, textoNovo, mudanca.fontSize, mudanca.color, !!mudanca.underline);
       }
     }
 

@@ -268,34 +268,38 @@ export class EditarTextoComponent {
     span.modificado = span.text !== span.textoOriginal;
   }
 
+  private marcarModificadoPorFormatacao(span: SpanItem) {
+    span.modificado = true;
+  }
+
   aplicarFonte(fonte: string) {
     const span = this.spanAtivo;
-    if (span) span.fontFamily = fonte;
+    if (span) { span.fontFamily = fonte; this.marcarModificadoPorFormatacao(span); }
   }
 
   aplicarTamanho(tamanho: number) {
     const span = this.spanAtivo;
-    if (span) span.fontSize = tamanho;
+    if (span) { span.fontSize = tamanho; this.marcarModificadoPorFormatacao(span); }
   }
 
   alternarNegrito() {
     const span = this.spanAtivo;
-    if (span) span.bold = !span.bold;
+    if (span) { span.bold = !span.bold; this.marcarModificadoPorFormatacao(span); }
   }
 
   alternarItalico() {
     const span = this.spanAtivo;
-    if (span) span.italic = !span.italic;
+    if (span) { span.italic = !span.italic; this.marcarModificadoPorFormatacao(span); }
   }
 
   alternarSublinhado() {
     const span = this.spanAtivo;
-    if (span) span.underline = !span.underline;
+    if (span) { span.underline = !span.underline; this.marcarModificadoPorFormatacao(span); }
   }
 
   aplicarCor(cor: string) {
     const span = this.spanAtivo;
-    if (span) span.color = cor;
+    if (span) { span.color = cor; this.marcarModificadoPorFormatacao(span); }
   }
 
   getEstiloSpan(span: SpanItem): Record<string, string> {
@@ -323,6 +327,12 @@ export class EditarTextoComponent {
             textoOriginal: span.textoOriginal,
             pageIndex,
             bbox: [...span.bbox],
+            fontFamily: span.fontFamily,
+            fontSize: span.fontSize,
+            bold: span.bold,
+            italic: span.italic,
+            underline: span.underline,
+            color: span.color,
           })),
     );
 
