@@ -1,0 +1,81 @@
+<section class="word-editor">
+  <input #fileInput type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden (change)="selecionarArquivo($event)" />
+  <input #imageInput type="file" accept="image/*" hidden (change)="inserirImagem($event)" />
+
+  <div class="word-toolbar">
+    <div class="toolbar-group file-group">
+      <button class="primary-action" type="button" (click)="abrirArquivo()">Abrir Word</button>
+      <button class="secondary-action" type="button" (click)="criarDocumento()">Novo</button>
+    </div>
+    <div class="toolbar-separator"></div>
+    <div class="toolbar-group formatting-group" aria-label="Formatação">
+      <select aria-label="Tamanho da fonte" #fontSize (change)="alterarFonte(fontSize.value)">
+        <option value="3">Tamanho</option>
+        <option value="2">12</option>
+        <option value="3">14</option>
+        <option value="4">18</option>
+        <option value="5">24</option>
+        <option value="6">32</option>
+      </select>
+      <button type="button" (click)="formatar('bold')" title="Negrito"><b>B</b></button>
+      <button type="button" (click)="formatar('italic')" title="Itálico"><i>I</i></button>
+      <button type="button" (click)="formatar('underline')" title="Sublinhado"><u>U</u></button>
+      <button type="button" (click)="formatar('strikeThrough')" title="Tachado"><s>S</s></button>
+      <button type="button" (click)="formatar('removeFormat')" title="Limpar formatação">Tx</button>
+    </div>
+    <div class="toolbar-separator"></div>
+    <div class="toolbar-group formatting-group">
+      <button type="button" (click)="alterarAlinhamento('left')" title="Alinhar à esquerda">≡</button>
+      <button type="button" (click)="alterarAlinhamento('center')" title="Centralizar">≡</button>
+      <button type="button" (click)="alterarAlinhamento('right')" title="Alinhar à direita">≡</button>
+      <button type="button" (click)="inserirLista('insertUnorderedList')" title="Lista com marcadores">•</button>
+      <button type="button" (click)="inserirLista('insertOrderedList')" title="Lista numerada">1.</button>
+    </div>
+    <div class="toolbar-separator"></div>
+    <select class="insert-select" aria-label="Inserir conteúdo" (change)="inserirSelecionado($event)">
+      <option value="">Inserir</option>
+      <option value="imagem">Imagem</option>
+      <option value="tabela">Tabela</option>
+      <option value="grafico">Gráfico</option>
+      <option value="link">Link</option>
+    </select>
+    <div class="toolbar-spacer"></div>
+    <div class="toolbar-group zoom-group">
+      <button type="button" (click)="reduzirZoom()">−</button>
+      <span>{{ zoom }}%</span>
+      <button type="button" (click)="aumentarZoom()">+</button>
+    </div>
+    <button class="export-action" type="button" [disabled]="!arquivoCarregado || carregando" (click)="exportar()">Baixar .docx</button>
+  </div>
+
+  <div class="word-body">
+    <aside class="word-sidebar">
+      <div class="sidebar-label">DOCUMENTO WORD</div>
+      <div class="file-card" [class.loaded]="arquivoCarregado">
+        <div class="word-icon">W</div>
+        <div class="file-info">
+          <strong>{{ nomeArquivo }}</strong>
+          <small>{{ arquivoCarregado ? 'Pronto para editar' : 'Nenhum arquivo aberto' }}</small>
+        </div>
+      </div>
+      <div class="sidebar-help">
+        <strong>Como começar</strong>
+        <p>Abra um arquivo .docx existente ou crie um documento novo.</p>
+        <p>Edite o texto diretamente na página e baixe o resultado em Word.</p>
+      </div>
+    </aside>
+
+    <main class="word-canvas-area">
+      <div class="paper-wrap" [style.transform]="'scale(' + (zoom / 100) + ')'" [style.transform-origin]="'top center'">
+        <article #editor class="word-paper" contenteditable="true" spellcheck="true" aria-label="Editor de documento Word">
+          <div class="empty-document">
+            <div class="empty-word-icon">W</div>
+            <h1>Seu documento Word</h1>
+            <p>Abra um arquivo .docx ou clique em “Novo” para começar.</p>
+            <button type="button" (click)="abrirArquivo()">Selecionar documento</button>
+          </div>
+        </article>
+      </div>
+    </main>
+  </div>
+</section>
