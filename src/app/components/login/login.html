@@ -1,0 +1,57 @@
+<div class="login-page">
+  <form class="login-card" (ngSubmit)="enviar()" #loginForm="ngForm">
+    <div class="login-brand">
+      <span class="brand-mark">P</span>
+      <span class="brand-name">PdfMaster</span>
+      <p class="brand-tag">Edite PDFs como em um editor de texto</p>
+    </div>
+
+    <div class="login-tabs" role="tablist">
+      <button type="button" [class.active]="modo === 'entrar'" (click)="alternarModo('entrar')">Entrar</button>
+      <button type="button" [class.active]="modo === 'cadastrar'" (click)="alternarModo('cadastrar')">Criar conta</button>
+    </div>
+
+    <h1 class="login-title">{{ titulo }}</h1>
+
+    <label class="field" *ngIf="modo === 'cadastrar'">
+      <span>Nome</span>
+      <input type="text" name="nome" [(ngModel)]="nome" required autocomplete="name" placeholder="Seu nome" />
+    </label>
+
+    <label class="field">
+      <span>E-mail</span>
+      <input type="email" name="email" [(ngModel)]="email" required autocomplete="email" placeholder="voce@exemplo.com" />
+    </label>
+
+    <label class="field">
+      <span>Senha</span>
+      <input type="password" name="senha" [(ngModel)]="senha" required [attr.autocomplete]="modo === 'entrar' ? 'current-password' : 'new-password'" placeholder="Sua senha" />
+    </label>
+
+    <label class="field" *ngIf="modo === 'cadastrar'">
+      <span>Confirmar senha</span>
+      <input type="password" name="confirmarSenha" [(ngModel)]="confirmarSenha" required autocomplete="new-password" placeholder="Repita a senha" />
+    </label>
+
+    <p class="login-error" *ngIf="erro" role="alert">{{ erro }}</p>
+
+    <button class="login-submit" type="submit" [disabled]="carregando || !loginForm.valid">
+      <span *ngIf="!carregando">{{ modo === 'entrar' ? 'Entrar' : 'Criar conta' }}</span>
+      <span *ngIf="carregando">Processando…</span>
+    </button>
+
+    <div class="login-divider"><span>ou</span></div>
+
+    <button class="guest-button" type="button" (click)="entrarComoConvidado()" [disabled]="carregando">
+      Continuar sem login
+    </button>
+    <p class="guest-hint">Explore o editor como convidado. Seus PDFs ficam salvos só neste dispositivo.</p>
+
+    <p class="login-hint" *ngIf="modo === 'entrar'">
+      Ainda não tem conta? <button type="button" class="link" (click)="alternarModo('cadastrar')">Cadastre-se</button>
+    </p>
+    <p class="login-hint" *ngIf="modo === 'cadastrar'">
+      Já tem conta? <button type="button" class="link" (click)="alternarModo('entrar')">Entrar</button>
+    </p>
+  </form>
+</div>

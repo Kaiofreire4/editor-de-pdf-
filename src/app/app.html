@@ -1,5 +1,5 @@
 <div class="pdf-app" [class.dark-theme]="tema === 'dark'" [attr.data-theme]="tema">
-  <header class="app-header">
+  <header class="app-header" *ngIf="autenticado">
     <a class="brand" routerLink="/editar-texto" aria-label="PdfMaster início">
       <span class="brand-mark">P</span>
       <span>PdfMaster</span>
@@ -30,7 +30,8 @@
           </div>
         </div>
       </div>
-      <span class="avatar">K</span>
+      <span class="avatar" [title]="usuarioAtual?.nome || 'Usuário'">{{ inicialDoNome() }}</span>
+      <button class="header-tool" type="button" (click)="sair()" title="Sair da conta">Sair</button>
     </div>
   </header>
 
