@@ -2,6 +2,7 @@ import { Component, ViewChild, ViewChildren, ElementRef, QueryList, ChangeDetect
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import * as pdfjsLib from 'pdfjs-dist';
+import { LocalPdfStorageService } from '../../services/local-pdf-storage';
 
 interface SpanItem {
   id: string;
@@ -71,6 +72,7 @@ export class EditarTextoComponent {
   miniaturasAbertas = true;
 
   private cdr = inject(ChangeDetectorRef);
+  private localPdfStorage = inject(LocalPdfStorageService);
   private sequenciaId = 0;
   private resizeState: {
     span: SpanItem;
@@ -824,6 +826,7 @@ export class EditarTextoComponent {
 
       if (resposta.ok) {
         const blob = await resposta.blob();
+        await this.localPdfStorage.savePdf(blob, 'pdf_editado_master.pdf');
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = 'pdf_editado_master.pdf';

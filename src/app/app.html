@@ -1,4 +1,4 @@
-<div class="pdf-app">
+<div class="pdf-app" [class.dark-theme]="tema === 'dark'" [attr.data-theme]="tema">
   <header class="app-header">
     <a class="brand" routerLink="/editar-texto" aria-label="PdfMaster início">
       <span class="brand-mark">P</span>
@@ -11,6 +11,25 @@
     </nav>
     <div class="header-actions">
       <span class="secure-label"><span class="secure-dot"></span> Processamento local</span>
+      <button class="header-tool" type="button" (click)="alternarTema()" [attr.aria-label]="tema === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'" [title]="tema === 'dark' ? 'Modo claro' : 'Modo escuro'">
+        {{ tema === 'dark' ? '☀' : '☾' }}
+      </button>
+      <div class="local-files-wrap">
+        <button class="header-tool local-files-button" type="button" (click)="alternarArquivosLocais()" title="PDFs salvos neste dispositivo">
+          ▣ <span>Meus PDFs</span>
+        </button>
+        <div class="local-files-panel" *ngIf="arquivosLocaisAbertos">
+          <strong>PDFs neste dispositivo</strong>
+          <p *ngIf="arquivosLocais.length === 0">Nenhum PDF editado salvo.</p>
+          <div class="local-file-row" *ngFor="let arquivo of arquivosLocais">
+            <div><b>{{ arquivo.name }}</b><small>{{ formatarData(arquivo.createdAt) }} · {{ (arquivo.size / 1024 / 1024).toFixed(2) }} MB</small></div>
+            <div class="local-file-actions">
+              <button type="button" (click)="baixarArquivoLocal(arquivo)" title="Baixar novamente">↓</button>
+              <button type="button" (click)="excluirArquivoLocal(arquivo)" title="Excluir do dispositivo">×</button>
+            </div>
+          </div>
+        </div>
+      </div>
       <span class="avatar">K</span>
     </div>
   </header>

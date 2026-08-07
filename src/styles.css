@@ -279,3 +279,98 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   min-width: 38px;
   text-align: center;
 }
+
+/* ---------- Tema escuro ---------- */
+.pdf-app.dark-theme,
+.pdf-app.dark-theme .document-workspace {
+  background: #171923;
+  color: #edf0f7;
+}
+
+.pdf-app.dark-theme .app-header,
+.pdf-app.dark-theme .editor-toolbar,
+.pdf-app.dark-theme .tool-sidebar,
+.pdf-app.dark-theme .thumbnail-panel,
+.pdf-app.dark-theme .help-panel,
+.pdf-app.dark-theme .word-ribbon,
+.pdf-app.dark-theme .word-statusbar {
+  background: #202331;
+  border-color: #35394a;
+  color: #edf0f7;
+}
+
+.pdf-app.dark-theme .brand,
+.pdf-app.dark-theme .toolbar-heading strong,
+.pdf-app.dark-theme .panel-title,
+.pdf-app.dark-theme .card-header h3,
+.pdf-app.dark-theme .local-files-panel,
+.pdf-app.dark-theme .local-file-row b {
+  color: #edf0f7;
+}
+
+.pdf-app.dark-theme .main-nav a,
+.pdf-app.dark-theme .toolbar-heading small,
+.pdf-app.dark-theme .stage-topbar,
+.pdf-app.dark-theme .help-step p,
+.pdf-app.dark-theme .local-file-row small {
+  color: #aab1c4;
+}
+
+.pdf-app.dark-theme .word-canvas-area,
+.pdf-app.dark-theme .organizar-workspace {
+  background: #171923;
+}
+
+.pdf-app.dark-theme .word-page:not(.has-pdf) {
+  background: #252938;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, .28);
+}
+
+.pdf-app.dark-theme .empty-state {
+  color: #aab1c4;
+}
+
+.pdf-app.dark-theme .empty-title {
+  color: #edf0f7;
+}
+
+.pdf-app.dark-theme .empty-hint,
+.pdf-app.dark-theme .privacy-note {
+  color: #aab1c4;
+}
+
+.pdf-app.dark-theme .upload-icon {
+  background: #302d5c;
+  color: #a9a1ff;
+}
+
+.pdf-app.dark-theme .thumbnail-scroll,
+.pdf-app.dark-theme .word-card,
+.pdf-app.dark-theme .local-files-panel {
+  background: #252938;
+  border-color: #3b4052;
+}
+
+.pdf-app.dark-theme .thumbnail-heading,
+.pdf-app.dark-theme .thumbnail-item canvas,
+.pdf-app.dark-theme .page-controls button,
+.pdf-app.dark-theme .zoom-controls button,
+.pdf-app.dark-theme .header-tool,
+.pdf-app.dark-theme .local-file-actions button,
+.pdf-app.dark-theme .fmt-select,
+.pdf-app.dark-theme .fmt-size-input,
+.pdf-app.dark-theme .image-size-field input {
+  background: #2b3041;
+  border-color: #464c60;
+  color: #edf0f7;
+}
+
+.pdf-app.dark-theme .format-toolbar { background: #252938; border-color: #464c60; }
+.pdf-app.dark-theme .format-sep { background: #464c60; }
+.pdf-app.dark-theme .card-header p,
+.pdf-app.dark-theme .arquivo-hint,
+.pdf-app.dark-theme .inputs-intervalo label { color: #aab1c4; }
+.pdf-app.dark-theme .arquivo-list li { background: #2b3041; color: #edf0f7; border-color: #3b4052; }
+.pdf-app.dark-theme .word-btn:not(.primary),
+.pdf-app.dark-theme .button.secondary { background: #2b3041; color: #d9deeb; }
+.pdf-app.dark-theme .local-file-row { border-color: #3b4052; }
