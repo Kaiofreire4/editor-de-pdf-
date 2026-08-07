@@ -40,6 +40,19 @@
           <li *ngFor="let arq of arquivosParaJuntar">📄 {{ arq.name }}</li>
         </ul>
         <p class="arquivo-hint" *ngIf="arquivosParaJuntar.length === 0">Nenhum arquivo adicionado.</p>
+
+        <div class="preview-panel" *ngIf="previewsJuntar.length > 0">
+          <div class="preview-title">Prévia da ordem final</div>
+          <div class="preview-grid">
+            @for (item of previewsJuntar; track $index) {
+              <div class="preview-page">
+                <canvas #previewJuntarCanvas></canvas>
+                <span>{{ $index + 1 }}</span>
+                <small>{{ item.arquivo }} · pág. {{ item.pagina }}</small>
+              </div>
+            }
+          </div>
+        </div>
       </div>
 
       <div class="word-card">
@@ -57,11 +70,24 @@
 
         <div class="inputs-intervalo">
           <label>Da página:
-            <input type="number" [(ngModel)]="paginaDe" min="1" />
+            <input type="number" [(ngModel)]="paginaDe" (ngModelChange)="onIntervaloAlterado()" min="1" [max]="totalPaginasCortar || null" />
           </label>
           <label>até:
-            <input type="number" [(ngModel)]="paginaAte" min="1" />
+            <input type="number" [(ngModel)]="paginaAte" (ngModelChange)="onIntervaloAlterado()" min="1" [max]="totalPaginasCortar || null" />
           </label>
+        </div>
+
+        <div class="preview-panel cut-preview" *ngIf="paginasPreviewCortar.length > 0">
+          <div class="preview-title">Prévia das páginas selecionadas ({{ paginasPreviewCortar.length }})</div>
+          <div class="preview-grid">
+            @for (pagina of paginasPreviewCortar; track pagina) {
+              <div class="preview-page selected-preview">
+                <canvas #previewCortarCanvas></canvas>
+                <span>{{ pagina }}</span>
+                <small>Página selecionada</small>
+              </div>
+            }
+          </div>
         </div>
       </div>
 

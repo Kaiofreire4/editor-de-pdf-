@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, ViewChild, ViewChildren, ElementRef, QueryList, ChangeDetectorRef, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -18,8 +18,25 @@ interface SpanItem {
   bold: boolean;
   italic: boolean;
   underline: boolean;
+  strikeThrough: boolean;
   color: string;
+  textAlign: 'left' | 'center' | 'right';
+  verticalAlign: 'top' | 'middle' | 'bottom';
+  novo?: boolean;
 }
+
+interface ImagemItem {
+  id: string;
+  dataUrl: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  bbox: [number, number, number, number];
+  novo: boolean;
+}
+
+type HandlePosition = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
 
 @Component({
   selector: 'app-editar-texto',
@@ -30,6 +47,7 @@ interface SpanItem {
 })
 export class EditarTextoComponent {
   @ViewChild('pdfCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChildren('thumbnailCanvas') thumbnailCanvases!: QueryList<ElementRef<HTMLCanvasElement>>;
 
   arquivoSelecionado: File | null = null;
   pdfCarregado: boolean = false;
@@ -41,12 +59,57 @@ export class EditarTextoComponent {
 
   spansDaPagina: SpanItem[] = [];
   private spansPorPagina = new Map<number, SpanItem[]>();
+  imagensDaPagina: ImagemItem[] = [];
+  private imagensPorPagina = new Map<number, ImagemItem[]>();
   spanAtivoId: string | null = null;
+  imagemAtivaId: string | null = null;
+  manterProporcaoImagem = true;
+  manterProporcaoTexto = false;
+  modoAdicionarTexto = false;
+  modoAdicionarImagem = false;
+  imagemPendente: string | null = null;
+  miniaturasAbertas = true;
 
   private cdr = inject(ChangeDetectorRef);
   private sequenciaId = 0;
+  private resizeState: {
+    span: SpanItem;
+    handle: HandlePosition;
+    startX: number;
+    startY: number;
+    startWidth: number;
+    startHeight: number;
+    startLeft: number;
+    startTop: number;
+  } | null = null;
+  private imageResizeState: {
+    imagem: ImagemItem;
+    handle: HandlePosition;
+    startX: number;
+    startY: number;
+    startWidth: number;
+    startHeight: number;
+    startLeft: number;
+    startTop: number;
+  } | null = null;
 
-  readonly fontesDisponiveis = ['Arial', 'Times New Roman', 'Courier New', 'Georgia', 'Verdana', 'Helvetica'];
+  readonly fontesDisponiveis = [
+    'Arial',
+    'Comic Sans MS',
+    'Calibri',
+    'Cambria',
+    'Times New Roman',
+    'Courier New',
+    'Georgia',
+    'Roboto',
+    'Open Sans',
+    'Tahoma',
+    'Trebuchet MS',
+    'Verdana',
+    'Helvetica',
+    'Arial Black',
+    'Impact',
+  ];
   readonly tamanhosDisponiveis = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
   readonly coresDisponiveis = [
     { nome: 'Preto', valor: '#000000' },
@@ -68,12 +131,20 @@ export class EditarTextoComponent {
     return this.spansDaPagina.find((s) => s.id === this.spanAtivoId);
   }
 
+  get imagemAtiva(): ImagemItem | undefined {
+    return this.imagensDaPagina.find((imagem) => imagem.id === this.imagemAtivaId);
+  }
+
   get spansModificadosCount(): number {
     let count = 0;
     this.spansPorPagina.forEach((spans) => {
       count += spans.filter((s) => s.modificado).length;
     });
     return count;
+  }
+
+  get paginas(): number[] {
+    return Array.from({ length: this.totalPaginas }, (_, index) => index + 1);
   }
 
   async onFileSelected(event: Event) {
@@ -86,8 +157,11 @@ export class EditarTextoComponent {
     this.pdfCarregado = false;
     this.mostrarEstadoVazio = true;
     this.spanAtivoId = null;
+    this.imagemAtivaId = null;
     this.spansPorPagina.clear();
+    this.imagensPorPagina.clear();
     this.spansDaPagina = [];
+    this.imagensDaPagina = [];
     this.sequenciaId = 0;
     this.limparCanvas();
     this.cdr.detectChanges();
@@ -106,6 +180,8 @@ export class EditarTextoComponent {
       this.cdr.detectChanges();
 
       await this.carregarOuRenderizarPagina(this.paginaAtual);
+      this.cdr.detectChanges();
+      setTimeout(() => this.renderizarMiniaturas());
     } catch (error: any) {
       console.error('[PDF] ERRO ao carregar:', error?.message || error);
       this.pdfDoc = null;
@@ -124,12 +200,16 @@ export class EditarTextoComponent {
 
     if (this.spansPorPagina.has(paginaIndex)) {
       this.spansDaPagina = this.spansPorPagina.get(paginaIndex)!;
+      this.imagensDaPagina = this.imagensPorPagina.get(paginaIndex) || [];
+      this.reposicionarSpansDaPagina();
       this.spanAtivoId = null;
+      this.imagemAtivaId = null;
       await this.renderizarApenasCanvas(numPagina);
       this.cdr.detectChanges();
       return;
     }
 
+    this.imagensDaPagina = this.imagensPorPagina.get(paginaIndex) || [];
     await this.renderizarPagina(numPagina);
   }
 
@@ -143,6 +223,7 @@ export class EditarTextoComponent {
     canvas.height = viewport.height;
     canvas.width = viewport.width;
     await page.render({ canvasContext: context, viewport }).promise;
+    this.reposicionarSpansDaPagina();
   }
 
   async renderizarPagina(numPagina: number) {
@@ -207,7 +288,10 @@ export class EditarTextoComponent {
           bold,
           italic,
           underline: false,
+          strikeThrough: false,
           color: '#000000',
+          textAlign: 'left',
+          verticalAlign: 'middle',
         });
       }
 
@@ -251,8 +335,211 @@ export class EditarTextoComponent {
   }
 
   ativarSpan(id: string) {
+    this.modoAdicionarTexto = false;
+    this.modoAdicionarImagem = false;
+    this.imagemAtivaId = null;
     this.spanAtivoId = id;
     this.cdr.detectChanges();
+  }
+
+  ativarModoAdicionarTexto() {
+    if (!this.pdfDoc || !this.canvasRef?.nativeElement?.width) return;
+    this.modoAdicionarTexto = !this.modoAdicionarTexto;
+    this.modoAdicionarImagem = false;
+    this.spanAtivoId = null;
+    this.imagemAtivaId = null;
+    this.cdr.detectChanges();
+  }
+
+  ativarModoEditarTexto() {
+    this.modoAdicionarTexto = false;
+    this.modoAdicionarImagem = false;
+    this.imagemAtivaId = null;
+    this.cdr.detectChanges();
+  }
+
+  alternarMiniaturas() {
+    this.miniaturasAbertas = !this.miniaturasAbertas;
+    if (this.miniaturasAbertas) setTimeout(() => this.renderizarMiniaturas());
+  }
+
+  irParaPagina(numero: number) {
+    if (numero === this.paginaAtual) return;
+    const delta = numero - this.paginaAtual;
+    this.mudarPagina(delta);
+  }
+
+  private async renderizarMiniaturas() {
+    if (!this.pdfDoc || !this.miniaturasAbertas || !this.thumbnailCanvases) return;
+    const canvases = this.thumbnailCanvases.toArray();
+
+    for (let index = 0; index < canvases.length; index++) {
+      const page = await this.pdfDoc.getPage(index + 1);
+      const originalViewport = page.getViewport({ scale: 1 });
+      const escalaMiniatura = Math.min(170 / originalViewport.width, 225 / originalViewport.height);
+      const viewport = page.getViewport({ scale: escalaMiniatura });
+      const canvas = canvases[index].nativeElement;
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const context = canvas.getContext('2d');
+      if (context) await page.render({ canvasContext: context, viewport }).promise;
+    }
+  }
+
+  adicionarTextoNoPonto(event: MouseEvent) {
+    if (!this.modoAdicionarTexto || !this.pdfDoc) return;
+
+    const target = event.target as HTMLElement;
+    if (target.closest('.format-toolbar')) return;
+
+    const canvas = this.canvasRef.nativeElement;
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    if (x < 0 || y < 0 || x > rect.width || y > rect.height) return;
+
+    this.removerTextoNovoVazio();
+
+    const largura = Math.min(260, Math.max(160, rect.width - x - 12));
+    const altura = 30;
+    const id = `span-${++this.sequenciaId}`;
+    const span: SpanItem = {
+      id,
+      text: '',
+      textoOriginal: '',
+      x,
+      y,
+      w: largura,
+      h: altura,
+      bbox: [x / this.escala, y / this.escala, (x + largura) / this.escala, (y + altura) / this.escala],
+      modificado: true,
+      fontFamily: 'Arial',
+      fontSize: 12,
+      bold: false,
+      italic: false,
+      underline: false,
+      strikeThrough: false,
+      color: '#000000',
+      textAlign: 'left',
+      verticalAlign: 'middle',
+      novo: true,
+    };
+
+    this.spansDaPagina = [...this.spansDaPagina, span];
+    this.spansPorPagina.set(this.paginaAtual - 1, this.spansDaPagina);
+    this.spanAtivoId = id;
+    event.stopPropagation();
+    this.cdr.detectChanges();
+    setTimeout(() => (document.querySelector('.inline-text-input') as HTMLInputElement | null)?.focus());
+  }
+
+  onImagemSelecionada(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imagemPendente = typeof reader.result === 'string' ? reader.result : null;
+      this.modoAdicionarImagem = this.imagemPendente !== null;
+      this.modoAdicionarTexto = false;
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
+  adicionarImagemNoPonto(event: MouseEvent) {
+    if (!this.modoAdicionarImagem || !this.imagemPendente || !this.pdfDoc) return;
+    const canvas = this.canvasRef.nativeElement;
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    if (x < 0 || y < 0 || x > rect.width || y > rect.height) return;
+
+    const largura = Math.min(240, rect.width - x - 12);
+    const altura = largura * 0.65;
+    const imagem: ImagemItem = {
+      id: `imagem-${++this.sequenciaId}`,
+      dataUrl: this.imagemPendente,
+      x,
+      y,
+      w: largura,
+      h: altura,
+      bbox: [x / this.escala, y / this.escala, (x + largura) / this.escala, (y + altura) / this.escala],
+      novo: true,
+    };
+
+    this.imagensDaPagina = [...this.imagensDaPagina, imagem];
+    this.imagensPorPagina.set(this.paginaAtual - 1, this.imagensDaPagina);
+    this.modoAdicionarImagem = false;
+    this.imagemPendente = null;
+    this.imagemAtivaId = imagem.id;
+    this.spanAtivoId = null;
+    event.stopPropagation();
+    this.cdr.detectChanges();
+  }
+
+  interagirComPagina(event: MouseEvent) {
+    if (this.modoAdicionarImagem) {
+      this.adicionarImagemNoPonto(event);
+      return;
+    }
+    this.adicionarTextoNoPonto(event);
+  }
+
+  selecionarImagem(imagem: ImagemItem, event: MouseEvent) {
+    this.imagemAtivaId = imagem.id;
+    this.spanAtivoId = null;
+    this.modoAdicionarImagem = false;
+    event.stopPropagation();
+    this.cdr.detectChanges();
+  }
+
+  alterarTamanhoImagem(dimensao: 'w' | 'h', valor: number) {
+    const imagem = this.imagemAtiva;
+    if (!imagem || !Number.isFinite(valor) || valor < 10) return;
+    const proporcao = imagem.w / imagem.h;
+    if (dimensao === 'w') {
+      imagem.w = valor;
+      if (this.manterProporcaoImagem) imagem.h = valor / proporcao;
+    } else {
+      imagem.h = valor;
+      if (this.manterProporcaoImagem) imagem.w = valor * proporcao;
+    }
+    this.atualizarBboxImagem(imagem);
+  }
+
+  removerImagemAtiva() {
+    if (!this.imagemAtivaId) return;
+    this.imagensDaPagina = this.imagensDaPagina.filter((imagem) => imagem.id !== this.imagemAtivaId);
+    this.imagensPorPagina.set(this.paginaAtual - 1, this.imagensDaPagina);
+    this.imagemAtivaId = null;
+    this.cdr.detectChanges();
+  }
+
+  private atualizarBboxImagem(imagem: ImagemItem) {
+    imagem.bbox = [
+      imagem.x / this.escala,
+      imagem.y / this.escala,
+      (imagem.x + imagem.w) / this.escala,
+      (imagem.y + imagem.h) / this.escala,
+    ];
+    this.imagensPorPagina.set(this.paginaAtual - 1, this.imagensDaPagina);
+    this.cdr.detectChanges();
+  }
+
+  selecionarOuAdicionarTexto(id: string, event: MouseEvent) {
+    if (this.modoAdicionarImagem) {
+      this.adicionarImagemNoPonto(event);
+      return;
+    }
+    if (this.modoAdicionarTexto) {
+      this.adicionarTextoNoPonto(event);
+      return;
+    }
+    this.ativarSpan(id);
+    event.stopPropagation();
   }
 
   deselecionarSpan(event?: MouseEvent) {
@@ -260,16 +547,150 @@ export class EditarTextoComponent {
       const target = event.target as HTMLElement;
       if (target.closest('.editable-text-block') || target.closest('.format-toolbar')) return;
     }
+    this.removerTextoNovoVazio();
     this.spanAtivoId = null;
+    this.imagemAtivaId = null;
     this.cdr.detectChanges();
+  }
+
+  private removerTextoNovoVazio() {
+    const span = this.spanAtivo;
+    if (!span?.novo || span.text.trim()) return;
+    this.spansDaPagina = this.spansDaPagina.filter((item) => item.id !== span.id);
+    this.spansPorPagina.set(this.paginaAtual - 1, this.spansDaPagina);
   }
 
   marcarModificado(span: SpanItem) {
     span.modificado = span.text !== span.textoOriginal;
   }
 
+  iniciarRedimensionamentoSpan(event: PointerEvent, span: SpanItem, handle: HandlePosition) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.spanAtivoId = span.id;
+    this.resizeState = {
+      span,
+      handle,
+      startX: event.clientX,
+      startY: event.clientY,
+      startWidth: span.w,
+      startHeight: span.h,
+      startLeft: span.x,
+      startTop: span.y,
+    };
+  }
+
+  @HostListener('document:pointermove', ['$event'])
+  redimensionarSpan(event: PointerEvent) {
+    if (this.imageResizeState) {
+      this.redimensionarImagemComAlca(event);
+      return;
+    }
+    const state = this.resizeState;
+    if (!state) return;
+
+    const dx = event.clientX - state.startX;
+    const dy = event.clientY - state.startY;
+    let width = state.startWidth;
+    let height = state.startHeight;
+    let left = state.startLeft;
+    let top = state.startTop;
+
+    if (state.handle.includes('e')) width = state.startWidth + dx;
+    if (state.handle.includes('w')) { width = state.startWidth - dx; left = state.startLeft + dx; }
+    if (state.handle.includes('s')) height = state.startHeight + dy;
+    if (state.handle.includes('n')) { height = state.startHeight - dy; top = state.startTop + dy; }
+
+    if (width < 40) { width = 40; if (state.handle.includes('w')) left = state.startLeft + state.startWidth - width; }
+    if (height < 18) { height = 18; if (state.handle.includes('n')) top = state.startTop + state.startHeight - height; }
+
+    state.span.x = left;
+    state.span.y = top;
+    state.span.w = width;
+    state.span.h = height;
+    if (this.manterProporcaoTexto) {
+      const proporcao = state.startWidth / state.startHeight;
+      if (Math.abs(dx) >= Math.abs(dy)) state.span.h = state.span.w / proporcao;
+      else state.span.w = state.span.h * proporcao;
+    }
+    state.span.w = Math.max(40, state.span.w);
+    state.span.h = Math.max(18, state.span.h);
+    state.span.bbox = [state.span.x / this.escala, state.span.y / this.escala, (state.span.x + state.span.w) / this.escala, (state.span.y + state.span.h) / this.escala];
+    state.span.modificado = true;
+    this.cdr.detectChanges();
+  }
+
+  @HostListener('document:pointerup')
+  finalizarRedimensionamentoSpan() {
+    if (this.resizeState) this.salvarEstadoDaPaginaAtual();
+    if (this.imageResizeState && this.imagemAtiva) this.atualizarBboxImagem(this.imagemAtiva);
+    this.resizeState = null;
+    this.imageResizeState = null;
+  }
+
+  iniciarRedimensionamentoImagem(event: PointerEvent, imagem: ImagemItem, handle: HandlePosition) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.imagemAtivaId = imagem.id;
+    this.imageResizeState = {
+      imagem,
+      handle,
+      startX: event.clientX,
+      startY: event.clientY,
+      startWidth: imagem.w,
+      startHeight: imagem.h,
+      startLeft: imagem.x,
+      startTop: imagem.y,
+    };
+  }
+
+  private redimensionarImagemComAlca(event: PointerEvent) {
+    const state = this.imageResizeState;
+    if (!state) return;
+    const dx = event.clientX - state.startX;
+    const dy = event.clientY - state.startY;
+    let width = state.startWidth;
+    let height = state.startHeight;
+    let left = state.startLeft;
+    let top = state.startTop;
+
+    if (state.handle.includes('e')) width = state.startWidth + dx;
+    if (state.handle.includes('w')) { width = state.startWidth - dx; left = state.startLeft + dx; }
+    if (state.handle.includes('s')) height = state.startHeight + dy;
+    if (state.handle.includes('n')) { height = state.startHeight - dy; top = state.startTop + dy; }
+
+    if (this.manterProporcaoImagem) {
+      const proporcao = state.startWidth / state.startHeight;
+      if (Math.abs(dx) >= Math.abs(dy)) height = width / proporcao;
+      else width = height * proporcao;
+    }
+    width = Math.max(30, width);
+    height = Math.max(30, height);
+    state.imagem.x = left;
+    state.imagem.y = top;
+    state.imagem.w = width;
+    state.imagem.h = height;
+    this.cdr.detectChanges();
+  }
+
   private marcarModificadoPorFormatacao(span: SpanItem) {
     span.modificado = true;
+  }
+
+  alterarTamanhoTexto(dimensao: 'w' | 'h', valor: number) {
+    const span = this.spanAtivo;
+    if (!span || !Number.isFinite(valor) || valor < 20) return;
+    const proporcao = span.w / span.h;
+    if (dimensao === 'w') {
+      span.w = valor;
+      if (this.manterProporcaoTexto) span.h = valor / proporcao;
+    } else {
+      span.h = valor;
+      if (this.manterProporcaoTexto) span.w = valor * proporcao;
+    }
+    span.bbox = [span.x / this.escala, span.y / this.escala, (span.x + span.w) / this.escala, (span.y + span.h) / this.escala];
+    this.marcarModificadoPorFormatacao(span);
+    this.cdr.detectChanges();
   }
 
   aplicarFonte(fonte: string) {
@@ -297,19 +718,52 @@ export class EditarTextoComponent {
     if (span) { span.underline = !span.underline; this.marcarModificadoPorFormatacao(span); }
   }
 
+  alternarTachado() {
+    const span = this.spanAtivo;
+    if (span) { span.strikeThrough = !span.strikeThrough; this.marcarModificadoPorFormatacao(span); }
+  }
+
   aplicarCor(cor: string) {
     const span = this.spanAtivo;
     if (span) { span.color = cor; this.marcarModificadoPorFormatacao(span); }
   }
 
-  getEstiloSpan(span: SpanItem): Record<string, string> {
+  aplicarAlinhamento(alinhamento: 'left' | 'center' | 'right') {
+    const span = this.spanAtivo;
+    if (span) { span.textAlign = alinhamento; this.marcarModificadoPorFormatacao(span); }
+  }
+
+  aplicarAlinhamentoVertical(alinhamento: 'top' | 'middle' | 'bottom') {
+    const span = this.spanAtivo;
+    if (span) { span.verticalAlign = alinhamento; this.marcarModificadoPorFormatacao(span); }
+  }
+
+  limparFormatacao() {
+    const span = this.spanAtivo;
+    if (!span) return;
+    span.fontFamily = 'Arial';
+    span.fontSize = 12;
+    span.bold = false;
+    span.italic = false;
+    span.underline = false;
+    span.strikeThrough = false;
+    span.color = '#000000';
+    span.textAlign = 'left';
+    span.verticalAlign = 'middle';
+    this.marcarModificadoPorFormatacao(span);
+  }
+
+  getEstiloSpan(span: SpanItem, mostrarTexto = true): Record<string, string> {
     return {
       'font-family': span.fontFamily,
       'font-size': span.fontSize + 'px',
       'font-weight': span.bold ? 'bold' : 'normal',
       'font-style': span.italic ? 'italic' : 'normal',
-      'text-decoration': span.underline ? 'underline' : 'none',
-      'color': span.color,
+      'text-decoration': [span.underline ? 'underline' : '', span.strikeThrough ? 'line-through' : ''].filter(Boolean).join(' ') || 'none',
+      'color': mostrarTexto ? span.color : 'transparent',
+      'text-align': span.textAlign,
+      'align-items': span.verticalAlign === 'top' ? 'flex-start' : span.verticalAlign === 'bottom' ? 'flex-end' : 'center',
+      'justify-content': span.textAlign === 'center' ? 'center' : span.textAlign === 'right' ? 'flex-end' : 'flex-start',
       'padding': '0 3px',
     };
   }
@@ -323,6 +777,7 @@ export class EditarTextoComponent {
         spans
           .filter((span) => span.modificado)
           .map((span) => ({
+            tipo: span.novo ? 'adicionar' : 'editar',
             text: span.text,
             textoOriginal: span.textoOriginal,
             pageIndex,
@@ -332,18 +787,34 @@ export class EditarTextoComponent {
             bold: span.bold,
             italic: span.italic,
             underline: span.underline,
+            strikeThrough: span.strikeThrough,
             color: span.color,
+            textAlign: span.textAlign,
+            verticalAlign: span.verticalAlign,
+            novo: span.novo,
           })),
     );
 
-    if (spansModificados.length === 0) {
-      alert('Nenhum texto foi alterado.');
+    const imagensModificadas = Array.from(this.imagensPorPagina.entries()).flatMap(
+      ([pageIndex, imagens]) => imagens.filter((imagem) => imagem.novo).map((imagem) => ({
+        tipo: 'imagem',
+        text: '',
+        textoOriginal: '',
+        pageIndex,
+        bbox: [...imagem.bbox],
+        imagemData: imagem.dataUrl,
+      })),
+    );
+    const modificacoes = [...spansModificados, ...imagensModificadas];
+
+    if (modificacoes.length === 0) {
+      alert('Nenhuma alteração foi feita.');
       return;
     }
 
     const formData = new FormData();
     formData.append('file', this.arquivoSelecionado);
-    formData.append('modificacoes', JSON.stringify(spansModificados));
+    formData.append('modificacoes', JSON.stringify(modificacoes));
 
     try {
       const resposta = await fetch('http://127.0.0.1:8000/salvar-pdf', {
@@ -370,9 +841,11 @@ export class EditarTextoComponent {
   mudarPagina(delta: number) {
     const novaPagina = this.paginaAtual + delta;
     if (novaPagina >= 1 && novaPagina <= this.totalPaginas) {
+      this.removerTextoNovoVazio();
       this.salvarEstadoDaPaginaAtual();
       this.paginaAtual = novaPagina;
       this.spanAtivoId = null;
+      this.imagemAtivaId = null;
       this.carregarOuRenderizarPagina(this.paginaAtual);
     }
   }
@@ -381,6 +854,7 @@ export class EditarTextoComponent {
     const novaEscala = Math.min(2.5, Math.max(0.7, this.escala + delta));
     if (novaEscala === this.escala) return;
     this.escala = Number(novaEscala.toFixed(1));
+    this.removerTextoNovoVazio();
     this.salvarEstadoDaPaginaAtual();
     this.spanAtivoId = null;
     this.carregarOuRenderizarPagina(this.paginaAtual);
@@ -389,6 +863,22 @@ export class EditarTextoComponent {
   private salvarEstadoDaPaginaAtual() {
     if (this.spansDaPagina.length > 0) {
       this.spansPorPagina.set(this.paginaAtual - 1, [...this.spansDaPagina]);
+    }
+    this.imagensPorPagina.set(this.paginaAtual - 1, [...this.imagensDaPagina]);
+  }
+
+  private reposicionarSpansDaPagina() {
+    for (const span of this.spansDaPagina) {
+      span.x = span.bbox[0] * this.escala;
+      span.y = span.bbox[1] * this.escala;
+      span.w = Math.max((span.bbox[2] - span.bbox[0]) * this.escala, 20);
+      span.h = Math.max((span.bbox[3] - span.bbox[1]) * this.escala, 18);
+    }
+    for (const imagem of this.imagensDaPagina) {
+      imagem.x = imagem.bbox[0] * this.escala;
+      imagem.y = imagem.bbox[1] * this.escala;
+      imagem.w = (imagem.bbox[2] - imagem.bbox[0]) * this.escala;
+      imagem.h = (imagem.bbox[3] - imagem.bbox[1]) * this.escala;
     }
   }
 

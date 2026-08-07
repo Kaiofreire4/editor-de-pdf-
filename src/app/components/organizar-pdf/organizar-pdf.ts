@@ -1,7 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, ViewChildren, QueryList, ElementRef, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PDFDocument } from 'pdf-lib';
+import * as pdfjsLib from 'pdfjs-dist';
+
+interface PreviewJuntarItem {
+  arquivo: string;
+  indiceArquivo: number;
+  pagina: number;
+}
 
 @Component({
   selector: 'app-organizar-pdf',
@@ -11,6 +18,9 @@ import { PDFDocument } from 'pdf-lib';
   styleUrl: './organizar-pdf.css'
 })
 export class OrganizarPdfComponent {
+  @ViewChildren('previewJuntarCanvas') previewJuntarCanvases!: QueryList<ElementRef<HTMLCanvasElement>>;
+  @ViewChildren('previewCortarCanvas') previewCortarCanvases!: QueryList<ElementRef<HTMLCanvasElement>>;
+
   // Estados para a ação de Juntar
   arquivosParaJuntar: File[] = [];
 
@@ -20,6 +30,11 @@ export class OrganizarPdfComponent {
   paginaAte: number = 1;
 
   mensagemStatus: string = 'Pronto';
+  previewsJuntar: PreviewJuntarItem[] = [];
+  documentosPreviewJuntar: any[] = [];
+  totalPaginasCortar = 0;
+  private pdfPreviewCortar: any = null;
+  private cdr = inject(ChangeDetectorRef);
 
   get podeJuntar(): boolean {
     return this.arquivosParaJuntar.length >= 2;
@@ -42,6 +57,10 @@ export class OrganizarPdfComponent {
     this.arquivoParaCortar = null;
     this.paginaDe = 1;
     this.paginaAte = 1;
+    this.previewsJuntar = [];
+    this.documentosPreviewJuntar = [];
+    this.pdfPreviewCortar = null;
+    this.totalPaginasCortar = 0;
     this.mensagemStatus = 'Pronto';
   }
 
@@ -49,6 +68,7 @@ export class OrganizarPdfComponent {
   onArquivosJuntarSelecionados(event: any) {
     if (event.target.files) {
       this.arquivosParaJuntar = Array.from(event.target.files);
+      void this.prepararPreviewJuntar();
     }
   }
 
@@ -83,7 +103,93 @@ export class OrganizarPdfComponent {
   onArquivoCortarSelecionado(event: any) {
     if (event.target.files && event.target.files[0]) {
       this.arquivoParaCortar = event.target.files[0];
+      void this.prepararPreviewCortar();
     }
+  }
+
+  get paginasPreviewCortar(): number[] {
+    if (!this.totalPaginasCortar) return [];
+    const inicio = Math.max(1, Math.min(this.paginaDe, this.totalPaginasCortar));
+    const fim = Math.max(inicio, Math.min(this.paginaAte, this.totalPaginasCortar));
+    return Array.from({ length: fim - inicio + 1 }, (_, index) => inicio + index);
+  }
+
+  onIntervaloAlterado() {
+    if (this.totalPaginasCortar) {
+      this.cdr.detectChanges();
+      setTimeout(() => this.renderizarPreviewCortar());
+    }
+  }
+
+  private configurarPdfJs() {
+    const versao = pdfjsLib.version;
+    const extensao = versao.startsWith('4') ? 'mjs' : 'js';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${versao}/pdf.worker.min.${extensao}`;
+  }
+
+  private async prepararPreviewJuntar() {
+    try {
+      this.configurarPdfJs();
+      this.documentosPreviewJuntar = [];
+      this.previewsJuntar = [];
+      for (let indiceArquivo = 0; indiceArquivo < this.arquivosParaJuntar.length; indiceArquivo++) {
+        const arquivo = this.arquivosParaJuntar[indiceArquivo];
+        const documento = await pdfjsLib.getDocument({ data: new Uint8Array(await arquivo.arrayBuffer()) }).promise;
+        this.documentosPreviewJuntar.push(documento);
+        for (let pagina = 1; pagina <= documento.numPages; pagina++) {
+          this.previewsJuntar.push({ arquivo: arquivo.name, indiceArquivo, pagina });
+        }
+      }
+      this.cdr.detectChanges();
+      setTimeout(() => this.renderizarPreviewJuntar());
+    } catch (error) {
+      console.error('Erro ao gerar prévia dos PDFs:', error);
+      this.previewsJuntar = [];
+    }
+  }
+
+  private async renderizarPreviewJuntar() {
+    const canvases = this.previewJuntarCanvases?.toArray() || [];
+    for (let index = 0; index < canvases.length; index++) {
+      const item = this.previewsJuntar[index];
+      const page = await this.documentosPreviewJuntar[item.indiceArquivo].getPage(item.pagina);
+      await this.renderizarPaginaPreview(page, canvases[index].nativeElement);
+    }
+  }
+
+  private async prepararPreviewCortar() {
+    try {
+      this.configurarPdfJs();
+      this.pdfPreviewCortar = await pdfjsLib.getDocument({ data: new Uint8Array(await this.arquivoParaCortar!.arrayBuffer()) }).promise;
+      this.totalPaginasCortar = this.pdfPreviewCortar.numPages;
+      this.paginaDe = 1;
+      this.paginaAte = this.totalPaginasCortar;
+      this.cdr.detectChanges();
+      setTimeout(() => this.renderizarPreviewCortar());
+    } catch (error) {
+      console.error('Erro ao gerar prévia do PDF:', error);
+      this.pdfPreviewCortar = null;
+      this.totalPaginasCortar = 0;
+    }
+  }
+
+  private async renderizarPreviewCortar() {
+    if (!this.pdfPreviewCortar) return;
+    const canvases = this.previewCortarCanvases?.toArray() || [];
+    const paginas = this.paginasPreviewCortar;
+    for (let index = 0; index < canvases.length; index++) {
+      const page = await this.pdfPreviewCortar.getPage(paginas[index]);
+      await this.renderizarPaginaPreview(page, canvases[index].nativeElement);
+    }
+  }
+
+  private async renderizarPaginaPreview(page: any, canvas: HTMLCanvasElement) {
+    const originalViewport = page.getViewport({ scale: 1 });
+    const viewport = page.getViewport({ scale: Math.min(150 / originalViewport.width, 190 / originalViewport.height) });
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const context = canvas.getContext('2d');
+    if (context) await page.render({ canvasContext: context, viewport }).promise;
   }
 
   // Lógica para CORTAR o PDF (Substitui o pypdf.PdfWriter)

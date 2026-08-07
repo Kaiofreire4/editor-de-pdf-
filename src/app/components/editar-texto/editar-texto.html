@@ -1,8 +1,24 @@
 <div class="editor-shell">
   <aside class="tool-sidebar">
-    <button class="tool-item selected" title="Editar texto"><span class="tool-icon">T</span><span>Editar</span></button>
-    <button class="tool-item" routerLink="/organizar-pdf" title="Organizar páginas"><span class="tool-icon">▦</span><span>Organizar</span></button>
-    <button class="tool-item" routerLink="/visualizar-pdf" title="Visualizar PDF"><span class="tool-icon">◉</span><span>Visualizar</span></button>
+    <button class="tool-item" [class.selected]="!modoAdicionarTexto" (click)="ativarModoEditarTexto()" title="Editar texto"><span class="tool-icon">T</span><span>Editar</span></button>
+    <button class="tool-item" [class.selected]="modoAdicionarTexto" (click)="ativarModoAdicionarTexto()" title="Adicionar texto"><span class="tool-icon">＋</span><span>Texto</span></button>
+    <button class="tool-item" [class.selected]="modoAdicionarImagem" (click)="fileInputImagem.click()" title="Adicionar imagem"><span class="tool-icon">▧</span><span>Imagem</span></button>
+  </aside>
+
+  <aside class="thumbnail-panel" *ngIf="pdfDisponivel">
+    <button class="thumbnail-heading" type="button" (click)="alternarMiniaturas()">
+      <span class="thumbnail-heading-icon">▣</span>
+      <span>Miniaturas</span>
+      <span class="thumbnail-chevron">{{ miniaturasAbertas ? '⌃' : '⌄' }}</span>
+    </button>
+    <div class="thumbnail-scroll" *ngIf="miniaturasAbertas">
+      @for (pagina of paginas; track pagina) {
+        <button class="thumbnail-item" [class.active]="paginaAtual === pagina" type="button" (click)="irParaPagina(pagina)">
+          <canvas #thumbnailCanvas></canvas>
+          <span class="thumbnail-number">{{ pagina }}</span>
+        </button>
+      }
+    </div>
   </aside>
 
   <section class="editor-main">
@@ -18,49 +34,82 @@
     </div>
 
     @if (spanAtivo) {
-    <div class="format-toolbar">
-      <div class="format-group">
-        <select class="fmt-select" [ngModel]="spanAtivo.fontFamily" (ngModelChange)="aplicarFonte($event)">
-          @for (f of fontesDisponiveis; track f) {
-            <option [value]="f">{{ f }}</option>
+      <div class="format-toolbar" (click)="$event.stopPropagation()">
+        <div class="format-group">
+          <select class="fmt-select font" [ngModel]="spanAtivo.fontFamily" (ngModelChange)="aplicarFonte($event)" title="Fonte">
+            @for (f of fontesDisponiveis; track f) { <option [value]="f">{{ f }}</option> }
+          </select>
+          <select class="fmt-select size" [ngModel]="spanAtivo.fontSize" (ngModelChange)="aplicarTamanho(+$event)" title="Tamanho">
+            @for (t of tamanhosDisponiveis; track t) { <option [value]="t">{{ t }}</option> }
+          </select>
+          <input class="fmt-size-input" type="number" min="1" max="144" [ngModel]="spanAtivo.fontSize" (ngModelChange)="aplicarTamanho(+$event)" title="Tamanho personalizado" />
+          <label class="image-size-field">L
+            <input type="number" min="20" [ngModel]="spanAtivo.w" (ngModelChange)="alterarTamanhoTexto('w', +$event)" title="Largura da caixa" />
+          </label>
+          <label class="image-size-field">A
+            <input type="number" min="18" [ngModel]="spanAtivo.h" (ngModelChange)="alterarTamanhoTexto('h', +$event)" title="Altura da caixa" />
+          </label>
+          <label class="image-lock"><input type="checkbox" [(ngModel)]="manterProporcaoTexto" /> Proporção</label>
+        </div>
+        <div class="format-sep"></div>
+        <div class="format-group">
+          <label class="color-picker" title="Cor do texto">
+            <span [style.background]="spanAtivo.color"></span>
+            <input type="color" [ngModel]="spanAtivo.color" (ngModelChange)="aplicarCor($event)" />
+          </label>
+          @for (c of coresDisponiveis; track c.valor) {
+            <button type="button" class="fmt-color-btn" [class.active]="spanAtivo.color === c.valor" [style.background]="c.valor" (click)="aplicarCor(c.valor)" [title]="c.nome"></button>
           }
-        </select>
-        <select class="fmt-select size" [ngModel]="spanAtivo.fontSize" (ngModelChange)="aplicarTamanho($event)">
-          @for (t of tamanhosDisponiveis; track t) {
-            <option [value]="t">{{ t }}</option>
-          }
-        </select>
+        </div>
+        <div class="format-sep"></div>
+        <div class="format-group">
+          <button type="button" class="fmt-btn" [class.active]="spanAtivo.bold" (click)="alternarNegrito()" title="Negrito"><b>N</b></button>
+          <button type="button" class="fmt-btn" [class.active]="spanAtivo.italic" (click)="alternarItalico()" title="Itálico"><i>I</i></button>
+          <button type="button" class="fmt-btn" [class.active]="spanAtivo.underline" (click)="alternarSublinhado()" title="Sublinhado"><u>S</u></button>
+          <button type="button" class="fmt-btn" [class.active]="spanAtivo.strikeThrough" (click)="alternarTachado()" title="Tachado"><s>T</s></button>
+        </div>
+        <div class="format-sep"></div>
+        <div class="format-group">
+          <button type="button" class="fmt-btn" [class.active]="spanAtivo.textAlign === 'left'" (click)="aplicarAlinhamento('left')" title="Alinhar à esquerda">≡</button>
+          <button type="button" class="fmt-btn" [class.active]="spanAtivo.textAlign === 'center'" (click)="aplicarAlinhamento('center')" title="Centralizar">≣</button>
+          <button type="button" class="fmt-btn" [class.active]="spanAtivo.textAlign === 'right'" (click)="aplicarAlinhamento('right')" title="Alinhar à direita">≡</button>
+        </div>
+        <div class="format-sep"></div>
+        <div class="format-group vertical-group">
+          <button type="button" class="fmt-btn" [class.active]="spanAtivo.verticalAlign === 'top'" (click)="aplicarAlinhamentoVertical('top')" title="Alinhar no topo">↑</button>
+          <button type="button" class="fmt-btn" [class.active]="spanAtivo.verticalAlign === 'middle'" (click)="aplicarAlinhamentoVertical('middle')" title="Centralizar verticalmente">↕</button>
+          <button type="button" class="fmt-btn" [class.active]="spanAtivo.verticalAlign === 'bottom'" (click)="aplicarAlinhamentoVertical('bottom')" title="Alinhar embaixo">↓</button>
+        </div>
+        <div class="format-sep"></div>
+        <button type="button" class="fmt-btn clear" (click)="limparFormatacao()" title="Limpar formatação">⌫</button>
+        <button type="button" class="fmt-btn close" (click)="deselecionarSpan()" title="Fechar barra">×</button>
       </div>
-      <div class="format-sep"></div>
-      <div class="format-group">
-        <button class="fmt-btn" [class.active]="spanAtivo.bold" (click)="alternarNegrito()" title="Negrito"><b>N</b></button>
-        <button class="fmt-btn" [class.active]="spanAtivo.italic" (click)="alternarItalico()" title="Itálico"><i>I</i></button>
-        <button class="fmt-btn" [class.active]="spanAtivo.underline" (click)="alternarSublinhado()" title="Sublinhado"><u>S</u></button>
+    }
+
+    @if (imagemAtiva) {
+      <div class="format-toolbar image-toolbar" (click)="$event.stopPropagation()">
+        <span class="image-toolbar-title">Imagem</span>
+        <label class="image-size-field">Largura
+          <input type="number" min="10" [ngModel]="imagemAtiva.w" (ngModelChange)="alterarTamanhoImagem('w', +$event)" />
+        </label>
+        <label class="image-size-field">Altura
+          <input type="number" min="10" [ngModel]="imagemAtiva.h" (ngModelChange)="alterarTamanhoImagem('h', +$event)" />
+        </label>
+        <label class="image-lock"><input type="checkbox" [(ngModel)]="manterProporcaoImagem" /> Proporção</label>
+        <button type="button" class="fmt-btn clear" (click)="removerImagemAtiva()" title="Excluir imagem">⌫</button>
+        <button type="button" class="fmt-btn close" (click)="deselecionarSpan()" title="Fechar barra">×</button>
       </div>
-      <div class="format-sep"></div>
-      <div class="format-group">
-        @for (c of coresDisponiveis; track c.valor) {
-          <button
-            class="fmt-color-btn"
-            [class.active]="spanAtivo.color === c.valor"
-            [style.background]="c.valor"
-            (click)="aplicarCor(c.valor)"
-            [title]="c.nome">
-          </button>
-        }
-      </div>
-    </div>
     }
 
     <div class="editor-body" (click)="deselecionarSpan($event)">
       <div class="page-stage">
         <div class="stage-topbar">
-          <span>{{ pdfDisponivel ? spansDaPagina.length + ' blocos de texto · clique para editar' : 'Seu arquivo fica no seu dispositivo' }}</span>
+          <span>{{ modoAdicionarTexto ? 'Clique na página para inserir um texto' : pdfDisponivel ? spansDaPagina.length + ' blocos de texto · clique para editar' : 'Seu arquivo fica no seu dispositivo' }}</span>
           <div class="zoom-controls">
             <button (click)="alterarZoom(-0.1)" [disabled]="!pdfDisponivel">−</button><span>{{ zoomPercent }}%</span><button (click)="alterarZoom(0.1)" [disabled]="!pdfDisponivel">＋</button>
           </div>
         </div>
-        <div class="word-canvas-area">
+        <div class="word-canvas-area" [class.add-mode]="modoAdicionarTexto || modoAdicionarImagem" (click)="interagirComPagina($event)">
           <div class="word-page" [class.has-pdf]="pdfDisponivel">
             <canvas #pdfCanvas class="pdf-canvas"></canvas>
 
@@ -69,11 +118,13 @@
                 <div
                   class="editable-text-block"
                   [class.active]="span.id === spanAtivoId"
+                  [class.empty-new]="span.id === spanAtivoId && span.novo && !span.text"
                   [class.modified-bg]="span.modificado && span.id !== spanAtivoId"
                   [style.left.px]="span.x"
                   [style.top.px]="span.y"
                   [style.width.px]="span.w"
                   [style.height.px]="span.h"
+                  (click)="selecionarOuAdicionarTexto(span.id, $event)"
                 >
                   @if (span.id === spanAtivoId) {
                     <input
@@ -84,15 +135,44 @@
                       class="inline-text-input"
                       [ngStyle]="getEstiloSpan(span)"
                       autofocus />
+                    <span class="selection-handle handle-nw" (pointerdown)="iniciarRedimensionamentoSpan($event, span, 'nw')"></span>
+                    <span class="selection-handle handle-n" (pointerdown)="iniciarRedimensionamentoSpan($event, span, 'n')"></span>
+                    <span class="selection-handle handle-ne" (pointerdown)="iniciarRedimensionamentoSpan($event, span, 'ne')"></span>
+                    <span class="selection-handle handle-e" (pointerdown)="iniciarRedimensionamentoSpan($event, span, 'e')"></span>
+                    <span class="selection-handle handle-se" (pointerdown)="iniciarRedimensionamentoSpan($event, span, 'se')"></span>
+                    <span class="selection-handle handle-s" (pointerdown)="iniciarRedimensionamentoSpan($event, span, 's')"></span>
+                    <span class="selection-handle handle-sw" (pointerdown)="iniciarRedimensionamentoSpan($event, span, 'sw')"></span>
+                    <span class="selection-handle handle-w" (pointerdown)="iniciarRedimensionamentoSpan($event, span, 'w')"></span>
+                    <span class="rotation-stem"></span>
+                    <span class="rotation-handle">↻</span>
                   } @else {
                     <span
                       class="text-block-label"
                       [class.modificado]="span.modificado"
-                      [ngStyle]="getEstiloSpan(span)"
-                      (click)="ativarSpan(span.id); $event.stopPropagation()"
-                      (dblclick)="ativarSpan(span.id); $event.stopPropagation()">
+                      [ngStyle]="getEstiloSpan(span, span.modificado || !!span.novo)"
+                      (dblclick)="selecionarOuAdicionarTexto(span.id, $event)">
                       {{ span.text }}
                     </span>
+                  }
+                </div>
+              }
+            </div>
+
+            <div class="pdf-image-layer" *ngIf="imagensDaPagina.length > 0">
+              @for (imagem of imagensDaPagina; track imagem.id) {
+                <div class="pdf-image-selection" [class.active]="imagem.id === imagemAtivaId" [style.left.px]="imagem.x" [style.top.px]="imagem.y" [style.width.px]="imagem.w" [style.height.px]="imagem.h">
+                  <img class="pdf-image-item" [src]="imagem.dataUrl" alt="Imagem adicionada" (click)="selecionarImagem(imagem, $event)" />
+                  @if (imagem.id === imagemAtivaId) {
+                    <span class="image-selection-handle image-handle-nw" (pointerdown)="iniciarRedimensionamentoImagem($event, imagem, 'nw')"></span>
+                    <span class="image-selection-handle image-handle-n" (pointerdown)="iniciarRedimensionamentoImagem($event, imagem, 'n')"></span>
+                    <span class="image-selection-handle image-handle-ne" (pointerdown)="iniciarRedimensionamentoImagem($event, imagem, 'ne')"></span>
+                    <span class="image-selection-handle image-handle-e" (pointerdown)="iniciarRedimensionamentoImagem($event, imagem, 'e')"></span>
+                    <span class="image-selection-handle image-handle-se" (pointerdown)="iniciarRedimensionamentoImagem($event, imagem, 'se')"></span>
+                    <span class="image-selection-handle image-handle-s" (pointerdown)="iniciarRedimensionamentoImagem($event, imagem, 's')"></span>
+                    <span class="image-selection-handle image-handle-sw" (pointerdown)="iniciarRedimensionamentoImagem($event, imagem, 'sw')"></span>
+                    <span class="image-selection-handle image-handle-w" (pointerdown)="iniciarRedimensionamentoImagem($event, imagem, 'w')"></span>
+                    <span class="image-rotation-stem"></span>
+                    <span class="image-rotation-handle">↻</span>
                   }
                 </div>
               }
@@ -115,6 +195,7 @@
       </div>
       <aside class="help-panel" *ngIf="pdfDisponivel">
         <div class="panel-title">Ferramentas</div>
+        <div class="help-step"><span>＋</span><p>Ative <strong>Texto</strong> e clique em qualquer ponto livre da página para adicionar conteúdo.</p></div>
         <div class="help-step"><span>1</span><p>Clique sobre um texto para editar.</p></div>
         <div class="help-step"><span>2</span><p>Use a barra de formatação para ajustar fonte, tamanho e estilo.</p></div>
         <div class="help-step"><span>3</span><p>Enter ou clique fora para confirmar.</p></div>
@@ -125,4 +206,5 @@
   </section>
 
   <input type="file" #fileInputWord style="display: none" accept=".pdf" (change)="onFileSelected($event)"/>
+  <input type="file" #fileInputImagem style="display: none" accept="image/png,image/jpeg" (change)="onImagemSelecionada($event)"/>
 </div>

@@ -62,6 +62,7 @@ const swaggerSpec = swaggerJSDoc({
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 interface Modificacao {
+  tipo?: 'editar' | 'adicionar' | 'imagem';
   text: string;
   textoOriginal: string;
   htmlFormatado?: string;
@@ -72,7 +73,11 @@ interface Modificacao {
   bold?: boolean;
   italic?: boolean;
   underline?: boolean;
+  strikeThrough?: boolean;
   color?: string;
+  textAlign?: 'left' | 'center' | 'right';
+  verticalAlign?: 'top' | 'middle' | 'bottom';
+  imagemData?: string;
 }
 
 function parseStrictInteger(value: unknown): number | null {
@@ -95,14 +100,20 @@ function isValidBbox(bbox: unknown): bbox is [number, number, number, number] {
     && bbox[1] >= 0;
 }
 
+function isValidHexColor(color: unknown): color is string {
+  return typeof color !== 'string' || /^#[0-9a-fA-F]{6}$/.test(color);
+}
+
 function validateModifications(value: unknown, pageCount: number): value is Modificacao[] {
   if (!Array.isArray(value)) return false;
 
   return value.every((item) => {
     if (!item || typeof item !== 'object') return false;
     const modification = item as Record<string, unknown>;
+    if (modification['tipo'] !== undefined && !['editar', 'adicionar', 'imagem'].includes(String(modification['tipo']))) return false;
     if (typeof modification['text'] !== 'string' || typeof modification['textoOriginal'] !== 'string') return false;
     if (modification['text'].length > 10_000 || modification['textoOriginal'].length > 10_000) return false;
+    if (modification['tipo'] !== 'adicionar' && modification['tipo'] !== 'imagem' && !modification['textoOriginal'].trim()) return false;
 
     if (modification['pageIndex'] !== undefined
       && (typeof modification['pageIndex'] !== 'number'
@@ -112,7 +123,29 @@ function validateModifications(value: unknown, pageCount: number): value is Modi
       return false;
     }
 
-    return modification['bbox'] === undefined || isValidBbox(modification['bbox']);
+    if (modification['tipo'] === 'adicionar'
+      && (modification['pageIndex'] === undefined || modification['bbox'] === undefined)) return false;
+    if (modification['tipo'] === 'imagem') {
+      if (modification['pageIndex'] === undefined || modification['bbox'] === undefined) return false;
+      if (typeof modification['imagemData'] !== 'string' || modification['imagemData'].length > 12 * 1024 * 1024) return false;
+      if (!/^data:image\/(png|jpeg|jpg);base64,[a-z0-9+/=]+$/i.test(modification['imagemData'])) return false;
+    }
+
+    if (modification['bbox'] !== undefined && !isValidBbox(modification['bbox'])) return false;
+    if (modification['fontFamily'] !== undefined && typeof modification['fontFamily'] !== 'string') return false;
+    if (modification['fontSize'] !== undefined
+      && (typeof modification['fontSize'] !== 'number'
+        || !Number.isFinite(modification['fontSize'])
+        || modification['fontSize'] < 1
+        || modification['fontSize'] > 144)) return false;
+    if (['bold', 'italic', 'underline', 'strikeThrough'].some((key) =>
+      modification[key] !== undefined && typeof modification[key] !== 'boolean')) return false;
+    if (!isValidHexColor(modification['color'])) return false;
+    if (modification['textAlign'] !== undefined
+      && !['left', 'center', 'right'].includes(String(modification['textAlign']))) return false;
+    if (modification['verticalAlign'] !== undefined
+      && !['top', 'middle', 'bottom'].includes(String(modification['verticalAlign']))) return false;
+    return true;
   });
 }
 
@@ -127,6 +160,20 @@ interface AlvoTexto {
 interface Span {
   text: string;
   bbox: number[];
+}
+
+async function localizarAlvoPorBbox(pdf: any, pageIndex: number, bbox: number[]): Promise<AlvoTexto[]> {
+  if (!isValidBbox(bbox) || pageIndex < 0 || pageIndex >= pdf.numPages) return [];
+  const page = await pdf.getPage(pageIndex + 1);
+  const { width, height } = page.getViewport({ scale: 1 });
+  if (bbox[2] > width || bbox[3] > height) return [];
+  return [{
+    pageIndex,
+    x: bbox[0],
+    y: bbox[1],
+    width: bbox[2] - bbox[0],
+    height: bbox[3] - bbox[1],
+  }];
 }
 
 // Converte as coordenadas do pdf.js (origem inferior esquerda)
@@ -362,28 +409,43 @@ function escreverTextoFormatado(
   fontSizeOverride: number | undefined,
   colorHex: string | undefined,
   underline: boolean,
+  strikeThrough: boolean,
+  textAlign: 'left' | 'center' | 'right',
+  verticalAlign: 'top' | 'middle' | 'bottom',
 ): void {
   const { height: pageHeight } = page.getSize();
   const fontSize = fontSizeOverride && fontSizeOverride > 0
-    ? Math.min(fontSizeOverride, alvo.height * 1.6)
+    ? Math.min(fontSizeOverride, 144)
     : Math.max(6, Math.round(alvo.height / 1.15));
   const [r, g, b] = colorHex ? rgbFromHex(colorHex) : [0, 0, 0];
-  const baseline = pageHeight - alvo.y - fontSize * 0.8;
+  const areaWidth = Math.max(50, alvo.width + 2);
+  const textWidth = font.widthOfTextAtSize(texto, fontSize);
+  const xOffset = textAlign === 'center'
+    ? Math.max(0, (areaWidth - textWidth) / 2)
+    : textAlign === 'right'
+      ? Math.max(0, areaWidth - textWidth)
+      : 0;
+  const x = alvo.x + 1 + xOffset;
+  const baseline = verticalAlign === 'top'
+    ? pageHeight - alvo.y - fontSize
+    : verticalAlign === 'bottom'
+      ? pageHeight - alvo.y - alvo.height + fontSize * 0.15
+      : pageHeight - alvo.y - fontSize * 0.8;
 
   page.drawText(texto, {
-    x: alvo.x + 1,
+    x,
     y: baseline,
     size: fontSize,
     font,
     color: rgb(r, g, b),
-    maxWidth: Math.max(50, alvo.width + 2),
+    maxWidth: areaWidth,
   });
 
-  if (underline) {
-    const linhaY = pageHeight - alvo.y - fontSize * 0.92;
+  if (underline || strikeThrough) {
+    const linhaY = underline ? baseline - fontSize * 0.12 : baseline + fontSize * 0.32;
     page.drawLine({
-      start: { x: alvo.x + 1, y: linhaY },
-      end: { x: alvo.x + Math.max(50, alvo.width + 2), y: linhaY },
+      start: { x, y: linhaY },
+      end: { x: x + textWidth, y: linhaY },
       thickness: Math.max(0.5, fontSize * 0.06),
       color: rgb(r, g, b),
     });
@@ -395,7 +457,7 @@ function escreverTextoFormatado(
  * /salvar-pdf:
  *   post:
  *     summary: Aplica alterações de texto no PDF e retorna o arquivo editado
- *     description: Envia o PDF original e uma lista de modificações; a API localiza cada texto original, apaga com retângulo branco e escreve o novo texto na mesma posição.
+  *     description: Envia o PDF original e uma lista de modificações; a API localiza cada texto original, apaga com retângulo branco e escreve o texto com a formatação solicitada na mesma posição.
  *     tags: [PDF]
  *     requestBody:
  *       required: true
@@ -410,7 +472,7 @@ function escreverTextoFormatado(
  *                 description: Arquivo PDF original
  *               modificacoes:
  *                 type: string
- *                 description: 'JSON array com as alterações: [{ text, textoOriginal, pageIndex?, bbox? }]'
+  *                 description: 'JSON array com alterações, inserções ou imagens: [{ tipo?: editar|adicionar|imagem, text, textoOriginal, pageIndex?, bbox?, fontFamily?, fontSize?, bold?, italic?, underline?, strikeThrough?, color?, textAlign?, verticalAlign?, imagemData? }]'
  *             required:
  *               - file
  *               - modificacoes
@@ -476,14 +538,53 @@ app.post('/salvar-pdf', upload.single('file'), async (req: Request, res: Respons
     }
 
     for (const mudanca of modificacoes) {
+      const tipo = mudanca.tipo || 'editar';
       const textoOriginal = (mudanca.textoOriginal || '').trim();
       const textoNovo = (mudanca.text || '').trim();
 
-      if (!textoOriginal || !textoNovo || textoOriginal === textoNovo) {
+      if (tipo === 'imagem') {
+        const imagemMatch = mudanca.imagemData?.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/i);
+        if (!imagemMatch || mudanca.pageIndex === undefined || !mudanca.bbox) continue;
+        const alvosImagem = await localizarAlvoPorBbox(pdf, mudanca.pageIndex, mudanca.bbox);
+        const imagemBytes = Buffer.from(imagemMatch[2], 'base64');
+        const imagemPdf = imagemMatch[1].toLowerCase() === 'png'
+          ? await pdfDoc.embedPng(imagemBytes)
+          : await pdfDoc.embedJpg(imagemBytes);
+
+        for (const alvo of alvosImagem) {
+          const page = pages[alvo.pageIndex];
+          if (!page) continue;
+          const { height: pageHeight } = page.getSize();
+          page.drawImage(imagemPdf, {
+            x: alvo.x,
+            y: pageHeight - alvo.y - alvo.height,
+            width: alvo.width,
+            height: alvo.height,
+          });
+        }
         continue;
       }
 
-      const alvos = await localizarTexto(pdf, textoOriginal, mudanca.pageIndex, mudanca.bbox);
+      if (!textoOriginal || !textoNovo) {
+        if (tipo !== 'adicionar' || !textoNovo) continue;
+      }
+
+      const mudouApenasFormatacao = textoOriginal === textoNovo && (
+        mudanca.fontFamily !== undefined
+        || mudanca.fontSize !== undefined
+        || mudanca.bold !== undefined
+        || mudanca.italic !== undefined
+        || mudanca.underline !== undefined
+        || mudanca.strikeThrough !== undefined
+        || mudanca.color !== undefined
+        || mudanca.textAlign !== undefined
+        || mudanca.verticalAlign !== undefined
+      );
+      if (tipo === 'editar' && textoOriginal === textoNovo && !mudouApenasFormatacao) continue;
+
+      const alvos = tipo === 'adicionar'
+        ? await localizarAlvoPorBbox(pdf, mudanca.pageIndex!, mudanca.bbox!)
+        : await localizarTexto(pdf, textoOriginal, mudanca.pageIndex, mudanca.bbox);
       const standardFont = escolherStandardFont(
         mudanca.fontFamily || 'Helvetica',
         !!mudanca.bold,
@@ -494,8 +595,19 @@ app.post('/salvar-pdf', upload.single('file'), async (req: Request, res: Respons
       for (const alvo of alvos) {
         const page = pages[alvo.pageIndex];
         if (!page) continue;
-        apagarTexto(page, alvo);
-        escreverTextoFormatado(page, font, alvo, textoNovo, mudanca.fontSize, mudanca.color, !!mudanca.underline);
+        if (tipo !== 'adicionar') apagarTexto(page, alvo);
+        escreverTextoFormatado(
+          page,
+          font,
+          alvo,
+          textoNovo,
+          mudanca.fontSize,
+          mudanca.color,
+          !!mudanca.underline,
+          !!mudanca.strikeThrough,
+          mudanca.textAlign || 'left',
+          mudanca.verticalAlign || 'middle',
+        );
       }
     }
 
