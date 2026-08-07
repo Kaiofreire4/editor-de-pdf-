@@ -1,5 +1,5 @@
 <div class="pdf-app" [class.dark-theme]="tema === 'dark'" [attr.data-theme]="tema">
-  <header class="app-header">
+  <header class="app-header" *ngIf="autenticado">
     <a class="brand" routerLink="/editar-texto" aria-label="PdfMaster início">
       <span class="brand-mark">P</span>
       <span>PdfMaster</span>
@@ -8,6 +8,7 @@
       <a routerLink="/editar-texto" routerLinkActive="active">Editar PDF</a>
       <a routerLink="/organizar-pdf" routerLinkActive="active">Organizar</a>
       <a routerLink="/visualizar-pdf" routerLinkActive="active">Visualizar</a>
+      <a routerLink="/editor-word" routerLinkActive="active">Editar Word</a>
     </nav>
     <div class="header-actions">
       <span class="secure-label"><span class="secure-dot"></span> Processamento local</span>
@@ -30,7 +31,8 @@
           </div>
         </div>
       </div>
-      <span class="avatar">K</span>
+      <span class="avatar" [title]="usuarioAtual?.nome || 'Usuário'">{{ inicialDoNome() }}</span>
+      <button class="header-tool" type="button" (click)="sair()" title="Sair da conta">Sair</button>
     </div>
   </header>
 

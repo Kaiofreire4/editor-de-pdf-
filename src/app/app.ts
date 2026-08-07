@@ -2,8 +2,9 @@ import { Component, OnInit, inject } from '@angular/core';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterModule } from '@angular/router';
+import { RouterOutlet, RouterModule, Router } from '@angular/router';
 import { LocalPdfRecord, LocalPdfStorageService } from './services/local-pdf-storage';
+import { AuthService, UsuarioAutenticado } from './services/auth-service';
 
 @Component({
   selector: 'app-root',
@@ -22,12 +23,33 @@ export class AppComponent implements OnInit {
   tema: 'light' | 'dark' = localStorage.getItem('pdfmaster-theme') === 'dark' ? 'dark' : 'light';
   arquivosLocaisAbertos = false;
   arquivosLocais: LocalPdfRecord[] = [];
+  usuarioAtual: UsuarioAutenticado | null = null;
+  autenticado = false;
   private localPdfStorage = inject(LocalPdfStorageService);
+  private auth = inject(AuthService);
+  private router = inject(Router);
 
   constructor(private http: HttpClient) {}
 
   async ngOnInit() {
+    this.usuarioAtual = this.auth.user;
+    this.autenticado = this.auth.isAuthenticated;
+    if (!this.auth.isAuthenticated) {
+      await this.auth.restaurar();
+    }
+    this.auth.user$.subscribe((user) => (this.usuarioAtual = user));
+    this.auth.acesso$.subscribe((temAcesso) => (this.autenticado = temAcesso));
+    this.autenticado = this.auth.isAuthenticated;
     await this.carregarArquivosLocais();
+  }
+
+  inicialDoNome(): string {
+    return (this.usuarioAtual?.nome || (this.auth.isConvidado ? 'PV' : '?')).trim().charAt(0).toUpperCase() || '?';
+  }
+
+  sair() {
+    this.auth.sair();
+    void this.router.navigateByUrl('/login');
   }
 
   alternarTema() {

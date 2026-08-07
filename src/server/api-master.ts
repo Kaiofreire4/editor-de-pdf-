@@ -10,6 +10,9 @@ import swaggerJSDoc from 'swagger-jsdoc';
 // @ts-ignore
 import swaggerUi from 'swagger-ui-express';
 import * as path from 'path';
+import * as crypto from 'crypto';
+import * as fs from 'fs';
+import Database from 'better-sqlite3';
 
 export const app = express();
 
@@ -60,6 +63,246 @@ const swaggerSpec = swaggerJSDoc({
 });
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// ---------- Autenticação (SQLite) ----------
+const SESSION_DAYS = 30;
+const SESSION_DAYS_MS = SESSION_DAYS * 24 * 60 * 60 * 1000;
+const AUTH_DIR = path.resolve(process.cwd(), '.data');
+fs.mkdirSync(AUTH_DIR, { recursive: true });
+
+const db = new Database(path.join(AUTH_DIR, 'pdfmaster.db'));
+db.pragma('journal_mode = WAL');
+db.exec(`
+  CREATE TABLE IF NOT EXISTS usuarios (
+    id TEXT PRIMARY KEY,
+    nome TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    hash TEXT NOT NULL,
+    salt TEXT NOT NULL,
+    criado_em INTEGER NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS sessoes (
+    token TEXT PRIMARY KEY,
+    email TEXT NOT NULL,
+    expira_em INTEGER NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_sessoes_email ON sessoes(email);
+`);
+
+interface LinhaUsuario {
+  id: string;
+  nome: string;
+  email: string;
+  hash: string;
+  salt: string;
+  criado_em: number;
+}
+
+interface LinhaSessao {
+  token: string;
+  email: string;
+  expira_em: number;
+}
+
+function gerarHash(senha: string, salt: string): string {
+  return crypto.pbkdf2Sync(senha, salt, 100_000, 64, 'sha256').toString('hex');
+}
+
+function gerarToken(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+function emailValido(email: unknown): email is string {
+  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
+}
+
+function inserirSessao(email: string): string {
+  const token = gerarToken();
+  db.prepare('INSERT INTO sessoes (token, email, expira_em) VALUES (?, ?, ?)').run(
+    token,
+    email,
+    Date.now() + SESSION_DAYS_MS,
+  );
+  return token;
+}
+
+function limparSessoesExpiradas(): void {
+  db.prepare('DELETE FROM sessoes WHERE expira_em < ?').run(Date.now());
+}
+
+/** Retorna o usuário por um token de sessão válido, ou null. */
+function usuarioPorToken(token: string): LinhaUsuario | null {
+  const sessao = db.prepare('SELECT * FROM sessoes WHERE token = ?').get(token) as LinhaSessao | undefined;
+  if (!sessao) return null;
+  if (sessao.expira_em < Date.now()) {
+    db.prepare('DELETE FROM sessoes WHERE token = ?').run(token);
+    return null;
+  }
+  return (db.prepare('SELECT * FROM usuarios WHERE email = ?').get(sessao.email) as LinhaUsuario | undefined) ?? null;
+}
+
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Cria um novo usuário
+ *     tags: [Autenticação]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nome: { type: string }
+ *               email: { type: string }
+ *               senha: { type: string }
+ *             required: [nome, email, senha]
+ *     responses:
+ *       201:
+ *         description: Usuário criado com token
+ *       400:
+ *         description: Dados inválidos ou e-mail já cadastrado
+ */
+app.post('/api/auth/register', (req: Request, res: Response) => {
+  const { nome, email, senha } = (req.body ?? {}) as Record<string, unknown>;
+
+  if (typeof nome !== 'string' || nome.trim().length < 2 || nome.length > 80) {
+    return res.status(400).json({ error: 'Nome deve ter entre 2 e 80 caracteres' });
+  }
+  if (!emailValido(email)) {
+    return res.status(400).json({ error: 'E-mail inválido' });
+  }
+  if (typeof senha !== 'string' || senha.length < 6 || senha.length > 128) {
+    return res.status(400).json({ error: 'A senha deve ter entre 6 e 128 caracteres' });
+  }
+
+  const emailNorm = email.toLowerCase();
+  const existente = db.prepare('SELECT id FROM usuarios WHERE email = ?').get(emailNorm);
+  if (existente) {
+    return res.status(400).json({ error: 'Este e-mail já está cadastrado' });
+  }
+
+  const salt = crypto.randomBytes(16).toString('hex');
+  const usuario: LinhaUsuario = {
+    id: crypto.randomUUID(),
+    nome: nome.trim(),
+    email: emailNorm,
+    hash: gerarHash(senha, salt),
+    salt,
+    criado_em: Date.now(),
+  };
+
+  const token = db.transaction(() => {
+    db.prepare(
+      'INSERT INTO usuarios (id, nome, email, hash, salt, criado_em) VALUES (@id, @nome, @email, @hash, @salt, @criado_em)',
+    ).run(usuario);
+    return inserirSessao(usuario.email);
+  })();
+
+  return res.status(201).json({
+    token,
+    user: { id: usuario.id, nome: usuario.nome, email: usuario.email },
+  });
+});
+
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Autentica um usuário e retorna um token
+ *     tags: [Autenticação]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email: { type: string }
+ *               senha: { type: string }
+ *             required: [email, senha]
+ *     responses:
+ *       200:
+ *         description: Login realizado com token
+ *       401:
+ *         description: Credenciais inválidas
+ */
+app.post('/api/auth/login', (req: Request, res: Response) => {
+  const { email, senha } = (req.body ?? {}) as Record<string, unknown>;
+  if (!emailValido(email) || typeof senha !== 'string' || !senha) {
+    return res.status(401).json({ error: 'E-mail ou senha inválidos' });
+  }
+
+  const usuario = db.prepare('SELECT * FROM usuarios WHERE email = ?').get(email.toLowerCase()) as LinhaUsuario | undefined;
+  if (!usuario) {
+    return res.status(401).json({ error: 'E-mail ou senha inválidos' });
+  }
+
+  if (gerarHash(senha, usuario.salt) !== usuario.hash) {
+    return res.status(401).json({ error: 'E-mail ou senha inválidos' });
+  }
+
+  const token = inserirSessao(usuario.email);
+  return res.json({
+    token,
+    user: { id: usuario.id, nome: usuario.nome, email: usuario.email },
+  });
+});
+
+function usuarioAutenticado(req: Request): LinhaUsuario | null {
+  const header = req.headers['authorization'];
+  const match = typeof header === 'string' ? /^Bearer\s+(.+)$/i.exec(header) : null;
+  if (!match) return null;
+  return usuarioPorToken(match[1].trim());
+}
+
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Retorna os dados do usuário autenticado
+ *     tags: [Autenticação]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dados do usuário atual
+ *       401:
+ *         description: Token ausente ou inválido
+ */
+app.get('/api/auth/me', (req: Request, res: Response) => {
+  const usuario = usuarioAutenticado(req);
+  if (!usuario) {
+    return res.status(401).json({ error: 'Não autenticado' });
+  }
+  return res.json({ user: { id: usuario.id, nome: usuario.nome, email: usuario.email } });
+});
+
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Encerra a sessão atual
+ *     tags: [Autenticação]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Sessão encerrada
+ */
+app.post('/api/auth/logout', (req: Request, res: Response) => {
+  const header = req.headers['authorization'];
+  const match = typeof header === 'string' ? /^Bearer\s+(.+)$/i.exec(header) : null;
+  if (match) {
+    db.prepare('DELETE FROM sessoes WHERE token = ?').run(match[1].trim());
+  }
+  return res.status(200).json({ ok: true });
+});
+
+// Mantém a tabela de sessões limpa de registros expirados durante a execução.
+const LIMPEZA_MS = 60 * 60 * 1000;
+setInterval(limparSessoesExpiradas, LIMPEZA_MS).unref();
 
 interface Modificacao {
   tipo?: 'editar' | 'adicionar' | 'imagem';
