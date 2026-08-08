@@ -1,66 +1,119 @@
 # PdfMasterWeb
 
-Editor de PDFs web com interface no estilo **Microsoft Word**. O projeto usa **Angular** no frontend e uma **API em TypeScript (Node/Express)** para processar os PDFs.
+Aplicação web para editar PDFs e documentos Word usando Angular, Node.js e Express.
 
-## Requisitos
+## Recursos
 
-- Node.js 20+ (testado com Node 24)
-- npm
+- Edição de texto em PDF, organização e visualização de PDFs
+- Editor de documentos `.docx` com importação e exportação
+- Inserção de imagens, tabelas, gráficos e links no Editor Word
+- Login, cadastro e modo convidado
+- Usuários e sessões persistidos em SQLite
+- PDFs editados salvos localmente no navegador
 
-## Instalação
+## Requisitos no Windows
 
-```bash
-npm install
+Instale estes programas antes de executar o projeto:
+
+1. **Node.js 22.12 ou superior na versão 22**: https://nodejs.org/en/download
+2. **Git**: https://git-scm.com/downloads
+3. **Visual Studio Build Tools**: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+
+No instalador do Visual Studio, marque:
+
+- `Desktop development with C++`
+- `MSVC C++ build tools`
+- `Windows 10/11 SDK`
+
+O Visual Studio Build Tools é necessário porque o SQLite usa o pacote nativo `better-sqlite3`. Ele não pode ser instalado pelo npm sozinho.
+
+Confira as versões:
+
+```powershell
+node --version
+npm --version
+git --version
 ```
 
-## Como rodar
+O Node deve mostrar uma versão `22.12.x` ou superior dentro da série 22.
 
-### 1. API (backend) — porta 8000
+## Instalação em um PC novo
 
-```bash
+Clone o repositório e instale as dependências:
+
+```powershell
+git clone https://github.com/Kaiofreire4/editor-de-pdf-.git
+cd editor-de-pdf-
+npm install
+npm run check:environment
+```
+
+O comando `npm install` instala todas as dependências JavaScript, incluindo Angular, PDF, Word e SQLite. O banco será criado automaticamente em `.data/pdfmaster.db` na primeira execução da API.
+
+## Como executar
+
+Abra dois terminais na pasta do projeto.
+
+### Terminal 1: API
+
+```powershell
 npm run server
 ```
 
-> Opcional: modo com reload automático (`npm run server:dev`).
+A API ficará disponível em `http://127.0.0.1:8000`.
 
-A API compila o TypeScript na hora com `ts-node`. Ela expõe:
+Swagger: `http://127.0.0.1:8000/api-docs`
 
-- **`POST /extrair-textos`** — extrai os textos de uma página do PDF com coordenadas (`multipart/form-data`: `file` + `page`).
-- **`POST /salvar-pdf`** — aplica alterações de texto e retorna o PDF editado (`multipart/form-data`: `file` + `modificacoes`).
-- **`GET /api-docs`** — Swagger UI interativo para testar os endpoints.
+### Terminal 2: frontend
 
-### 2. Frontend (Angular) — porta 4200
-
-Em outro terminal:
-
-```bash
+```powershell
 npm start
 ```
 
-Abra `http://localhost:4200/`.
+Acesse `http://localhost:4200`.
 
-## Estrutura
+## Atualizar um projeto já clonado
 
-```
-src/
-├── app/                    # Frontend Angular
-│   ├── components/
-│   │   ├── editar-texto/   # Editor de texto (estilo Word)
-│   │   ├── organizar-pdf/  # Juntar e cortar PDFs
-│   │   └── visualizar-pdf/ # Leitor de PDF
-│   └── services/           # Serviços (PdfManager)
-└── server/                 # API em TypeScript (Express)
-    └── api-master.ts
+Se não houver alterações locais:
+
+```powershell
+git checkout master
+git pull origin master
+npm install
 ```
 
-## Como a API edita o texto
+Se o Git reclamar que `angular.json` ou outro arquivo local será sobrescrito, guarde as alterações:
 
-1. O frontend renderiza o PDF com `pdf.js` e pede os textos à API.
-2. Ao salvar, o frontend envia as alterações (texto original + novo texto + posição).
-3. A API localiza o texto original com `pdf.js`, apaga cobrindo com um retângulo branco e escreve o novo texto na mesma posição usando `pdf-lib`.
+```powershell
+git stash push -m "alteracoes locais"
+git pull origin master
+npm install
+```
+
+## Erros comuns
+
+### `better-sqlite3` não instala
+
+Verifique se o Visual Studio Build Tools foi instalado com `Desktop development with C++`. Depois feche os terminais e execute:
+
+```powershell
+Remove-Item -Recurse -Force node_modules
+npm install
+npm run check:environment
+```
+
+### `ts-node não é reconhecido`
+
+O `npm install` não terminou. Corrija o erro do SQLite e execute `npm install` novamente.
+
+### Porta ocupada
+
+Feche o processo que já está usando a porta 4200 ou 8000 e execute os comandos novamente.
 
 ## Build de produção
 
-```bash
+```powershell
 npm run build
 ```
+
+O resultado será gerado em `dist/pdf-master-web`.
