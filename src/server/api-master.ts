@@ -25,7 +25,8 @@ const allowedOrigins = new Set([
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: MAX_PDF_SIZE_BYTES, files: 1 },
+  // As alterações podem conter imagens em Base64 junto com o PDF.
+  limits: { fileSize: MAX_PDF_SIZE_BYTES, files: 1, fieldSize: 20 * 1024 * 1024 },
   fileFilter: (_req, file, callback) => {
     if (file.mimetype === 'application/pdf' || file.mimetype === 'application/octet-stream') {
       callback(null, true);
