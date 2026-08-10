@@ -5,6 +5,8 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:server": "tsc --project tsconfig.server.json",
+    "start:server": "node out-tsc/server/api-master.js",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "check:environment": "node scripts/check-environment.mjs",
@@ -59,6 +61,9 @@
     "prettier": "^3.8.1",
     "ts-node": "^10.9.1",
     "typescript": "~6.0.2",
-    "vitest": "^4.0.8"
+    "vitest": "^4.0.8",
+    "@netlify/blobs": "^9.1.0",
+    "@netlify/functions": "^3.0.0",
+    "busboy": "^1.6.0"
   }
 }

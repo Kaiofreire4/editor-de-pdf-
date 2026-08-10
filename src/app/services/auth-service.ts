@@ -14,7 +14,7 @@ interface AuthResponse {
   user: UsuarioAutenticado;
 }
 
-export const API_BASE_URL = 'https://editor-de-pdf-lypq.onrender.com';
+export const API_BASE_URL = '';
 const TOKEN_KEY = 'pdfmaster_token';
 const GUEST_KEY = 'pdfmaster_convidado';
 

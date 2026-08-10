@@ -969,7 +969,7 @@ export class EditarTextoComponent {
     formData.append('modificacoes', JSON.stringify(modificacoes));
 
     try {
-      const resposta = await fetch('https://editor-de-pdf-lypq.onrender.com/salvar-pdf', {
+      const resposta = await fetch('/salvar-pdf', {
         method: 'POST',
         body: formData,
       });
