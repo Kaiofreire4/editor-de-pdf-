@@ -25,7 +25,8 @@ export class LoginComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    await this.auth.restaurar();
     if (this.auth.isAuthenticated) {
       void this.router.navigateByUrl('/editar-texto');
     }

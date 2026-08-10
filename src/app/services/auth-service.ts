@@ -23,6 +23,7 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly _userSubject = new BehaviorSubject<UsuarioAutenticado | null>(null);
   private readonly _acessoSubject = new BehaviorSubject<boolean>(false);
+  private restauracaoEmAndamento: Promise<boolean> | null = null;
 
   readonly user$: Observable<UsuarioAutenticado | null> = this._userSubject.asObservable();
 
@@ -65,6 +66,16 @@ export class AuthService {
   }
 
   restaurar(): Promise<boolean> {
+    if (this.isAuthenticated) return Promise.resolve(true);
+    if (this.restauracaoEmAndamento) return this.restauracaoEmAndamento;
+
+    this.restauracaoEmAndamento = this.restaurarSessao().finally(() => {
+      this.restauracaoEmAndamento = null;
+    });
+    return this.restauracaoEmAndamento;
+  }
+
+  private restaurarSessao(): Promise<boolean> {
     if (this.isConvidado) {
       this._acessoSubject.next(true);
       return Promise.resolve(true);
@@ -76,6 +87,7 @@ export class AuthService {
       return firstValueFrom(
         this.http
           .get<{ user: UsuarioAutenticado }>(`${API_BASE_URL}/api/auth/me`, { headers: this.headers() })
+          .pipe(timeout({ first: 15000 }))
           .pipe(tap(({ user }) => {
             this._userSubject.next(user);
             this._acessoSubject.next(true);
