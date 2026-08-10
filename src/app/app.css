@@ -155,8 +155,16 @@
 }
 
 @media (max-width: 700px) {
-  .app-header { padding: 0 16px; gap: 18px; }
-  .main-nav { gap: 13px; }
+  .app-header { height: 60px; padding: 0 12px; gap: 14px; overflow-x: auto; }
+  .brand { font-size: 16px; gap: 7px; }
+  .main-nav { flex: 1 0 auto; gap: 16px; }
+  .main-nav a { flex-shrink: 0; white-space: nowrap; font-size: 12px; }
   .secure-label { display: none; }
   .local-files-button span { display: none; }
+}
+
+@media (max-width: 480px) {
+  .app-header { gap: 10px; }
+  .brand-mark { width: 30px; height: 30px; }
+  .header-actions { display: none; }
 }

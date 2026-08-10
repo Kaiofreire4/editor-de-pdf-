@@ -376,4 +376,27 @@
 @media (max-width: 1100px) { .thumbnail-panel { width: 184px; min-width: 184px; } .thumbnail-item canvas { max-width: 150px; } }
 @media (max-width: 900px) { .help-panel { display: none; } }
 @media (max-width: 760px) { .thumbnail-panel { display: none; } }
-@media (max-width: 620px) { .tool-sidebar { width: 58px; padding: 12px 4px; } .tool-item { width: 50px; } .editor-toolbar { padding: 0 14px; } .toolbar-heading { display: none; } .word-canvas-area { padding: 15px; } .word-page { min-width: 300px; } .stage-topbar { padding: 0 12px; } }
+@media (max-width: 620px) {
+  .editor-shell { flex-direction: column; }
+  .tool-sidebar {
+    order: 2;
+    width: auto;
+    height: 64px;
+    padding: 4px 8px;
+    flex-direction: row;
+    justify-content: space-around;
+    border-right: 0;
+    border-top: 1px solid #e8ebf2;
+  }
+  .tool-item { width: 82px; min-height: 54px; }
+  .editor-main { order: 1; }
+  .editor-toolbar { min-height: 62px; padding: 0 12px; }
+  .toolbar-heading { display: none; }
+  .toolbar-actions { width: 100%; gap: 8px; }
+  .toolbar-actions .button { flex: 1; padding: 10px 8px; }
+  .word-canvas-area { padding: 12px; }
+  .word-page { min-width: 0; }
+  .stage-topbar { height: 40px; padding: 0 10px; }
+  .stage-topbar > span { max-width: 58%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .format-toolbar { top: 6px; padding: 0 10px; }
+}

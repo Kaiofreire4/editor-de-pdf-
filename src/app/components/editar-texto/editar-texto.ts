@@ -56,7 +56,7 @@ export class EditarTextoComponent {
   paginaAtual: number = 1;
   totalPaginas: number = 0;
   pdfDoc: any = null;
-  escala: number = 1.5;
+  escala: number = typeof window !== 'undefined' && window.innerWidth <= 620 ? 0.9 : 1.5;
 
   spansDaPagina: SpanItem[] = [];
   private spansPorPagina = new Map<number, SpanItem[]>();
