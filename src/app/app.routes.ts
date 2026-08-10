@@ -5,6 +5,7 @@ import { VisualizarPdfComponent } from './components/visualizar-pdf/visualizar-p
 import { LoginComponent } from './components/login/login';
 import { AuthGuard } from './guards/auth.guard';
 import { EditorWordComponent } from './components/editor-word/editor-word';
+import { ConversorComponent } from './components/conversor/conversor';
 
 export const routes: Routes = [
   // Ao abrir o app, vai para a tela de login
@@ -16,6 +17,7 @@ export const routes: Routes = [
   { path: 'organizar-pdf', component: OrganizarPdfComponent, canActivate: [AuthGuard] },
   { path: 'visualizar-pdf', component: VisualizarPdfComponent, canActivate: [AuthGuard] },
   { path: 'editor-word', component: EditorWordComponent, canActivate: [AuthGuard] },
+  { path: 'conversor', component: ConversorComponent, canActivate: [AuthGuard] },
 
   { path: '**', redirectTo: 'login' }
 ];

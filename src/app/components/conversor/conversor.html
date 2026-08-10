@@ -1,0 +1,33 @@
+<section class="converter-page">
+  <div class="converter-header">
+    <div>
+      <span class="eyebrow">FERRAMENTAS</span>
+      <h1>Converter arquivos</h1>
+      <p>Transforme PDF em Word ou Word em PDF diretamente no navegador.</p>
+    </div>
+  </div>
+
+  <div class="converter-grid">
+    <article class="converter-card pdf-card">
+      <div class="format-icon">PDF</div>
+      <h2>PDF para Word</h2>
+      <p>Extraia o texto do PDF e baixe um documento editável no formato DOCX.</p>
+      <button type="button" class="converter-button" [disabled]="carregando" (click)="abrirPdf()">Escolher PDF</button>
+    </article>
+    <article class="converter-card word-card">
+      <div class="format-icon">W</div>
+      <h2>Word para PDF</h2>
+      <p>Converta um documento DOCX em PDF para compartilhar ou imprimir.</p>
+      <button type="button" class="converter-button" [disabled]="carregando" (click)="abrirWord()">Escolher Word</button>
+    </article>
+  </div>
+
+  <div class="converter-status" *ngIf="carregando || mensagem || erro" [class.error]="!!erro" role="status">
+    <span class="status-spinner" *ngIf="carregando"></span>
+    {{ erro || mensagem }}
+  </div>
+  <p class="converter-note">Conversão local no navegador. PDFs escaneados exigem OCR e podem não conter texto extraível.</p>
+
+  <input #pdfInput hidden type="file" accept="application/pdf,.pdf" (change)="converterPdfParaWord($event)" />
+  <input #wordInput hidden type="file" accept="application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx" (change)="converterWordParaPdf($event)" />
+</section>
