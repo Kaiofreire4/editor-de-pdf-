@@ -51,7 +51,7 @@ const swaggerSpec = swaggerJSDoc({
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'PdfMasterWeb API',
+      title: 'MEU PDF API',
       version: '1.0.0',
       description:
         'API em TypeScript (Express) para edição de PDFs. Extrai textos com coordenadas e grava alterações no PDF.',
