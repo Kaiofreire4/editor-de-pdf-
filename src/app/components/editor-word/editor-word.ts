@@ -361,6 +361,10 @@ export class EditorWordComponent {
     this.formatar(tipo);
   }
 
+  marcarTextoWord(): void {
+    this.formatar('hiliteColor', '#ffe45c');
+  }
+
   alternarNormaAbnt(): void {
     this.normaAbntAtiva = !this.normaAbntAtiva;
     this.editor.nativeElement.classList.toggle('abnt-document', this.normaAbntAtiva);

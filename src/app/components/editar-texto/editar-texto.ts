@@ -21,6 +21,7 @@ interface SpanItem {
   underline: boolean;
   strikeThrough: boolean;
   color: string;
+  destacado?: boolean;
   textAlign: 'left' | 'center' | 'right';
   verticalAlign: 'top' | 'middle' | 'bottom';
   novo?: boolean;
@@ -653,8 +654,21 @@ export class EditarTextoComponent {
       this.adicionarTextoNoPonto(event);
       return;
     }
+    if (this.modoMarcaTexto) {
+      this.destacarTexto(id, event);
+      return;
+    }
     this.ativarSpan(id);
     event.stopPropagation();
+  }
+
+  destacarTexto(id: string, event?: MouseEvent) {
+    const span = this.spansDaPagina.find((item) => item.id === id);
+    if (!span) return;
+    span.destacado = !span.destacado;
+    this.spansPorPagina.set(this.paginaAtual - 1, this.spansDaPagina);
+    event?.stopPropagation();
+    this.cdr.detectChanges();
   }
 
   deselecionarSpan(event?: MouseEvent) {
@@ -921,9 +935,12 @@ export class EditarTextoComponent {
       })),
     );
     const rabiscosModificados = [];
-    for (const [pageIndex, tracos] of this.tracosPorPagina.entries()) {
-      if (tracos.length === 0) continue;
-      const imagemData = await this.gerarImagemDosTracos(pageIndex, tracos);
+    const paginasAnotadas = new Set([...this.tracosPorPagina.keys(), ...this.spansPorPagina.keys()]);
+    for (const pageIndex of paginasAnotadas) {
+      const tracos = this.tracosPorPagina.get(pageIndex) || [];
+      const destaques = (this.spansPorPagina.get(pageIndex) || []).filter((span) => span.destacado);
+      if (tracos.length === 0 && destaques.length === 0) continue;
+      const imagemData = await this.gerarImagemAnotacoes(pageIndex, tracos, destaques);
       if (!imagemData) continue;
       const page = await this.pdfDoc.getPage(pageIndex + 1);
       const viewport = page.getViewport({ scale: 1 });
@@ -1008,7 +1025,7 @@ export class EditarTextoComponent {
     this.tracosPorPagina.set(this.paginaAtual - 1, [...this.tracosDaPagina]);
   }
 
-  private async gerarImagemDosTracos(pageIndex: number, tracos: TracoCaneta[]): Promise<string | null> {
+  private async gerarImagemAnotacoes(pageIndex: number, tracos: TracoCaneta[], destaques: SpanItem[]): Promise<string | null> {
     const page = await this.pdfDoc.getPage(pageIndex + 1);
     const viewport = page.getViewport({ scale: 1 });
     const canvas = document.createElement('canvas');
@@ -1016,6 +1033,12 @@ export class EditarTextoComponent {
     canvas.height = Math.ceil(viewport.height);
     const context = canvas.getContext('2d');
     if (!context) return null;
+
+    for (const destaque of destaques) {
+      const [x0, y0, x1, y1] = destaque.bbox;
+      context.fillStyle = 'rgba(255, 228, 92, 0.42)';
+      context.fillRect(x0, y0, x1 - x0, y1 - y0);
+    }
 
     context.lineCap = 'round';
     context.lineJoin = 'round';

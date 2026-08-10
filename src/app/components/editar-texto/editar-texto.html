@@ -130,7 +130,7 @@
             <button (click)="alterarZoom(-0.1)" [disabled]="!pdfDisponivel">−</button><span>{{ zoomPercent }}%</span><button (click)="alterarZoom(0.1)" [disabled]="!pdfDisponivel">＋</button>
           </div>
         </div>
-        <div class="word-canvas-area" [class.add-mode]="modoAdicionarTexto || modoAdicionarImagem" [class.pen-mode]="modoCaneta || modoMarcaTexto" (click)="interagirComPagina($event)">
+        <div class="word-canvas-area" [class.add-mode]="modoAdicionarTexto || modoAdicionarImagem" [class.pen-mode]="modoCaneta || modoMarcaTexto" [class.marker-mode]="modoMarcaTexto" (click)="interagirComPagina($event)">
           <div class="word-page" [class.has-pdf]="pdfDisponivel">
              <canvas #pdfCanvas class="pdf-canvas"></canvas>
 
@@ -173,10 +173,11 @@
                     <span class="rotation-stem"></span>
                     <span class="rotation-handle">↻</span>
                   } @else {
-                    <span
-                      class="text-block-label"
-                      [class.modificado]="span.modificado"
-                      [ngStyle]="getEstiloSpan(span, span.modificado || !!span.novo)"
+                   <span
+                       class="text-block-label"
+                       [class.highlighted]="span.destacado"
+                       [class.modificado]="span.modificado"
+                       [ngStyle]="getEstiloSpan(span, span.modificado || !!span.novo || !!span.destacado)"
                       (dblclick)="selecionarOuAdicionarTexto(span.id, $event)">
                       {{ span.text }}
                     </span>

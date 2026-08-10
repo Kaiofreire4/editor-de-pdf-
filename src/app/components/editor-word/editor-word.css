@@ -7,6 +7,8 @@
 .toolbar-group button:hover, .toolbar-group select:hover { background: #f0efff; border-color: #d8d4ff; color: #6556d9; }
 .toolbar-group select { border-color: #e2e5ed; background: #fafbfc; min-width: 92px; }
 .heading-select { min-width: 145px !important; }
+.highlight-button { color: #8a7200 !important; background: #fff8c9 !important; border-color: #f1df77 !important; }
+.highlight-button:hover { color: #624f00 !important; background: #ffe45c !important; }
 .insert-select { height: 31px; border: 1px solid #e2e5ed; border-radius: 6px; background: #fafbfc; color: #596174; cursor: pointer; font: 600 12px inherit; padding: 0 8px; }
 .insert-select:hover { border-color: #d8d4ff; color: #6556d9; }
 .primary-action, .export-action { height: 34px; border: 0; border-radius: 7px; padding: 0 14px; color: #fff; background: #6556d9; cursor: pointer; font: 700 12px inherit; }

@@ -26,6 +26,7 @@
       <button type="button" (click)="formatar('underline')" title="Sublinhado"><u>U</u></button>
       <button type="button" (click)="formatar('strikeThrough')" title="Tachado"><s>S</s></button>
       <button type="button" (click)="formatar('removeFormat')" title="Limpar formatação">Tx</button>
+      <button class="highlight-button" type="button" (mousedown)="$event.preventDefault()" (click)="marcarTextoWord()" title="Marcar texto selecionado">▰</button>
       <select class="heading-select" aria-label="Nível do título" (change)="aplicarNivelTitulo($any($event.target).value)">
         <option value="">Título</option>
         <option value="1">Título primário</option>
