@@ -4,5 +4,14 @@ declare module 'mammoth' {
     messages: Array<{ type: string; message: string }>;
   }
 
-  export function convertToHtml(options: { arrayBuffer: ArrayBuffer }): Promise<HtmlResult>;
+  interface ConvertToHtmlOptions {
+    includeDefaultStyleMap?: boolean;
+    ignoreEmptyParagraphs?: boolean;
+    styleMap?: string[];
+  }
+
+  export function convertToHtml(
+    input: { arrayBuffer: ArrayBuffer },
+    options?: ConvertToHtmlOptions,
+  ): Promise<HtmlResult>;
 }

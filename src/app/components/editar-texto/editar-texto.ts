@@ -37,6 +37,12 @@ interface ImagemItem {
   novo: boolean;
 }
 
+interface TracoCaneta {
+  pontos: Array<{ x: number; y: number }>;
+  cor: string;
+  largura: number;
+}
+
 type HandlePosition = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
 
 @Component({
@@ -62,14 +68,19 @@ export class EditarTextoComponent {
   private spansPorPagina = new Map<number, SpanItem[]>();
   imagensDaPagina: ImagemItem[] = [];
   private imagensPorPagina = new Map<number, ImagemItem[]>();
+  private tracosPorPagina = new Map<number, TracoCaneta[]>();
   spanAtivoId: string | null = null;
   imagemAtivaId: string | null = null;
   manterProporcaoImagem = true;
   manterProporcaoTexto = false;
   modoAdicionarTexto = false;
   modoAdicionarImagem = false;
+  modoCaneta = false;
   imagemPendente: string | null = null;
   miniaturasAbertas = true;
+  corCaneta = '#d32f2f';
+  larguraCaneta = 3;
+  tracosDaPagina: TracoCaneta[] = [];
 
   private cdr = inject(ChangeDetectorRef);
   private localPdfStorage = inject(LocalPdfStorageService);
@@ -94,6 +105,7 @@ export class EditarTextoComponent {
     startLeft: number;
     startTop: number;
   } | null = null;
+  private tracoEmAndamento: TracoCaneta | null = null;
 
   readonly fontesDisponiveis = [
     'Arial',
@@ -160,10 +172,13 @@ export class EditarTextoComponent {
     this.mostrarEstadoVazio = true;
     this.spanAtivoId = null;
     this.imagemAtivaId = null;
+    this.modoCaneta = false;
     this.spansPorPagina.clear();
     this.imagensPorPagina.clear();
+    this.tracosPorPagina.clear();
     this.spansDaPagina = [];
     this.imagensDaPagina = [];
+    this.tracosDaPagina = [];
     this.sequenciaId = 0;
     this.limparCanvas();
     this.cdr.detectChanges();
@@ -203,6 +218,7 @@ export class EditarTextoComponent {
     if (this.spansPorPagina.has(paginaIndex)) {
       this.spansDaPagina = this.spansPorPagina.get(paginaIndex)!;
       this.imagensDaPagina = this.imagensPorPagina.get(paginaIndex) || [];
+      this.tracosDaPagina = this.tracosPorPagina.get(paginaIndex) || [];
       this.reposicionarSpansDaPagina();
       this.spanAtivoId = null;
       this.imagemAtivaId = null;
@@ -212,6 +228,7 @@ export class EditarTextoComponent {
     }
 
     this.imagensDaPagina = this.imagensPorPagina.get(paginaIndex) || [];
+    this.tracosDaPagina = this.tracosPorPagina.get(paginaIndex) || [];
     await this.renderizarPagina(numPagina);
   }
 
@@ -339,6 +356,7 @@ export class EditarTextoComponent {
   ativarSpan(id: string) {
     this.modoAdicionarTexto = false;
     this.modoAdicionarImagem = false;
+    this.modoCaneta = false;
     this.imagemAtivaId = null;
     this.spanAtivoId = id;
     this.cdr.detectChanges();
@@ -348,6 +366,7 @@ export class EditarTextoComponent {
     if (!this.pdfDoc || !this.canvasRef?.nativeElement?.width) return;
     this.modoAdicionarTexto = !this.modoAdicionarTexto;
     this.modoAdicionarImagem = false;
+    this.modoCaneta = false;
     this.spanAtivoId = null;
     this.imagemAtivaId = null;
     this.cdr.detectChanges();
@@ -356,7 +375,25 @@ export class EditarTextoComponent {
   ativarModoEditarTexto() {
     this.modoAdicionarTexto = false;
     this.modoAdicionarImagem = false;
+    this.modoCaneta = false;
     this.imagemAtivaId = null;
+    this.cdr.detectChanges();
+  }
+
+  ativarModoCaneta() {
+    if (!this.pdfDoc || !this.canvasRef?.nativeElement?.width) return;
+    this.modoCaneta = !this.modoCaneta;
+    this.modoAdicionarTexto = false;
+    this.modoAdicionarImagem = false;
+    this.spanAtivoId = null;
+    this.imagemAtivaId = null;
+    this.cdr.detectChanges();
+  }
+
+  desfazerUltimoTraco() {
+    if (this.tracosDaPagina.length === 0) return;
+    this.tracosDaPagina = this.tracosDaPagina.slice(0, -1);
+    this.tracosPorPagina.set(this.paginaAtual - 1, this.tracosDaPagina);
     this.cdr.detectChanges();
   }
 
@@ -435,6 +472,53 @@ export class EditarTextoComponent {
     setTimeout(() => (document.querySelector('.inline-text-input') as HTMLInputElement | null)?.focus());
   }
 
+  iniciarTraco(event: PointerEvent) {
+    if (!this.modoCaneta || !this.pdfDoc) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const ponto = this.obterPontoDaCaneta(event);
+    if (!ponto) return;
+    const svg = event.currentTarget as SVGElement;
+    svg.setPointerCapture(event.pointerId);
+    this.tracoEmAndamento = { pontos: [ponto], cor: this.corCaneta, largura: this.larguraCaneta };
+    this.tracosDaPagina = [...this.tracosDaPagina, this.tracoEmAndamento];
+  }
+
+  continuarTraco(event: PointerEvent) {
+    if (!this.tracoEmAndamento) return;
+    event.preventDefault();
+    const ponto = this.obterPontoDaCaneta(event);
+    if (!ponto) return;
+    const pontos = this.tracoEmAndamento.pontos;
+    const ultimo = pontos[pontos.length - 1];
+    if (Math.hypot(ponto.x - ultimo.x, ponto.y - ultimo.y) < 0.5) return;
+    pontos.push(ponto);
+    this.cdr.detectChanges();
+  }
+
+  finalizarTraco(event: PointerEvent) {
+    if (!this.tracoEmAndamento) return;
+    event.preventDefault();
+    this.tracosPorPagina.set(this.paginaAtual - 1, this.tracosDaPagina);
+    this.tracoEmAndamento = null;
+  }
+
+  pontosDoTraco(traco: TracoCaneta): string {
+    return traco.pontos.map((ponto) => `${ponto.x},${ponto.y}`).join(' ');
+  }
+
+  private obterPontoDaCaneta(event: PointerEvent): { x: number; y: number } | null {
+    const svg = event.currentTarget as SVGElement;
+    const rect = svg.getBoundingClientRect();
+    if (!rect.width || !rect.height) return null;
+    const larguraPagina = this.canvasRef.nativeElement.width / this.escala;
+    const alturaPagina = this.canvasRef.nativeElement.height / this.escala;
+    return {
+      x: Math.max(0, Math.min(larguraPagina, (event.clientX - rect.left) / rect.width * larguraPagina)),
+      y: Math.max(0, Math.min(alturaPagina, (event.clientY - rect.top) / rect.height * alturaPagina)),
+    };
+  }
+
   onImagemSelecionada(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -445,6 +529,7 @@ export class EditarTextoComponent {
       this.imagemPendente = typeof reader.result === 'string' ? reader.result : null;
       this.modoAdicionarImagem = this.imagemPendente !== null;
       this.modoAdicionarTexto = false;
+      this.modoCaneta = false;
       this.cdr.detectChanges();
     };
     reader.readAsDataURL(file);
@@ -483,6 +568,7 @@ export class EditarTextoComponent {
   }
 
   interagirComPagina(event: MouseEvent) {
+    if (this.modoCaneta) return;
     if (this.modoAdicionarImagem) {
       this.adicionarImagemNoPonto(event);
       return;
@@ -807,7 +893,23 @@ export class EditarTextoComponent {
         imagemData: imagem.dataUrl,
       })),
     );
-    const modificacoes = [...spansModificados, ...imagensModificadas];
+    const rabiscosModificados = [];
+    for (const [pageIndex, tracos] of this.tracosPorPagina.entries()) {
+      if (tracos.length === 0) continue;
+      const imagemData = await this.gerarImagemDosTracos(pageIndex, tracos);
+      if (!imagemData) continue;
+      const page = await this.pdfDoc.getPage(pageIndex + 1);
+      const viewport = page.getViewport({ scale: 1 });
+      rabiscosModificados.push({
+        tipo: 'imagem',
+        text: '',
+        textoOriginal: '',
+        pageIndex,
+        bbox: [0, 0, viewport.width, viewport.height],
+        imagemData,
+      });
+    }
+    const modificacoes = [...spansModificados, ...imagensModificadas, ...rabiscosModificados];
 
     if (modificacoes.length === 0) {
       alert('Nenhuma alteração foi feita.');
@@ -868,6 +970,31 @@ export class EditarTextoComponent {
       this.spansPorPagina.set(this.paginaAtual - 1, [...this.spansDaPagina]);
     }
     this.imagensPorPagina.set(this.paginaAtual - 1, [...this.imagensDaPagina]);
+    this.tracosPorPagina.set(this.paginaAtual - 1, [...this.tracosDaPagina]);
+  }
+
+  private async gerarImagemDosTracos(pageIndex: number, tracos: TracoCaneta[]): Promise<string | null> {
+    const page = await this.pdfDoc.getPage(pageIndex + 1);
+    const viewport = page.getViewport({ scale: 1 });
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.ceil(viewport.width);
+    canvas.height = Math.ceil(viewport.height);
+    const context = canvas.getContext('2d');
+    if (!context) return null;
+
+    context.lineCap = 'round';
+    context.lineJoin = 'round';
+    for (const traco of tracos) {
+      if (traco.pontos.length === 0) continue;
+      context.strokeStyle = traco.cor;
+      context.lineWidth = traco.largura / this.escala;
+      context.beginPath();
+      context.moveTo(traco.pontos[0].x, traco.pontos[0].y);
+      for (const ponto of traco.pontos.slice(1)) context.lineTo(ponto.x, ponto.y);
+      if (traco.pontos.length === 1) context.lineTo(traco.pontos[0].x + 0.1, traco.pontos[0].y + 0.1);
+      context.stroke();
+    }
+    return canvas.toDataURL('image/png');
   }
 
   private reposicionarSpansDaPagina() {
