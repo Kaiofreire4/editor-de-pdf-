@@ -300,7 +300,7 @@ export class EditorWordComponent {
     this.mensagem = 'Abrindo documento...';
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const resultado = await mammoth.convertToHtml(
+      const resultado = await (mammoth.convertToHtml as any)(
         { arrayBuffer },
         {
           includeDefaultStyleMap: true,
