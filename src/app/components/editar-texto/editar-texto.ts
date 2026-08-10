@@ -819,7 +819,7 @@ export class EditarTextoComponent {
     formData.append('modificacoes', JSON.stringify(modificacoes));
 
     try {
-      const resposta = await fetch('http://127.0.0.1:8000/salvar-pdf', {
+      const resposta = await fetch('https://editor-de-pdf-lypq.onrender.com/salvar-pdf', {
         method: 'POST',
         body: formData,
       });
