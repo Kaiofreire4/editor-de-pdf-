@@ -493,7 +493,7 @@ export class EditarTextoComponent {
   }
 
   iniciarTraco(event: PointerEvent) {
-    if (!this.modoCaneta || !this.pdfDoc) return;
+    if ((!this.modoCaneta && !this.modoMarcaTexto) || !this.pdfDoc) return;
     event.preventDefault();
     event.stopPropagation();
     const ponto = this.obterPontoDaCaneta(event);

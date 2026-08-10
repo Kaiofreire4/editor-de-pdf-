@@ -125,7 +125,7 @@
     <div class="editor-body" (click)="deselecionarSpan($event)">
       <div class="page-stage">
         <div class="stage-topbar">
-           <span>{{ modoCaneta ? 'Desenhe livremente na página' : modoAdicionarTexto ? 'Clique na página para inserir um texto' : pdfDisponivel ? spansDaPagina.length + ' blocos de texto · clique para editar' : 'Seu arquivo fica no seu dispositivo' }}</span>
+           <span>{{ modoCaneta || modoMarcaTexto ? 'Passe o marca-texto ou desenhe livremente na página' : modoAdicionarTexto ? 'Clique na página para inserir um texto' : pdfDisponivel ? spansDaPagina.length + ' blocos de texto · clique para editar' : 'Seu arquivo fica no seu dispositivo' }}</span>
           <div class="zoom-controls">
             <button (click)="alterarZoom(-0.1)" [disabled]="!pdfDisponivel">−</button><span>{{ zoomPercent }}%</span><button (click)="alterarZoom(0.1)" [disabled]="!pdfDisponivel">＋</button>
           </div>
