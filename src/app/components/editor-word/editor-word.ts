@@ -5,6 +5,7 @@ import JSZip from 'jszip';
 import {
   AlignmentType,
   Document,
+  ExternalHyperlink,
   HeadingLevel,
   LevelFormat,
   Packer,
@@ -38,6 +39,7 @@ export class EditorWordComponent {
   carregando = false;
   mensagem = '';
   zoom = 100;
+  normaAbntAtiva = false;
 
   // ---------- Modelos (estilo Canva) ----------
   mostrarModelos = false;
@@ -359,6 +361,103 @@ export class EditorWordComponent {
     this.formatar(tipo);
   }
 
+  alternarNormaAbnt(): void {
+    this.normaAbntAtiva = !this.normaAbntAtiva;
+    this.editor.nativeElement.classList.toggle('abnt-document', this.normaAbntAtiva);
+    if (this.normaAbntAtiva) {
+      this.aplicarEstilosAbnt();
+      this.atualizarSumarioAbnt();
+      this.linkarUrls();
+      this.mensagem = 'Norma ABNT aplicada: margens, fonte, espaçamento, títulos e sumário configurados.';
+    } else {
+      this.editor.nativeElement.querySelector('.abnt-sumario')?.remove();
+      this.mensagem = 'Formatação ABNT desativada. O conteúdo foi preservado.';
+    }
+    this.cdr.detectChanges();
+  }
+
+  aplicarNivelTitulo(nivel: string): void {
+    if (!nivel) return;
+    const tag = `h${nivel}`;
+    this.formatar('formatBlock', `<${tag}>`);
+    if (this.normaAbntAtiva) {
+      this.aplicarEstilosAbnt();
+      this.atualizarSumarioAbnt();
+    }
+  }
+
+  atualizarSumario(): void {
+    if (!this.normaAbntAtiva) return;
+    this.atualizarSumarioAbnt();
+    this.mensagem = 'Sumário atualizado com os títulos do documento.';
+  }
+
+  private aplicarEstilosAbnt(): void {
+    const titulos = this.editor.nativeElement.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    titulos.forEach((titulo, index) => {
+      const elemento = titulo as HTMLElement;
+      elemento.classList.add('abnt-heading');
+      elemento.dataset['abntLevel'] = elemento.tagName.substring(1);
+      elemento.id = elemento.id || `titulo-abnt-${index + 1}`;
+    });
+  }
+
+  private atualizarSumarioAbnt(): void {
+    this.editor.nativeElement.querySelector('.abnt-sumario')?.remove();
+    const titulos = Array.from(this.editor.nativeElement.querySelectorAll('h1, h2, h3, h4, h5, h6'))
+      .filter((titulo) => !(titulo as HTMLElement).closest('.abnt-sumario')) as HTMLElement[];
+    if (titulos.length === 0) return;
+
+    const sumario = document.createElement('nav');
+    sumario.className = 'abnt-sumario';
+    sumario.contentEditable = 'false';
+    sumario.innerHTML = '<h1>SUMÁRIO</h1>';
+    const lista = document.createElement('ol');
+    titulos.forEach((titulo) => {
+      const item = document.createElement('li');
+      item.dataset['level'] = titulo.tagName.substring(1);
+      const link = document.createElement('a');
+      link.href = `#${titulo.id}`;
+      link.textContent = titulo.textContent?.trim() || 'Título sem texto';
+      item.appendChild(link);
+      lista.appendChild(item);
+    });
+    sumario.appendChild(lista);
+    this.editor.nativeElement.prepend(sumario);
+  }
+
+  private linkarUrls(): void {
+    const walker = document.createTreeWalker(this.editor.nativeElement, NodeFilter.SHOW_TEXT);
+    const nos: Text[] = [];
+    let no: Node | null;
+    while ((no = walker.nextNode())) nos.push(no as Text);
+    const urlRegex = /https?:\/\/[^\s<]+/gi;
+
+    for (const texto of nos) {
+      if (texto.parentElement?.closest('a, .abnt-sumario')) continue;
+      if (!urlRegex.test(texto.data)) {
+        urlRegex.lastIndex = 0;
+        continue;
+      }
+      urlRegex.lastIndex = 0;
+      const fragmento = document.createDocumentFragment();
+      let inicio = 0;
+      let encontro: RegExpExecArray | null;
+      while ((encontro = urlRegex.exec(texto.data))) {
+        fragmento.append(texto.data.slice(inicio, encontro.index));
+        const link = document.createElement('a');
+        link.href = encontro[0].replace(/[.,;:)]$/, '');
+        link.textContent = encontro[0];
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        fragmento.append(link);
+        inicio = encontro.index + encontro[0].length;
+      }
+      fragmento.append(texto.data.slice(inicio));
+      texto.replaceWith(fragmento);
+    }
+  }
+
   aumentarZoom(): void {
     this.zoom = Math.min(150, this.zoom + 10);
   }
@@ -368,12 +467,27 @@ export class EditorWordComponent {
   }
 
   async exportar(): Promise<void> {
+    if (this.normaAbntAtiva) {
+      this.aplicarEstilosAbnt();
+      this.atualizarSumarioAbnt();
+      this.linkarUrls();
+    }
     const paragraphs = this.criarParagrafos(this.editor.nativeElement);
     const documento = new Document({
       sections: [{
-        properties: {},
+        properties: this.normaAbntAtiva ? {
+          page: { margin: { top: 1701, right: 1134, bottom: 1134, left: 1701 } },
+        } : {},
         children: paragraphs.length > 0 ? paragraphs : [new Paragraph('')],
       }],
+      styles: this.normaAbntAtiva ? {
+        default: {
+          document: {
+            run: { font: 'Times New Roman', size: 24 },
+            paragraph: { alignment: AlignmentType.JUSTIFIED, spacing: { line: 360, after: 0 } },
+          },
+        },
+      } : undefined,
       numbering: {
         config: [
           {
@@ -399,8 +513,16 @@ export class EditorWordComponent {
   }
 
   private criarParagrafos(container: HTMLElement): Paragraph[] {
-    return Array.from(container.children).map((element) => {
+    return Array.from(container.children).flatMap((element) => {
       const htmlElement = element as HTMLElement;
+      if (htmlElement.classList.contains('abnt-sumario')) {
+        const itens = Array.from(htmlElement.querySelectorAll('a')).map((link) => new Paragraph({
+          children: [this.criarLink(link)],
+          indent: { left: 360 },
+          spacing: { line: 360, after: 0 },
+        }));
+        return [new Paragraph({ text: 'SUMÁRIO', heading: HeadingLevel.HEADING_1 }), ...itens];
+      }
       const tag = htmlElement.tagName.toLowerCase();
       const props: Record<string, unknown> = {};
 
@@ -420,8 +542,20 @@ export class EditorWordComponent {
       if (alinhamento === 'justify') props['alignment'] = AlignmentType.JUSTIFIED;
       if (htmlElement.closest('ol')) props['numbering'] = { reference: 'word-numbers', level: 0 };
       else if (htmlElement.closest('ul')) props['bullet'] = { level: 0 };
+      if (this.normaAbntAtiva && !/^h[1-6]$/.test(tag)) {
+        props['alignment'] = AlignmentType.JUSTIFIED;
+        props['indent'] = { firstLine: 709 };
+        props['spacing'] = { line: 360, after: 0 };
+      }
 
-      return new Paragraph({ ...props, children: this.criarRuns(htmlElement) } as never);
+      return [new Paragraph({ ...props, children: this.criarRuns(htmlElement) } as never)];
+    });
+  }
+
+  private criarLink(link: HTMLAnchorElement): ExternalHyperlink {
+    return new ExternalHyperlink({
+      link: link.href,
+      children: [new TextRun({ text: link.textContent || link.href, style: 'Hyperlink' })],
     });
   }
 
@@ -457,8 +591,8 @@ export class EditorWordComponent {
     }
   }
 
-  private criarRuns(element: Node): TextRun[] {
-    const runs: TextRun[] = [];
+  private criarRuns(element: Node): Array<TextRun | ExternalHyperlink> {
+    const runs: Array<TextRun | ExternalHyperlink> = [];
     element.childNodes.forEach((node) => {
       if (node.nodeType === Node.TEXT_NODE) {
         if (node.textContent) runs.push(new TextRun(node.textContent));
@@ -469,6 +603,10 @@ export class EditorWordComponent {
       const tag = child.tagName.toLowerCase();
       if (tag === 'br') {
         runs.push(new TextRun({ text: '', break: 1 }));
+        return;
+      }
+      if (tag === 'a') {
+        runs.push(this.criarLink(child as HTMLAnchorElement));
         return;
       }
       const text = child.textContent || '';

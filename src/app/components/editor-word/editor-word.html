@@ -23,6 +23,12 @@
       <button type="button" (click)="formatar('underline')" title="Sublinhado"><u>U</u></button>
       <button type="button" (click)="formatar('strikeThrough')" title="Tachado"><s>S</s></button>
       <button type="button" (click)="formatar('removeFormat')" title="Limpar formatação">Tx</button>
+      <select class="heading-select" aria-label="Nível do título" (change)="aplicarNivelTitulo($any($event.target).value)">
+        <option value="">Título</option>
+        <option value="1">Título primário</option>
+        <option value="2">Título secundário</option>
+        <option value="3">Título terciário</option>
+      </select>
     </div>
     <div class="toolbar-separator"></div>
     <div class="toolbar-group formatting-group">
@@ -40,6 +46,10 @@
       <option value="grafico">Gráfico</option>
       <option value="link">Link</option>
     </select>
+    <button class="abnt-action" [class.active]="normaAbntAtiva" type="button" (click)="alternarNormaAbnt()" title="Aplicar ou remover formatação ABNT">
+      {{ normaAbntAtiva ? '✓ ABNT ativa' : 'ABNT automático' }}
+    </button>
+    <button class="abnt-update" *ngIf="normaAbntAtiva" type="button" (click)="atualizarSumario()" title="Atualizar sumário">↻ Sumário</button>
     <div class="toolbar-spacer"></div>
     <div class="toolbar-group zoom-group">
       <button type="button" (click)="reduzirZoom()">−</button>
