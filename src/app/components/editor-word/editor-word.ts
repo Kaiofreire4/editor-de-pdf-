@@ -12,6 +12,13 @@ import {
   TextRun,
 } from 'docx';
 
+interface Modelo {
+  id: string;
+  nome: string;
+  categoria: string;
+  html: string;
+}
+
 @Component({
   selector: 'app-editor-word',
   standalone: true,
@@ -31,6 +38,160 @@ export class EditorWordComponent {
   carregando = false;
   mensagem = '';
   zoom = 100;
+
+  // ---------- Modelos (estilo Canva) ----------
+  mostrarModelos = false;
+
+  modelos: Modelo[] = [
+    {
+      id: 'curriculo',
+      nome: 'Currículo Profissional',
+      categoria: 'Profissional',
+      html: `<div class="tpl-titulo">Seu Nome</div>
+<div class="tpl-cargo">Desenvolvedor(a) · Designer · Profissional</div>
+<div class="tpl-contato">seu@email.com · (11) 99999-9999 · linkedin.com/in/voce · Cidade</div>
+<hr class="tpl-divisao">
+<h3 class="tpl-secao">Resumo</h3>
+<p class="tpl-corpo">Escreva aqui um resumo profissional destacando suas principais competências, experiência e objetivos de carreira.</p>
+<h3 class="tpl-secao">Experiência Profissional</h3>
+<p class="tpl-cargo-menor"><b>Cargo</b> — Empresa (2022–2024)</p>
+<p class="tpl-corpo">Descreva as responsabilidades, projetos e conquistas desta posição.</p>
+<h3 class="tpl-secao">Formação Acadêmica</h3>
+<p class="tpl-corpo"><b>Nome do curso</b> — Instituição de ensino</p>
+<h3 class="tpl-secao">Habilidades</h3>
+<ul class="tpl-lista">
+<li>Habilidade 1</li>
+<li>Habilidade 2</li>
+<li>Habilidade 3</li>
+</ul>`,
+    },
+    {
+      id: 'certificado',
+      nome: 'Certificado de Conclusão',
+      categoria: 'Formal',
+      html: `<div class="tpl-cabecalho" style="text-align:center">Certificado de Conclusão</div>
+<p class="tpl-cert-corpo" style="text-align:center">Conferimos o presente certificado a</p>
+<div class="tpl-cert-nome" style="text-align:center">Nome Completo</div>
+<p class="tpl-cert-corpo" style="text-align:center">por concluir com êxito o curso de <b>Nome do Curso</b>, com carga horária de <b>X horas</b>.</p>
+<div class="tpl-cert-data" style="text-align:center">São Paulo, 1º de janeiro de 2026</div>
+<div class="tpl-cert-assinaturas">
+<div class="tpl-assinatura"><div class="tpl-linha-assinatura"></div>Instrutor(a)</div>
+<div class="tpl-assinatura"><div class="tpl-linha-assinatura"></div>Coordenação</div>
+</div>`,
+    },
+    {
+      id: 'convite',
+      nome: 'Convite de Evento',
+      categoria: 'Celebração',
+      html: `<div class="tpl-faixa-convite">
+<div class="tpl-convite-super">Você está convidado(a)</div>
+<div class="tpl-convite-titulo">Festa de Aniversário</div>
+<div class="tpl-convite-super">Com muita alegria e gratidão</div>
+</div>
+<div class="tpl-convite-info">
+<div><b>Data:</b> Sábado, 15 de fevereiro</div>
+<div><b>Horário:</b> 18h00</div>
+<div><b>Local:</b> Rua das Flores, 123 — Bairro</div>
+<div><b>Confirmação:</b> (11) 99999-9999</div>
+</div>
+<p class="tpl-convite-texto">Sua presença fará a festa ainda mais especial!</p>`,
+    },
+    {
+      id: 'proposta',
+      nome: 'Proposta Comercial',
+      categoria: 'Profissional',
+      html: `<div class="tpl-proposta-capa">
+<div class="tpl-proposta-marca">Sua Empresa</div>
+<div class="tpl-proposta-titulo">Proposta Comercial</div>
+<div class="tpl-proposta-para">Para: Nome do Cliente</div>
+<div class="tpl-proposta-data">Data: __/__/2026</div>
+</div>
+<h3 class="tpl-secao">Escopo do Projeto</h3>
+<p class="tpl-corpo">Descreva aqui o objetivo, as entregas e o prazo do projeto.</p>
+<h3 class="tpl-secao">Investimento</h3>
+<table class="tpl-tabela">
+<tr><th>Item</th><th>Valor</th></tr>
+<tr><td>Item 1</td><td>R$ 1.000,00</td></tr>
+<tr><td>Item 2</td><td>R$ 2.000,00</td></tr>
+<tr><td><b>Total</b></td><td><b>R$ 3.000,00</b></td></tr>
+</table>
+<h3 class="tpl-secao">Condições Comerciais</h3>
+<ul class="tpl-lista">
+<li>Prazo de entrega: 15 dias úteis</li>
+<li>Pagamento: 50% na aprovação e 50% na entrega</li>
+</ul>`,
+    },
+    {
+      id: 'relatorio',
+      nome: 'Relatório de Atividades',
+      categoria: 'Trabalho',
+      html: `<div class="tpl-rel-titulo">Relatório de Atividades</div>
+<div class="tpl-rel-meta">Período: Mês/Ano · Responsável: Seu Nome · Setor</div>
+<div class="tpl-destaque"><b>Destaques:</b> principais resultados e metas atingidas no período.</div>
+<h3 class="tpl-secao">Atividades Realizadas</h3>
+<ul class="tpl-lista">
+<li>Atividade 1</li>
+<li>Atividade 2</li>
+<li>Atividade 3</li>
+</ul>
+<h3 class="tpl-secao">Resultados</h3>
+<table class="tpl-tabela">
+<tr><th>Indicador</th><th>Meta</th><th>Realizado</th></tr>
+<tr><td>Indicador 1</td><td>100%</td><td>95%</td></tr>
+<tr><td>Indicador 2</td><td>50</td><td>47</td></tr>
+</table>
+<h3 class="tpl-secao">Próximos Passos</h3>
+<p class="tpl-corpo">Descreva o planejamento para o próximo período.</p>`,
+    },
+    {
+      id: 'carta',
+      nome: 'Carta Formal',
+      categoria: 'Formal',
+      html: `<div class="tpl-carta-endereco">São Paulo, 1º de janeiro de 2026</div>
+<div class="tpl-carta-endereco">Ao(a) Sr.(a) Nome do Destinatário<br>Empresa / Instituição<br>Endereço completo</div>
+<div class="tpl-carta-assunto"><b>Assunto:</b> Assunto da carta</div>
+<p class="tpl-corpo">Prezado(a) Senhor(a),</p>
+<p class="tpl-corpo">Escreva aqui o corpo da carta, apresentando o motivo do contato e os detalhes solicitados.</p>
+<p class="tpl-corpo">Desde já, agradeço a atenção e fico à disposição.</p>
+<p class="tpl-corpo">Atenciosamente,</p>
+<div class="tpl-carta-assinatura">Seu Nome<br>Cargo / Empresa</div>`,
+    },
+    {
+      id: 'aula',
+      nome: 'Material de Aula',
+      categoria: 'Educação',
+      html: `<div class="tpl-aula-cab">Material de Aula</div>
+<div class="tpl-aula-titulo">Título da Aula</div>
+<div class="tpl-destaque"><b>Objetivos:</b> ao final desta aula você será capaz de compreender e aplicar os conceitos apresentados.</div>
+<h3 class="tpl-secao">Conteúdo Programático</h3>
+<p class="tpl-corpo">Escreva aqui o conteúdo da aula, com exemplos e explicações.</p>
+<h3 class="tpl-secao">Resumo</h3>
+<ul class="tpl-lista">
+<li>Ponto principal 1</li>
+<li>Ponto principal 2</li>
+<li>Ponto principal 3</li>
+</ul>
+<p class="tpl-corpo">Adicione exercícios ou referências conforme necessário.</p>`,
+    },
+  ];
+
+  abrirModelos(): void {
+    this.mostrarModelos = true;
+  }
+
+  fecharModelos(): void {
+    this.mostrarModelos = false;
+  }
+
+  aplicarModelo(modelo: Modelo): void {
+    this.editor.nativeElement.innerHTML = modelo.html;
+    this.nomeArquivo = modelo.nome;
+    this.arquivoCarregado = true;
+    this.mensagem = 'Modelo aplicado. Clique nos elementos para editar — igual ao Canva.';
+    this.mostrarModelos = false;
+    this.cdr.detectChanges();
+    this.editor.nativeElement.focus();
+  }
 
   abrirArquivo(): void {
     this.fileInput.nativeElement.click();

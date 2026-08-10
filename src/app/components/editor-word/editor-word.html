@@ -6,6 +6,7 @@
     <div class="toolbar-group file-group">
       <button class="primary-action" type="button" (click)="abrirArquivo()">Abrir Word</button>
       <button class="secondary-action" type="button" (click)="criarDocumento()">Novo</button>
+      <button class="secondary-action templates-action" type="button" (click)="abrirModelos()">🎨 Modelos</button>
     </div>
     <div class="toolbar-separator"></div>
     <div class="toolbar-group formatting-group" aria-label="Formatação">
@@ -71,11 +72,36 @@
           <div class="empty-document">
             <div class="empty-word-icon">W</div>
             <h1>Seu documento Word</h1>
-            <p>Abra um arquivo .docx ou clique em “Novo” para começar.</p>
-            <button type="button" (click)="abrirArquivo()">Selecionar documento</button>
+            <p>Abra um arquivo .docx, crie um documento novo ou escolha um modelo.</p>
+            <div class="empty-actions">
+              <button type="button" (click)="abrirArquivo()">Selecionar documento</button>
+              <button class="templates-action" type="button" (click)="abrirModelos()">🎨 Usar um modelo</button>
+            </div>
           </div>
         </article>
       </div>
     </main>
+  </div>
+
+  <!-- MODAL DE MODELOS (estilo Canva) -->
+  <div class="modelos-modal-overlay" *ngIf="mostrarModelos" (click)="fecharModelos()">
+    <div class="modelos-modal" (click)="$event.stopPropagation()">
+      <div class="modelos-modal-header">
+        <div>
+          <h2>Modelos</h2>
+          <p class="modelos-hint">Escolha um modelo e edite os elementos diretamente, como no Canva.</p>
+        </div>
+        <button type="button" class="modelos-close" (click)="fecharModelos()" aria-label="Fechar">✕</button>
+      </div>
+      <div class="modelos-grid">
+        <div class="modelo-card" *ngFor="let modelo of modelos" (click)="aplicarModelo(modelo)">
+          <div class="modelo-thumb">
+            <div class="modelo-preview" [innerHTML]="modelo.html"></div>
+          </div>
+          <div class="modelo-nome">{{ modelo.nome }}</div>
+          <div class="modelo-categoria">{{ modelo.categoria }}</div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>

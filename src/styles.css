@@ -374,3 +374,53 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .pdf-app.dark-theme .word-btn:not(.primary),
 .pdf-app.dark-theme .button.secondary { background: #2b3041; color: #d9deeb; }
 .pdf-app.dark-theme .local-file-row { border-color: #3b4052; }
+
+/* ============ Modelos estilo Canva (estilos dos templates) ============ */
+.tpl-titulo { font-size: 34px; font-weight: 800; letter-spacing: .3px; color: #1c1f29; margin: 0 0 4px; }
+.tpl-cargo { font-size: 16px; color: #6556d9; font-weight: 600; margin-bottom: 6px; }
+.tpl-contato { font-size: 12.5px; color: #6b7183; margin-bottom: 10px; }
+.tpl-divisao { border: 0; border-top: 2px solid #6556d9; margin: 14px 0 16px; }
+.tpl-secao { font-size: 15px; text-transform: uppercase; letter-spacing: .6px; color: #6556d9; margin: 18px 0 6px; font-weight: 800; }
+.tpl-corpo { font-size: 14px; margin: 0 0 10px; }
+.tpl-cargo-menor { font-size: 14px; margin: 0 0 4px; }
+.tpl-lista { padding-left: 22px; font-size: 14px; margin: 4px 0 10px; }
+.tpl-lista li { margin-bottom: 3px; }
+.tpl-tabela { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: 13px; }
+.tpl-tabela th, .tpl-tabela td { border: 1px solid #dde1ea; padding: 7px 9px; text-align: left; }
+.tpl-tabela th { background: #f1efff; color: #4a3f9e; }
+.tpl-destaque { background: #f0efff; border-left: 4px solid #6556d9; padding: 12px 14px; border-radius: 6px; font-size: 13.5px; margin: 12px 0 14px; color: #3a3f54; }
+
+/* Certificado */
+.tpl-cabecalho { font-size: 12px; letter-spacing: 2.5px; text-transform: uppercase; color: #7a6ae0; font-weight: 700; margin-bottom: 6px; }
+.tpl-cert-corpo { font-size: 15px; color: #4a4f62; margin: 16px 0 6px; }
+.tpl-cert-nome { font-family: Georgia, 'Times New Roman', serif; font-size: 30px; color: #1c1f29; margin: 6px 0 14px; letter-spacing: .5px; }
+.tpl-cert-data { font-size: 13px; color: #6b7183; margin: 22px 0 30px; }
+.tpl-cert-assinaturas { display: flex; justify-content: space-around; margin-top: 26px; }
+.tpl-assinatura { width: 200px; font-size: 12px; color: #4a4f62; text-align: center; }
+.tpl-linha-assinatura { border-bottom: 1px solid #9aa0b5; margin-bottom: 5px; height: 26px; }
+
+/* Convite */
+.tpl-faixa-convite { background: linear-gradient(135deg, #6556d9, #8f5fe0); color: #fff; text-align: center; padding: 34px 20px; border-radius: 10px; margin-bottom: 16px; }
+.tpl-convite-super { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; opacity: .9; }
+.tpl-convite-titulo { font-family: Georgia, 'Times New Roman', serif; font-size: 34px; font-weight: 700; margin: 10px 0; }
+.tpl-convite-info { margin: 20px 6px; font-size: 15px; line-height: 2; color: #3a3f54; }
+.tpl-convite-texto { font-size: 14px; color: #6b7183; font-style: italic; }
+
+/* Proposta */
+.tpl-proposta-capa { background: #141b34; color: #fff; padding: 30px 26px; border-radius: 10px; margin-bottom: 18px; }
+.tpl-proposta-marca { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #9fb0ff; }
+.tpl-proposta-titulo { font-size: 30px; font-weight: 800; margin: 10px 0 14px; }
+.tpl-proposta-para, .tpl-proposta-data { font-size: 14px; color: #cdd4ff; }
+
+/* Relatório */
+.tpl-rel-titulo { font-size: 28px; font-weight: 800; color: #1c1f29; }
+.tpl-rel-meta { font-size: 12.5px; color: #6b7183; margin: 4px 0 12px; }
+
+/* Carta */
+.tpl-carta-endereco { font-size: 13.5px; color: #4a4f62; margin-bottom: 14px; }
+.tpl-carta-assunto { font-size: 14px; margin: 14px 0; }
+.tpl-carta-assinatura { font-size: 14px; color: #1c1f29; margin-top: 4px; }
+
+/* Aula */
+.tpl-aula-cab { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #37a878; font-weight: 800; }
+.tpl-aula-titulo { font-size: 30px; font-weight: 800; color: #1c1f29; margin: 6px 0 10px; }
