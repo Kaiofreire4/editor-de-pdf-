@@ -51,7 +51,7 @@ const swaggerSpec = swaggerJSDoc({
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'PdfMasterWeb API',
+      title: 'MEU PDF API',
       version: '1.0.0',
       description:
         'API em TypeScript (Express) para edição de PDFs. Extrai textos com coordenadas e grava alterações no PDF.',
@@ -67,10 +67,10 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // ---------- Autenticação (SQLite) ----------
 const SESSION_DAYS = 30;
 const SESSION_DAYS_MS = SESSION_DAYS * 24 * 60 * 60 * 1000;
-const AUTH_DIR = path.resolve(process.cwd(), '.data');
+const AUTH_DIR = path.resolve(process.cwd(), '.data', 'editor-de-pdf');
 fs.mkdirSync(AUTH_DIR, { recursive: true });
 
-const db = new Database(path.join(AUTH_DIR, 'pdfmaster.db'));
+const db = new Database(path.join(AUTH_DIR, 'editor-de-pdf.db'));
 db.pragma('journal_mode = WAL');
 db.exec(`
   CREATE TABLE IF NOT EXISTS usuarios (

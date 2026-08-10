@@ -48,7 +48,7 @@ npm install
 npm run check:environment
 ```
 
-O comando `npm install` instala todas as dependências JavaScript, incluindo Angular, PDF, Word e SQLite. O banco será criado automaticamente em `.data/pdfmaster.db` na primeira execução da API.
+O comando `npm install` instala todas as dependências JavaScript, incluindo Angular, PDF, Word e SQLite. O banco próprio do editor será criado automaticamente em `.data/editor-de-pdf/editor-de-pdf.db` na primeira execução da API.
 
 ## Como executar
 
