@@ -54,4 +54,13 @@
       Já tem conta? <button type="button" class="link" (click)="alternarModo('entrar')">Entrar</button>
     </p>
   </form>
+
+  <div class="loading-overlay" *ngIf="carregando" role="status" aria-live="polite" aria-label="Processando login">
+    <div class="loading-card">
+      <div class="loading-orbit"><span></span><span></span><span></span></div>
+      <strong>{{ modo === 'entrar' ? 'Conectando à sua conta' : 'Criando sua conta' }}</strong>
+      <span>Aguarde só um instante...</span>
+      <div class="loading-progress"><i></i></div>
+    </div>
+  </div>
 </div>

@@ -41,6 +41,7 @@ interface TracoCaneta {
   pontos: Array<{ x: number; y: number }>;
   cor: string;
   largura: number;
+  opacidade: number;
 }
 
 type HandlePosition = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
@@ -76,11 +77,14 @@ export class EditarTextoComponent {
   modoAdicionarTexto = false;
   modoAdicionarImagem = false;
   modoCaneta = false;
+  modoMarcaTexto = false;
   imagemPendente: string | null = null;
   miniaturasAbertas = true;
   corCaneta = '#d32f2f';
   larguraCaneta = 3;
   tracosDaPagina: TracoCaneta[] = [];
+  exportandoPdf = false;
+  mensagemExportacao = 'Preparando seu PDF...';
 
   private cdr = inject(ChangeDetectorRef);
   private localPdfStorage = inject(LocalPdfStorageService);
@@ -173,6 +177,7 @@ export class EditarTextoComponent {
     this.spanAtivoId = null;
     this.imagemAtivaId = null;
     this.modoCaneta = false;
+    this.modoMarcaTexto = false;
     this.spansPorPagina.clear();
     this.imagensPorPagina.clear();
     this.tracosPorPagina.clear();
@@ -357,6 +362,7 @@ export class EditarTextoComponent {
     this.modoAdicionarTexto = false;
     this.modoAdicionarImagem = false;
     this.modoCaneta = false;
+    this.modoMarcaTexto = false;
     this.imagemAtivaId = null;
     this.spanAtivoId = id;
     this.cdr.detectChanges();
@@ -367,6 +373,7 @@ export class EditarTextoComponent {
     this.modoAdicionarTexto = !this.modoAdicionarTexto;
     this.modoAdicionarImagem = false;
     this.modoCaneta = false;
+    this.modoMarcaTexto = false;
     this.spanAtivoId = null;
     this.imagemAtivaId = null;
     this.cdr.detectChanges();
@@ -376,13 +383,26 @@ export class EditarTextoComponent {
     this.modoAdicionarTexto = false;
     this.modoAdicionarImagem = false;
     this.modoCaneta = false;
+    this.modoMarcaTexto = false;
     this.imagemAtivaId = null;
     this.cdr.detectChanges();
   }
 
   ativarModoCaneta() {
     if (!this.pdfDoc || !this.canvasRef?.nativeElement?.width) return;
-    this.modoCaneta = !this.modoCaneta;
+    this.modoCaneta = !this.modoCaneta || this.modoMarcaTexto;
+    this.modoMarcaTexto = false;
+    this.modoAdicionarTexto = false;
+    this.modoAdicionarImagem = false;
+    this.spanAtivoId = null;
+    this.imagemAtivaId = null;
+    this.cdr.detectChanges();
+  }
+
+  ativarModoMarcaTexto() {
+    if (!this.pdfDoc || !this.canvasRef?.nativeElement?.width) return;
+    this.modoMarcaTexto = !this.modoMarcaTexto;
+    this.modoCaneta = false;
     this.modoAdicionarTexto = false;
     this.modoAdicionarImagem = false;
     this.spanAtivoId = null;
@@ -480,7 +500,12 @@ export class EditarTextoComponent {
     if (!ponto) return;
     const svg = event.currentTarget as SVGElement;
     svg.setPointerCapture(event.pointerId);
-    this.tracoEmAndamento = { pontos: [ponto], cor: this.corCaneta, largura: this.larguraCaneta };
+    this.tracoEmAndamento = {
+      pontos: [ponto],
+      cor: this.modoMarcaTexto ? '#ffe45c' : this.corCaneta,
+      largura: this.modoMarcaTexto ? 16 : this.larguraCaneta,
+      opacidade: this.modoMarcaTexto ? 0.38 : 1,
+    };
     this.tracosDaPagina = [...this.tracosDaPagina, this.tracoEmAndamento];
   }
 
@@ -530,6 +555,7 @@ export class EditarTextoComponent {
       this.modoAdicionarImagem = this.imagemPendente !== null;
       this.modoAdicionarTexto = false;
       this.modoCaneta = false;
+      this.modoMarcaTexto = false;
       this.cdr.detectChanges();
     };
     reader.readAsDataURL(file);
@@ -560,6 +586,7 @@ export class EditarTextoComponent {
     this.imagensDaPagina = [...this.imagensDaPagina, imagem];
     this.imagensPorPagina.set(this.paginaAtual - 1, this.imagensDaPagina);
     this.modoAdicionarImagem = false;
+    this.modoMarcaTexto = false;
     this.imagemPendente = null;
     this.imagemAtivaId = imagem.id;
     this.spanAtivoId = null;
@@ -568,7 +595,7 @@ export class EditarTextoComponent {
   }
 
   interagirComPagina(event: MouseEvent) {
-    if (this.modoCaneta) return;
+    if (this.modoCaneta || this.modoMarcaTexto) return;
     if (this.modoAdicionarImagem) {
       this.adicionarImagemNoPonto(event);
       return;
@@ -857,7 +884,7 @@ export class EditarTextoComponent {
   }
 
   async exportarPdf() {
-    if (!this.arquivoSelecionado) return;
+    if (!this.arquivoSelecionado || this.exportandoPdf) return;
 
     this.salvarEstadoDaPaginaAtual();
     const spansModificados = Array.from(this.spansPorPagina.entries()).flatMap(
@@ -916,6 +943,10 @@ export class EditarTextoComponent {
       return;
     }
 
+    this.exportandoPdf = true;
+    this.mensagemExportacao = 'Enviando alterações...';
+    this.cdr.detectChanges();
+
     const formData = new FormData();
     formData.append('file', this.arquivoSelecionado);
     formData.append('modificacoes', JSON.stringify(modificacoes));
@@ -927,6 +958,7 @@ export class EditarTextoComponent {
       });
 
       if (resposta.ok) {
+        this.mensagemExportacao = 'Preparando seu download...';
         const blob = await resposta.blob();
         await this.localPdfStorage.savePdf(blob, 'pdf_editado_master.pdf');
         const link = document.createElement('a');
@@ -940,6 +972,9 @@ export class EditarTextoComponent {
       }
     } catch {
       alert('Erro ao conectar com o servidor. Verifique se a API está rodando na porta 8000.');
+    } finally {
+      this.exportandoPdf = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -987,6 +1022,7 @@ export class EditarTextoComponent {
     for (const traco of tracos) {
       if (traco.pontos.length === 0) continue;
       context.strokeStyle = traco.cor;
+      context.globalAlpha = traco.opacidade;
       context.lineWidth = traco.largura / this.escala;
       context.beginPath();
       context.moveTo(traco.pontos[0].x, traco.pontos[0].y);
@@ -994,6 +1030,7 @@ export class EditarTextoComponent {
       if (traco.pontos.length === 1) context.lineTo(traco.pontos[0].x + 0.1, traco.pontos[0].y + 0.1);
       context.stroke();
     }
+    context.globalAlpha = 1;
     return canvas.toDataURL('image/png');
   }
 

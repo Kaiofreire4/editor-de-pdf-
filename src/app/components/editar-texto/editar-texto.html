@@ -1,9 +1,10 @@
 <div class="editor-shell">
   <aside class="tool-sidebar">
-    <button class="tool-item" [class.selected]="!modoAdicionarTexto && !modoCaneta" (click)="ativarModoEditarTexto()" title="Editar texto"><span class="tool-icon">T</span><span>Editar</span></button>
+    <button class="tool-item" [class.selected]="!modoAdicionarTexto && !modoCaneta && !modoMarcaTexto" (click)="ativarModoEditarTexto()" title="Editar texto"><span class="tool-icon">T</span><span>Editar</span></button>
     <button class="tool-item" [class.selected]="modoAdicionarTexto" (click)="ativarModoAdicionarTexto()" title="Adicionar texto"><span class="tool-icon">＋</span><span>Texto</span></button>
     <button class="tool-item" [class.selected]="modoAdicionarImagem" (click)="fileInputImagem.click()" title="Adicionar imagem"><span class="tool-icon">▧</span><span>Imagem</span></button>
     <button class="tool-item" [class.selected]="modoCaneta" (click)="ativarModoCaneta()" title="Rabiscar com caneta"><span class="tool-icon">✎</span><span>Caneta</span></button>
+    <button class="tool-item" [class.selected]="modoMarcaTexto" (click)="ativarModoMarcaTexto()" title="Marcar texto"><span class="tool-icon">▰</span><span>Marca-texto</span></button>
   </aside>
 
   <aside class="thumbnail-panel" *ngIf="pdfDisponivel">
@@ -30,7 +31,12 @@
       </div>
       <div class="toolbar-actions">
         <button class="button secondary" (click)="fileInputWord.click()">＋ Abrir PDF</button>
-        <button class="button primary" [disabled]="!pdfDisponivel" (click)="exportarPdf()">Baixar PDF</button>
+        <button class="button quick-tool" [class.active]="modoCaneta" [disabled]="!pdfDisponivel" (click)="ativarModoCaneta()">✎ Caneta</button>
+        <button class="button quick-tool marker" [class.active]="modoMarcaTexto" [disabled]="!pdfDisponivel" (click)="ativarModoMarcaTexto()">▰ Marca-texto</button>
+        <button class="button primary" [disabled]="!pdfDisponivel || exportandoPdf" (click)="exportarPdf()">
+           <span class="button-spinner" *ngIf="exportandoPdf"></span>
+           {{ exportandoPdf ? 'Processando...' : 'Baixar PDF' }}
+         </button>
       </div>
     </div>
 
@@ -102,14 +108,14 @@
       </div>
     }
 
-    @if (modoCaneta) {
+    @if (modoCaneta || modoMarcaTexto) {
       <div class="format-toolbar pen-toolbar" (click)="$event.stopPropagation()">
-        <span class="image-toolbar-title">Caneta</span>
+        <span class="image-toolbar-title">{{ modoMarcaTexto ? 'Marca-texto' : 'Caneta' }}</span>
         <label class="color-picker" title="Cor da caneta">
           <span [style.background]="corCaneta"></span>
           <input type="color" [(ngModel)]="corCaneta" />
         </label>
-        <label class="image-size-field">Espessura
+        <label class="image-size-field" *ngIf="modoCaneta">Espessura
           <input type="number" min="1" max="20" [(ngModel)]="larguraCaneta" />
         </label>
         <button type="button" class="fmt-btn clear" (click)="desfazerUltimoTraco()" title="Desfazer último rabisco">↶</button>
@@ -124,13 +130,13 @@
             <button (click)="alterarZoom(-0.1)" [disabled]="!pdfDisponivel">−</button><span>{{ zoomPercent }}%</span><button (click)="alterarZoom(0.1)" [disabled]="!pdfDisponivel">＋</button>
           </div>
         </div>
-        <div class="word-canvas-area" [class.add-mode]="modoAdicionarTexto || modoAdicionarImagem" [class.pen-mode]="modoCaneta" (click)="interagirComPagina($event)">
+        <div class="word-canvas-area" [class.add-mode]="modoAdicionarTexto || modoAdicionarImagem" [class.pen-mode]="modoCaneta || modoMarcaTexto" (click)="interagirComPagina($event)">
           <div class="word-page" [class.has-pdf]="pdfDisponivel">
              <canvas #pdfCanvas class="pdf-canvas"></canvas>
 
              <svg *ngIf="pdfDisponivel" class="pen-layer" [attr.viewBox]="'0 0 ' + (pdfCanvas.width / escala) + ' ' + (pdfCanvas.height / escala)" (pointerdown)="iniciarTraco($event)" (pointermove)="continuarTraco($event)" (pointerup)="finalizarTraco($event)" (pointercancel)="finalizarTraco($event)">
                @for (traco of tracosDaPagina; track $index) {
-                 <polyline [attr.points]="pontosDoTraco(traco)" fill="none" [attr.stroke]="traco.cor" [attr.stroke-width]="traco.largura / escala" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                 <polyline [attr.points]="pontosDoTraco(traco)" fill="none" [attr.stroke]="traco.cor" [attr.opacity]="traco.opacidade" [attr.stroke-width]="traco.largura / escala" stroke-linecap="round" stroke-linejoin="round"></polyline>
                }
              </svg>
 
@@ -228,4 +234,13 @@
 
   <input type="file" #fileInputWord style="display: none" accept=".pdf" (change)="onFileSelected($event)"/>
   <input type="file" #fileInputImagem style="display: none" accept="image/png,image/jpeg" (change)="onImagemSelecionada($event)"/>
+
+  <div class="loading-overlay pdf-loading-overlay" *ngIf="exportandoPdf" role="status" aria-live="polite" aria-label="Processando PDF">
+    <div class="loading-card">
+      <div class="pdf-loading-icon"><span>PDF</span><i></i></div>
+      <strong>{{ mensagemExportacao }}</strong>
+      <span>Não feche esta página enquanto terminamos.</span>
+      <div class="loading-progress"><i></i></div>
+    </div>
+  </div>
 </div>

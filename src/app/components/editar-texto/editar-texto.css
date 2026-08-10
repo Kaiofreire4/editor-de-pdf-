@@ -212,13 +212,80 @@
 
 .button:disabled { cursor: not-allowed; opacity: .45; }
 
-.button.primary { color: #fff; background: #6556d9; box-shadow: 0 4px 10px rgba(101, 86, 217, .2); }
+.button.primary { color: #fff; background: #6556d9; box-shadow: 0 4px 10px rgba(101, 86, 217, .2); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 
 .button.primary:hover:not(:disabled) { background: #5647c7; }
+
+.button-spinner {
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255, 255, 255, .45);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: loading-spin .75s linear infinite;
+}
+
+.pdf-loading-overlay { position: fixed; }
+.pdf-loading-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 64px;
+  margin-bottom: 3px;
+  border-radius: 8px;
+  background: #fbe8eb;
+  color: #d05a68;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 0 7px 15px rgba(208, 90, 104, .14);
+  animation: pdf-float 1.8s ease-in-out infinite;
+}
+
+.pdf-loading-icon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-top: 15px solid #fff;
+  border-left: 15px solid transparent;
+}
+
+.pdf-loading-icon i {
+  position: absolute;
+  right: 8px;
+  bottom: 10px;
+  left: 8px;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #efb7be;
+}
+
+.pdf-loading-icon i::after {
+  content: '';
+  display: block;
+  width: 45%;
+  height: 100%;
+  border-radius: inherit;
+  background: #d05a68;
+  animation: pdf-file-progress 1s ease-in-out infinite;
+}
+
+@keyframes pdf-float { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-5px) rotate(2deg); } }
+@keyframes pdf-file-progress { 0% { transform: translateX(-110%); } 100% { transform: translateX(250%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .button-spinner, .pdf-loading-icon, .pdf-loading-icon i::after { animation-duration: 2.5s; }
+}
 
 .button.secondary { color: #565d73; background: #f1f2f7; }
 
 .button.secondary:hover:not(:disabled) { background: #e4e3f7; }
+.button.quick-tool { color: #6556d9; background: #f0efff; border: 1px solid #dedaff; }
+.button.quick-tool:hover:not(:disabled), .button.quick-tool.active { color: #fff; background: #6556d9; border-color: #6556d9; }
+.button.quick-tool.marker { color: #8a7200; background: #fff8c9; border-color: #f1df77; }
+.button.quick-tool.marker:hover:not(:disabled), .button.quick-tool.marker.active { color: #624f00; background: #ffe45c; border-color: #e2c82f; }
 
 .editor-body { display: flex; flex: 1; min-height: 0; min-width: 0; }
 
