@@ -7,6 +7,9 @@
       <button class="primary-action" type="button" (click)="abrirArquivo()">Abrir Word</button>
       <button class="secondary-action" type="button" (click)="criarDocumento()">Novo</button>
       <button class="secondary-action templates-action" type="button" (click)="abrirModelos()">🎨 Modelos</button>
+      <button class="abnt-action" [class.active]="normaAbntAtiva" type="button" (click)="alternarNormaAbnt()" title="Aplicar ou remover formatação ABNT">
+        {{ normaAbntAtiva ? '✓ ABNT ativa' : 'ABNT automático' }}
+      </button>
     </div>
     <div class="toolbar-separator"></div>
     <div class="toolbar-group formatting-group" aria-label="Formatação">
@@ -46,9 +49,6 @@
       <option value="grafico">Gráfico</option>
       <option value="link">Link</option>
     </select>
-    <button class="abnt-action" [class.active]="normaAbntAtiva" type="button" (click)="alternarNormaAbnt()" title="Aplicar ou remover formatação ABNT">
-      {{ normaAbntAtiva ? '✓ ABNT ativa' : 'ABNT automático' }}
-    </button>
     <button class="abnt-update" *ngIf="normaAbntAtiva" type="button" (click)="atualizarSumario()" title="Atualizar sumário">↻ Sumário</button>
     <div class="toolbar-spacer"></div>
     <div class="toolbar-group zoom-group">

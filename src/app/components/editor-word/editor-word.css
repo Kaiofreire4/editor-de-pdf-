@@ -16,7 +16,7 @@
 .export-action { background: #37a878; }
 .export-action:disabled { opacity: .45; cursor: not-allowed; }
 .abnt-action, .abnt-update { height: 34px; border-radius: 7px; padding: 0 11px; cursor: pointer; font: 700 11px inherit; }
-.abnt-action { border: 1px solid #d9d3ff; background: #f0efff; color: #6556d9; }
+.abnt-action { border: 1px solid #d9d3ff; background: #f0efff; color: #6556d9; white-space: nowrap; }
 .abnt-action:hover, .abnt-action.active { color: #fff; background: #6556d9; }
 .abnt-update { border: 1px solid #dfe3ec; background: #fff; color: #596174; }
 .abnt-update:hover { border-color: #d8d4ff; color: #6556d9; }
