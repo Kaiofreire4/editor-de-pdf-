@@ -300,7 +300,22 @@ export class EditorWordComponent {
     this.mensagem = 'Abrindo documento...';
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const resultado = await mammoth.convertToHtml({ arrayBuffer });
+      const resultado = await mammoth.convertToHtml(
+        { arrayBuffer },
+        {
+          includeDefaultStyleMap: true,
+          ignoreEmptyParagraphs: false,
+          styleMap: [
+            "p[style-name='Title'] => h1:fresh",
+            "p[style-name='Subtitle'] => p.subtitle:fresh",
+            "p[style-name='Heading 1'] => h1:fresh",
+            "p[style-name='Heading 2'] => h2:fresh",
+            "p[style-name='Heading 3'] => h3:fresh",
+            "p[style-name='Heading 4'] => h4:fresh",
+            "p[style-name='Quote'] => blockquote:fresh",
+          ],
+        },
+      );
       this.editor.nativeElement.innerHTML = resultado.value || '<p><br></p>';
       await this.aplicarDimensoesOriginais(arrayBuffer);
       this.nomeArquivo = file.name.replace(/\.docx$/i, '');

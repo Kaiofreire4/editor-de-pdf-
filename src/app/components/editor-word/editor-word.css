@@ -42,6 +42,8 @@
 .word-paper h2 { font-size: 23px; }
 .word-paper h3 { font-size: 18px; }
 .word-paper p { margin: 0 0 13px; }
+.word-paper p.subtitle { color: #596174; font-size: 18px; }
+.word-paper blockquote { margin: 16px 0; padding: 10px 16px; border-left: 4px solid #d8d4ff; color: #596174; }
 .word-paper img { display: inline-block; max-width: 100%; height: auto; margin: 14px 0; vertical-align: middle; object-fit: contain; }
 .word-paper table { width: 100%; max-width: 100%; border-collapse: collapse; margin: 14px 0; table-layout: fixed; }
 .word-paper td, .word-paper th { padding: 6px 8px; border: 1px solid #dfe3ec; vertical-align: top; overflow-wrap: anywhere; }
