@@ -367,7 +367,7 @@ export class EditorWordComponent {
     if (this.normaAbntAtiva) {
       this.aplicarEstilosAbnt();
       this.atualizarSumarioAbnt();
-      this.linkarUrls();
+      this.atualizarReferenciasAbnt();
       this.mensagem = 'Norma ABNT aplicada: margens, fonte, espaçamento, títulos e sumário configurados.';
     } else {
       this.editor.nativeElement.querySelector('.abnt-sumario')?.remove();
@@ -416,46 +416,57 @@ export class EditorWordComponent {
     titulos.forEach((titulo) => {
       const item = document.createElement('li');
       item.dataset['level'] = titulo.tagName.substring(1);
-      const link = document.createElement('a');
-      link.href = `#${titulo.id}`;
-      link.textContent = titulo.textContent?.trim() || 'Título sem texto';
-      item.appendChild(link);
+      item.textContent = titulo.textContent?.trim() || 'Título sem texto';
       lista.appendChild(item);
     });
     sumario.appendChild(lista);
     this.editor.nativeElement.prepend(sumario);
   }
 
-  private linkarUrls(): void {
+  private atualizarReferenciasAbnt(): void {
+    this.editor.nativeElement.querySelector('.abnt-referencias')?.remove();
+    const urls = new Set<string>();
+    const urlRegex = /https?:\/\/[^\s<]+/gi;
+    const links = this.editor.nativeElement.querySelectorAll('a[href]');
+    links.forEach((link) => {
+      if ((link as HTMLElement).closest('.abnt-sumario')) return;
+      const url = (link as HTMLAnchorElement).href;
+      if (/^https?:\/\//i.test(url)) urls.add(url.replace(/[.,;:)]$/, ''));
+    });
+
     const walker = document.createTreeWalker(this.editor.nativeElement, NodeFilter.SHOW_TEXT);
     const nos: Text[] = [];
     let no: Node | null;
     while ((no = walker.nextNode())) nos.push(no as Text);
-    const urlRegex = /https?:\/\/[^\s<]+/gi;
 
     for (const texto of nos) {
-      if (texto.parentElement?.closest('a, .abnt-sumario')) continue;
-      if (!urlRegex.test(texto.data)) {
-        urlRegex.lastIndex = 0;
-        continue;
-      }
+      if (texto.parentElement?.closest('a, .abnt-sumario, .abnt-referencias')) continue;
       urlRegex.lastIndex = 0;
-      const fragmento = document.createDocumentFragment();
-      let inicio = 0;
       let encontro: RegExpExecArray | null;
       while ((encontro = urlRegex.exec(texto.data))) {
-        fragmento.append(texto.data.slice(inicio, encontro.index));
-        const link = document.createElement('a');
-        link.href = encontro[0].replace(/[.,;:)]$/, '');
-        link.textContent = encontro[0];
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        fragmento.append(link);
-        inicio = encontro.index + encontro[0].length;
+        urls.add(encontro[0].replace(/[.,;:)]$/, ''));
       }
-      fragmento.append(texto.data.slice(inicio));
-      texto.replaceWith(fragmento);
     }
+
+    if (urls.size === 0) return;
+    const referencias = document.createElement('section');
+    referencias.className = 'abnt-referencias';
+    referencias.contentEditable = 'false';
+    const titulo = document.createElement('h1');
+    titulo.textContent = 'REFERÊNCIAS';
+    referencias.appendChild(titulo);
+    urls.forEach((url) => {
+      const paragrafo = document.createElement('p');
+      paragrafo.append('Disponível em: ');
+      const link = document.createElement('a');
+      link.href = url;
+      link.textContent = url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      paragrafo.append(link, `. Acesso em: ${new Intl.DateTimeFormat('pt-BR').format(new Date())}.`);
+      referencias.appendChild(paragrafo);
+    });
+    this.editor.nativeElement.appendChild(referencias);
   }
 
   aumentarZoom(): void {
@@ -470,7 +481,7 @@ export class EditorWordComponent {
     if (this.normaAbntAtiva) {
       this.aplicarEstilosAbnt();
       this.atualizarSumarioAbnt();
-      this.linkarUrls();
+      this.atualizarReferenciasAbnt();
     }
     const paragraphs = this.criarParagrafos(this.editor.nativeElement);
     const documento = new Document({
@@ -516,12 +527,20 @@ export class EditorWordComponent {
     return Array.from(container.children).flatMap((element) => {
       const htmlElement = element as HTMLElement;
       if (htmlElement.classList.contains('abnt-sumario')) {
-        const itens = Array.from(htmlElement.querySelectorAll('a')).map((link) => new Paragraph({
-          children: [this.criarLink(link)],
-          indent: { left: 360 },
+        const itens = Array.from(htmlElement.querySelectorAll('li')).map((item) => new Paragraph({
+          text: item.textContent || '',
+          indent: { left: (Number((item as HTMLElement).dataset['level'] || 1) - 1) * 360 },
           spacing: { line: 360, after: 0 },
         }));
         return [new Paragraph({ text: 'SUMÁRIO', heading: HeadingLevel.HEADING_1 }), ...itens];
+      }
+      if (htmlElement.classList.contains('abnt-referencias')) {
+        const itens = Array.from(htmlElement.querySelectorAll('p')).map((item) => new Paragraph({
+          children: this.criarRuns(item),
+          alignment: AlignmentType.JUSTIFIED,
+          spacing: { line: 360, after: 0 },
+        }));
+        return [new Paragraph({ text: 'REFERÊNCIAS', heading: HeadingLevel.HEADING_1 }), ...itens];
       }
       const tag = htmlElement.tagName.toLowerCase();
       const props: Record<string, unknown> = {};

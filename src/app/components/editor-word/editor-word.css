@@ -67,6 +67,9 @@
 .word-paper.abnt-document .abnt-sumario li { margin: 5px 0; }
 .word-paper.abnt-document .abnt-sumario li[data-level="2"] { margin-left: 20px; }
 .word-paper.abnt-document .abnt-sumario li[data-level="3"] { margin-left: 40px; }
+.word-paper.abnt-document .abnt-referencias { margin-top: 38px; padding-top: 12px; border-top: 1px solid #e4e7ef; }
+.word-paper.abnt-document .abnt-referencias h1 { text-align: center; }
+.word-paper.abnt-document .abnt-referencias p { text-indent: 0; overflow-wrap: anywhere; }
 .word-chart { width: min(100%, 560px); margin: 20px auto; padding: 16px 18px; border: 1px solid #dfe3ec; border-radius: 8px; background: #fbfcfe; }
 .word-chart > strong { display: block; margin-bottom: 14px; color: #34384c; font-size: 16px; }
 .chart-row { display: grid; grid-template-columns: 100px 1fr 40px; align-items: center; gap: 8px; min-height: 27px; font-size: 12px; }
