@@ -2,10 +2,9 @@ import { Component, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as pdfjsLib from 'pdfjs-dist';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
+const pdfJsWorkerExtension = pdfjsLib.version.startsWith('4') ? 'mjs' : 'js';
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.${pdfJsWorkerExtension}`;
 
 @Component({
   selector: 'app-visualizar-pdf',

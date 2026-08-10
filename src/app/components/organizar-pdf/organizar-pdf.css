@@ -200,15 +200,24 @@
 
 .inputs-intervalo input {
   width: 64px;
+  height: 34px;
   border: 1px solid #c8c8c8;
-  border-radius: 3px;
-  padding: 5px 6px;
+  border-radius: 7px;
+  padding: 5px 8px;
   font-family: inherit;
   font-size: 13px;
   text-align: center;
+  background: #fff;
+  color: #202438;
+  box-sizing: border-box;
 }
 
 .inputs-intervalo input:focus {
-  outline: 2px solid rgba(101, 86, 217, .25);
+  outline: 3px solid rgba(101, 86, 217, .18);
   border-color: #6556d9;
+}
+
+.selected-preview canvas {
+  border: 3px solid #6556d9;
+  box-shadow: 0 0 0 2px rgba(101, 86, 217, .18), 0 3px 9px rgba(36, 40, 59, .14);
 }
