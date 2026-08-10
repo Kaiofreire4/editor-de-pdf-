@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap, timeout } from 'rxjs/operators';
 
 export interface UsuarioAutenticado {
   id: string;
@@ -107,6 +107,7 @@ export class AuthService {
   private executar(operacao: Observable<AuthResponse>): Promise<void> {
     return firstValueFrom(
       operacao.pipe(
+        timeout({ first: 15000 }),
         tap((res) => {
           localStorage.setItem(TOKEN_KEY, res.token);
           localStorage.removeItem(GUEST_KEY);

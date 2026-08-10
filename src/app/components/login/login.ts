@@ -72,6 +72,7 @@ export class LoginComponent implements OnInit {
   }
 
   private mensagemErro(error: any): string {
+    if (error?.name === 'TimeoutError') return 'A API demorou para responder. Tente novamente em alguns segundos.';
     if (error?.error?.error) return error.error.error;
     if (typeof error?.message === 'string') return error.message;
     return 'Não foi possível concluir a operação. Tente novamente.';

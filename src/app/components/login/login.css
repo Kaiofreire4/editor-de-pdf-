@@ -205,3 +205,32 @@
   cursor: pointer;
   padding: 0;
 }
+
+@media (max-width: 480px) {
+  .login-page {
+    min-height: 100dvh;
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .login-card {
+    margin: 8px 0;
+    max-width: none;
+    border-radius: 14px;
+    padding: 24px 18px;
+  }
+
+  .login-brand {
+    margin-bottom: 18px;
+  }
+
+  .login-title {
+    font-size: 20px;
+  }
+
+  .field input,
+  .login-submit,
+  .guest-button {
+    min-height: 46px;
+  }
+}
