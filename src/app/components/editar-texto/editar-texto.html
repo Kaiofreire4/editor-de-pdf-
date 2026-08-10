@@ -177,7 +177,7 @@
                        class="text-block-label"
                        [class.highlighted]="span.destacado"
                        [class.modificado]="span.modificado"
-                       [ngStyle]="getEstiloSpan(span, span.modificado || !!span.novo || !!span.destacado)"
+                       [ngStyle]="getEstiloSpan(span, span.modificado || !!span.novo)"
                       (dblclick)="selecionarOuAdicionarTexto(span.id, $event)">
                       {{ span.text }}
                     </span>
