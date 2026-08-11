@@ -1,11 +1,11 @@
 import type { Handler } from '@netlify/functions';
 import * as crypto from 'node:crypto';
-import { gerarHash, resposta, salvarSessao, usuarioPorEmail, type Usuario } from './_auth';
+import { corpoJson, gerarHash, resposta, salvarSessao, usuarioPorEmail, type Usuario } from './_auth';
 import { getStore } from '@netlify/blobs';
 
 export const handler: Handler = async (event) => {
   try {
-    const { nome, email, senha } = JSON.parse(event.body || '{}') as Record<string, unknown>;
+    const { nome, email, senha } = corpoJson(event);
     const emailNorm = typeof email === 'string' ? email.toLowerCase().trim() : '';
     if (typeof nome !== 'string' || nome.trim().length < 2 || nome.length > 80) return resposta(400, { error: 'Nome deve ter entre 2 e 80 caracteres' });
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNorm)) return resposta(400, { error: 'E-mail inválido' });

@@ -87,7 +87,7 @@ export class AuthService {
       return firstValueFrom(
         this.http
           .get<{ user: UsuarioAutenticado }>(`${API_BASE_URL}/auth-me`, { headers: this.headers() })
-          .pipe(timeout({ first: 15000 }))
+          .pipe(timeout({ first: 10000 }))
           .pipe(tap(({ user }) => {
             this._userSubject.next(user);
             this._acessoSubject.next(true);
@@ -119,7 +119,7 @@ export class AuthService {
   private executar(operacao: Observable<AuthResponse>): Promise<void> {
     return firstValueFrom(
       operacao.pipe(
-        timeout({ first: 15000 }),
+        timeout({ first: 10000 }),
         tap((res) => {
           localStorage.setItem(TOKEN_KEY, res.token);
           localStorage.removeItem(GUEST_KEY);

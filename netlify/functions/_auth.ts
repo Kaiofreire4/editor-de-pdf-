@@ -46,6 +46,13 @@ export function resposta(statusCode: number, body: unknown) {
   return { statusCode, headers: { 'content-type': 'application/json; charset=utf-8' }, body: JSON.stringify(body) };
 }
 
+export function corpoJson(event: { body: string | null; isBase64Encoded?: boolean }): Record<string, unknown> {
+  const corpo = event.body
+    ? Buffer.from(event.body, event.isBase64Encoded ? 'base64' : 'utf8').toString('utf8')
+    : '{}';
+  return JSON.parse(corpo) as Record<string, unknown>;
+}
+
 export async function salvarSessao(email: string): Promise<string> {
   const token = gerarToken();
   await sessoes().setJSON(token, { email, expiraEm: Date.now() + diasSessao });

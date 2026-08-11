@@ -1,9 +1,9 @@
 import type { Handler } from '@netlify/functions';
-import { gerarHash, resposta, salvarSessao, usuarioPorEmail } from './_auth';
+import { corpoJson, gerarHash, resposta, salvarSessao, usuarioPorEmail } from './_auth';
 
 export const handler: Handler = async (event) => {
   try {
-    const { email, senha } = JSON.parse(event.body || '{}') as Record<string, unknown>;
+    const { email, senha } = corpoJson(event);
     const emailNorm = typeof email === 'string' ? email.toLowerCase().trim() : '';
     const usuario = await usuarioPorEmail(emailNorm);
     if (!usuario || typeof senha !== 'string' || gerarHash(senha, usuario.salt) !== usuario.hash) return resposta(401, { error: 'E-mail ou senha inválidos' });
