@@ -22,7 +22,7 @@
   </div>
 
   <!-- ÁREA DA PÁGINA -->
-  <div class="word-canvas-area">
+   <div class="word-canvas-area" (touchstart)="iniciarToque($event)" (touchend)="finalizarToque($event)">
        <div class="word-page" [class.docx-page]="docxCarregado">
        <canvas #pdfCanvasVis class="pdf-canvas-vis" [style.display]="pdfCarregado ? 'block' : 'none'"></canvas>
        <article *ngIf="docxCarregado" class="docx-content" [innerHTML]="docxHtml"></article>

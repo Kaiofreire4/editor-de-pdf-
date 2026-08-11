@@ -25,6 +25,7 @@ export class VisualizarPdfComponent {
   totalPaginas = 0;
   pdfDoc: any = null;
   escala = 1.5;
+  private toqueInicialY: number | null = null;
 
   get zoomPercent(): number {
     return Math.round(this.escala * 100);
@@ -120,5 +121,24 @@ export class VisualizarPdfComponent {
     if (novaPagina < 1 || novaPagina > this.totalPaginas) return;
     this.paginaAtual = novaPagina;
     void this.renderizarPagina(this.paginaAtual);
+  }
+
+  iniciarToque(event: TouchEvent): void {
+    this.toqueInicialY = event.changedTouches[0]?.clientY ?? null;
+  }
+
+  finalizarToque(event: TouchEvent): void {
+    if (this.toqueInicialY === null) return;
+    const toqueFinalY = event.changedTouches[0]?.clientY;
+    if (toqueFinalY === undefined) return;
+    const deslocamento = toqueFinalY - this.toqueInicialY;
+    this.toqueInicialY = null;
+    if (!Number.isFinite(deslocamento) || Math.abs(deslocamento) < 70) return;
+
+    const area = event.currentTarget as HTMLElement;
+    const chegouAoTopo = area.scrollTop <= 2;
+    const chegouAoFim = area.scrollTop + area.clientHeight >= area.scrollHeight - 2;
+    if (deslocamento < 0 && chegouAoFim) this.mudarPagina(1);
+    if (deslocamento > 0 && chegouAoTopo) this.mudarPagina(-1);
   }
 }

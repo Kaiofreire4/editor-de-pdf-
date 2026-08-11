@@ -7,12 +7,24 @@
 }
 
 .word-visualizar .word-canvas-area {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
   background: radial-gradient(circle at 15% 10%, rgba(101,86,217,.08), transparent 30%), #f5f7fb;
 }
 
 .pdf-canvas-vis {
   display: block;
+  max-width: 100%;
+  height: auto;
 }
+
+.word-visualizar .word-page { flex: 0 0 auto; max-width: 100%; }
 
 .docx-page { width: min(800px, calc(100vw - 48px)); min-height: 1100px; }
 .docx-content { box-sizing: border-box; min-height: 1100px; padding: 76px 82px; color: #252938; font: 15px/1.55 Calibri, Arial, sans-serif; overflow-wrap: anywhere; }
@@ -57,4 +69,9 @@
 
 .empty-hint strong {
   color: #6556d9;
+}
+
+@media (max-width: 900px) {
+  .word-visualizar .word-canvas-area { padding: 14px 10px 30px; align-items: flex-start; }
+  .word-visualizar .word-page { width: min(800px, calc(100vw - 20px)); }
 }
