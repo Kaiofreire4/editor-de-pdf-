@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -16,6 +16,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 })
 export class VisualizarPdfComponent {
   @ViewChild('pdfCanvasVis') canvasRef!: ElementRef<HTMLCanvasElement>;
+  private readonly cdr = inject(ChangeDetectorRef);
 
   pdfCarregado = false;
   docxCarregado = false;
@@ -91,6 +92,7 @@ export class VisualizarPdfComponent {
       this.totalPaginas = this.pdfDoc.numPages;
       this.paginaAtual = 1;
       this.pdfCarregado = true;
+      this.cdr.detectChanges();
       await this.renderizarPagina(this.paginaAtual);
     } catch (error: any) {
       console.error('Erro ao carregar documento:', error);
