@@ -1,10 +1,9 @@
-import type { Handler } from '@netlify/functions';
 import { corpoJson, gerarHash, resposta, salvarSessao, usuarioPorEmail } from './_auth';
 
-export const handler: Handler = async (event) => {
+export default async (request: Request) => {
   let dados: Record<string, unknown>;
   try {
-    dados = corpoJson(event);
+    dados = await corpoJson(request);
   } catch { return resposta(400, { error: 'O corpo da requisição não contém JSON válido' }); }
 
   const { email, senha } = dados;

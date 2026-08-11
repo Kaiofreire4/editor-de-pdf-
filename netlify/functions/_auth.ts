@@ -36,25 +36,19 @@ export async function usuarioPorToken(token: string | null): Promise<Usuario | n
   return usuarioPorEmail(sessao.email);
 }
 
-export function tokenDoEvento(event: { headers: Record<string, string | undefined> }): string | null {
-  const header = event.headers.authorization || event.headers.Authorization;
+export function tokenDoRequest(request: Request): string | null {
+  const header = request.headers.get('authorization');
   const match = header?.match(/^Bearer\s+(.+)$/i);
   return match?.[1]?.trim() || null;
 }
 
 export function resposta(statusCode: number, body: unknown) {
-  return { statusCode, headers: { 'content-type': 'application/json; charset=utf-8' }, body: JSON.stringify(body) };
+  return new Response(JSON.stringify(body), { status: statusCode, headers: { 'content-type': 'application/json; charset=utf-8' } });
 }
 
-export function corpoJson(event: { body: string | null; isBase64Encoded?: boolean }): Record<string, unknown> {
-  if (!event.body) return {};
-  const normal = event.body;
-  const base64 = Buffer.from(event.body, 'base64').toString('utf8');
-  const tentativas = event.isBase64Encoded ? [base64, normal] : [normal, base64];
-  for (const corpo of tentativas) {
-    try { return JSON.parse(corpo) as Record<string, unknown>; } catch { /* tenta o formato seguinte */ }
-  }
-  throw new Error('Corpo JSON inválido');
+export async function corpoJson(request: Request): Promise<Record<string, unknown>> {
+  const corpo = (await request.text()).replace(/^\uFEFF/, '');
+  return (corpo ? JSON.parse(corpo) : {}) as Record<string, unknown>;
 }
 
 export async function salvarSessao(email: string): Promise<string> {

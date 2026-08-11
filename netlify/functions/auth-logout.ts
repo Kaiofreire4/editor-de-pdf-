@@ -1,9 +1,8 @@
-import type { Handler } from '@netlify/functions';
 import { getStore } from '@netlify/blobs';
-import { resposta, tokenDoEvento } from './_auth';
+import { resposta, tokenDoRequest } from './_auth';
 
-export const handler: Handler = async (event) => {
-  const token = tokenDoEvento(event);
+export default async (request: Request) => {
+  const token = tokenDoRequest(request);
   if (token) await getStore('pdfmaster-sessions').delete(token);
   return resposta(200, { ok: true });
 };

@@ -1,12 +1,11 @@
-import type { Handler } from '@netlify/functions';
 import * as crypto from 'node:crypto';
 import { corpoJson, gerarHash, resposta, salvarSessao, usuarioPorEmail, type Usuario } from './_auth';
 import { getStore } from '@netlify/blobs';
 
-export const handler: Handler = async (event) => {
+export default async (request: Request) => {
   let dados: Record<string, unknown>;
   try {
-    dados = corpoJson(event);
+    dados = await corpoJson(request);
   } catch { return resposta(400, { error: 'O corpo da requisição não contém JSON válido' }); }
 
   const { nome, email, senha } = dados;
