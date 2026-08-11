@@ -381,6 +381,13 @@ export class EditorWordComponent {
     this.desativarAnotacaoWord();
   }
 
+  removerMarcaTextoWord(): void {
+    this.editor.nativeElement.focus();
+    document.execCommand('hiliteColor', false, 'transparent');
+    document.execCommand('backColor', false, 'transparent');
+    this.desativarAnotacaoWord();
+  }
+
   alternarMarcaTextoWord(): void {
     this.modoMarcaTextoWord = !this.modoMarcaTextoWord;
     this.modoBorrachaWord = false;

@@ -27,6 +27,7 @@
       <button type="button" (click)="formatar('strikeThrough')" title="Tachado"><s>S</s></button>
       <button type="button" (click)="formatar('removeFormat')" title="Limpar formatação">Tx</button>
       <button class="highlight-button" type="button" (mousedown)="$event.preventDefault()" (click)="marcarTextoWord()" title="Marcar texto selecionado">▰</button>
+      <button class="remove-highlight-button" type="button" (mousedown)="$event.preventDefault()" (click)="removerMarcaTextoWord()" title="Remover marca-texto da seleção">▱</button>
       <button class="highlight-button draw-highlight-button" [class.active]="modoMarcaTextoWord" type="button" (click)="alternarMarcaTextoWord()" title="Desenhar marca-texto">✎</button>
       <button class="highlight-button eraser-button" [class.active]="modoBorrachaWord" type="button" (click)="alternarBorrachaWord()" title="Apagar marca-texto desenhado">⌫</button>
       <button class="exit-tool-button" *ngIf="modoMarcaTextoWord || modoBorrachaWord" type="button" (click)="desativarAnotacaoWord()" title="Voltar a editar o documento">✕ Editar</button>

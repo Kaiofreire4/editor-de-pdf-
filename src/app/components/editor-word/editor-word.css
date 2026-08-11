@@ -9,6 +9,8 @@
 .heading-select { min-width: 145px !important; }
 .highlight-button { color: #8a7200 !important; background: #fff8c9 !important; border-color: #f1df77 !important; }
 .highlight-button:hover { color: #624f00 !important; background: #ffe45c !important; }
+.remove-highlight-button { color: #8a7200 !important; background: #fff !important; border-color: #f1df77 !important; }
+.remove-highlight-button:hover { color: #624f00 !important; background: #fff8c9 !important; }
 .draw-highlight-button.active { color: #624f00 !important; background: #ffe45c !important; border-color: #e2c82f !important; }
 .eraser-button.active { color: #fff !important; background: #c54b43 !important; border-color: #c54b43 !important; }
 .exit-tool-button { color: #596174 !important; background: #f1f2f7 !important; border-color: #dfe3ec !important; white-space: nowrap; }
