@@ -27,6 +27,7 @@ export class VisualizarPdfComponent {
   pdfDoc: any = null;
   escala = 1.5;
   private toqueInicialY: number | null = null;
+  private tentativasRenderizacao = 0;
 
   get zoomPercent(): number {
     return Math.round(this.escala * 100);
@@ -94,7 +95,7 @@ export class VisualizarPdfComponent {
       this.pdfCarregado = true;
       this.cdr.detectChanges();
       await this.renderizarPagina(this.paginaAtual);
-      setTimeout(() => this.aplicarZoomAutomatico(), 80);
+      setTimeout(() => this.aplicarZoomAutomatico(), 180);
     } catch (error: any) {
       console.error('Erro ao carregar documento:', error);
       this.pdfCarregado = false;
@@ -106,7 +107,7 @@ export class VisualizarPdfComponent {
   async renderizarPagina(numPagina: number): Promise<void> {
     if (!this.pdfDoc) return;
     if (!this.canvasRef?.nativeElement) {
-      setTimeout(() => void this.renderizarPagina(numPagina), 50);
+      this.tentarRenderizarNovamente(numPagina);
       return;
     }
     try {
@@ -118,8 +119,10 @@ export class VisualizarPdfComponent {
       canvas.height = viewport.height;
       canvas.width = viewport.width;
       await page.render({ canvasContext: context, viewport }).promise;
+      this.tentativasRenderizacao = 0;
     } catch (error) {
       console.error('Erro ao renderizar página no visualizador:', error);
+      this.tentarRenderizarNovamente(numPagina);
     }
   }
 
@@ -127,6 +130,12 @@ export class VisualizarPdfComponent {
     if (!this.pdfCarregado) return;
     this.escala = Number(Math.min(3, this.escala + 0.01).toFixed(2));
     void this.renderizarPagina(this.paginaAtual);
+  }
+
+  private tentarRenderizarNovamente(numPagina: number): void {
+    if (this.tentativasRenderizacao >= 5 || !this.pdfDoc || !this.pdfCarregado) return;
+    this.tentativasRenderizacao += 1;
+    setTimeout(() => void this.renderizarPagina(numPagina), 180 * this.tentativasRenderizacao);
   }
 
   mudarPagina(delta: number): void {
