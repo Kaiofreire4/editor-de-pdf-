@@ -89,6 +89,7 @@
     <label>Largura <input type="number" min="20" [value]="larguraImagem" (input)="alterarTamanhoImagemWord('w', +$any($event.target).value)" /></label>
     <label>Altura <input type="number" min="20" [value]="alturaImagem" (input)="alterarTamanhoImagemWord('h', +$any($event.target).value)" /></label>
     <label class="image-ratio"><input type="checkbox" [(ngModel)]="manterProporcaoImagem" /> Proporção</label>
+    <button type="button" class="remove-image-button" (click)="removerImagemWord()" title="Remover imagem">Remover imagem</button>
   </div>
 
   <div class="word-body">

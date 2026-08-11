@@ -52,6 +52,8 @@
 .image-edit-toolbar strong { color: #34384c; }
 .image-edit-toolbar label { display: flex; align-items: center; gap: 5px; }
 .image-edit-toolbar input[type="number"] { width: 68px; height: 27px; border: 1px solid #dfe3ec; border-radius: 5px; padding: 0 5px; color: #34384c; }
+.remove-image-button { border: 1px solid #f0c6cc; border-radius: 5px; background: #fff4f5; color: #c33f50; padding: 6px 10px; cursor: pointer; font: 600 11px inherit; }
+.remove-image-button:hover { background: #ffe6e9; }
 .image-ratio { gap: 4px !important; }
 .word-sidebar { width: 245px; padding: 24px 18px; background: #fbfcfe; border-right: 1px solid #e5e8f0; flex-shrink: 0; }
 .sidebar-label { color: #9a90a8; font-size: 10px; font-weight: 800; letter-spacing: .7px; margin-bottom: 14px; }

@@ -502,11 +502,21 @@ export class EditorWordComponent {
 
   selecionarImagemWord(event: MouseEvent): void {
     event.stopPropagation();
-    const imagem = event.currentTarget as HTMLImageElement;
+    const imagem = (event.target as HTMLElement).closest('img');
+    if (!imagem) return;
     this.imagemAtiva = imagem;
     this.larguraImagem = Math.round(imagem.getBoundingClientRect().width);
     this.alturaImagem = Math.round(imagem.getBoundingClientRect().height);
     this.modoMarcaTextoWord = false;
+  }
+
+  removerImagemWord(): void {
+    if (!this.imagemAtiva) return;
+    this.imagemAtiva.remove();
+    this.imagemAtiva = null;
+    this.imagemDragWord = null;
+    this.imagemResizeWord = null;
+    this.cdr.detectChanges();
   }
 
   iniciarArrasteImagemWord(event: PointerEvent): void {
