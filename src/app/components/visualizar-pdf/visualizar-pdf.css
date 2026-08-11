@@ -77,7 +77,24 @@
   color: #6556d9;
 }
 
+.word-visualizar .viewer-statusbar { position: relative; z-index: 5; flex: 0 0 58px; height: 58px; padding: 7px 18px; border-top: 1px solid #dfe3ec; background: rgba(255, 255, 255, .96); box-shadow: 0 -5px 18px rgba(36, 40, 59, .08); }
+.word-visualizar .viewer-page-nav { position: absolute; left: 50%; transform: translateX(-50%); gap: 12px; }
+.word-visualizar .viewer-nav-btn { width: 36px; height: 36px; border: 1px solid #dfe3ec; border-radius: 10px; background: #f8f9fc; color: #596174; font-size: 24px; line-height: 1; }
+.word-visualizar .viewer-nav-btn:hover:not(:disabled) { border-color: #6556d9; background: #f0efff; color: #6556d9; }
+.word-visualizar .viewer-nav-btn:disabled { opacity: .35; cursor: not-allowed; }
+.word-visualizar .viewer-page-indicator { min-width: 110px; justify-content: center; gap: 5px; color: #596174; }
+.word-visualizar .viewer-page-indicator small { color: #9a90a8; font-size: 9px; font-weight: 800; letter-spacing: .7px; }
+.word-visualizar .viewer-page-indicator strong { color: #34384c; font-size: 16px; }
+.word-visualizar .viewer-page-indicator .page-total { color: #858b9f; font-size: 12px; }
+.word-visualizar .viewer-zoom-nav { margin-left: auto; gap: 7px; }
+.word-visualizar .viewer-zoom-btn { width: 32px; height: 32px; border: 1px solid #dfe3ec; border-radius: 8px; background: #fff; color: #596174; cursor: pointer; font-size: 18px; line-height: 1; }
+.word-visualizar .viewer-zoom-btn:hover { border-color: #6556d9; background: #f0efff; color: #6556d9; }
+.word-visualizar .viewer-zoom-nav .zoom-value { min-width: 42px; justify-content: center; color: #6556d9; font-weight: 700; font-size: 11px; }
+
 @media (max-width: 900px) {
   .word-visualizar .word-canvas-area { max-height: calc(100dvh - 190px); padding: 14px 10px 30px; align-items: flex-start; }
   .word-visualizar .word-page { width: min(800px, calc(100vw - 20px)); }
+  .word-visualizar .viewer-statusbar { padding: 7px 10px; }
+  .word-visualizar .viewer-page-nav { gap: 8px; }
+  .word-visualizar .viewer-nav-btn { width: 38px; height: 38px; }
 }

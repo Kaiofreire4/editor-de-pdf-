@@ -35,17 +35,22 @@
   </div>
 
   <!-- BARRA DE STATUS -->
-  <div class="word-statusbar">
-    <div class="status-left">
-      <button class="status-btn" [disabled]="!pdfCarregado || paginaAtual <= 1" (click)="mudarPagina(-1)">‹</button>
-       <span class="status-item">{{ pdfCarregado ? 'Página ' + paginaAtual + ' de ' + totalPaginas : docxCarregado ? nomeArquivo : 'Pronto' }}</span>
-      <button class="status-btn" [disabled]="!pdfCarregado || paginaAtual >= totalPaginas" (click)="mudarPagina(1)">›</button>
-    </div>
-    <div class="status-right">
-      <span class="status-item clickable" (click)="ajustarZoom(-0.25)">−</span>
-      <span class="status-item zoom-value">{{ zoomPercent }}%</span>
-      <span class="status-item clickable" (click)="ajustarZoom(0.25)">＋</span>
-    </div>
+   <div class="word-statusbar viewer-statusbar">
+     <div class="status-left viewer-page-nav">
+       <button class="status-btn viewer-nav-btn" aria-label="Página anterior" title="Página anterior" [disabled]="!pdfCarregado || paginaAtual <= 1" (click)="mudarPagina(-1)">‹</button>
+       <span class="status-item viewer-page-indicator">
+         <small *ngIf="pdfCarregado">PÁGINA</small>
+         <strong *ngIf="pdfCarregado">{{ paginaAtual }}</strong>
+         <span *ngIf="pdfCarregado" class="page-total">de {{ totalPaginas }}</span>
+         <span *ngIf="!pdfCarregado">{{ docxCarregado ? nomeArquivo : 'Pronto' }}</span>
+       </span>
+       <button class="status-btn viewer-nav-btn" aria-label="Próxima página" title="Próxima página" [disabled]="!pdfCarregado || paginaAtual >= totalPaginas" (click)="mudarPagina(1)">›</button>
+     </div>
+     <div class="status-right viewer-zoom-nav">
+       <button class="viewer-zoom-btn" type="button" aria-label="Diminuir zoom" (click)="ajustarZoom(-0.25)">−</button>
+       <span class="status-item zoom-value">{{ zoomPercent }}%</span>
+       <button class="viewer-zoom-btn" type="button" aria-label="Aumentar zoom" (click)="ajustarZoom(0.25)">＋</button>
+     </div>
   </div>
 
    <input type="file" #fileInputVis style="display: none" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" (change)="onFileSelected($event)" />
