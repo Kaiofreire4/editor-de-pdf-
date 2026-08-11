@@ -525,13 +525,18 @@ export class EditorWordComponent {
     event.stopPropagation();
     this.selecionarImagemWord(event);
     const imagem = this.imagemAtiva;
-    if (!imagem) return;
-    imagem.style.position = 'relative';
+    if (!imagem || !this.paperWrap) return;
+    const papel = this.paperWrap.nativeElement.getBoundingClientRect();
+    const imagemBounds = imagem.getBoundingClientRect();
+    const escala = this.zoom / 100;
+    imagem.style.position = 'absolute';
+    imagem.style.left = `${(imagemBounds.left - papel.left) / escala}px`;
+    imagem.style.top = `${(imagemBounds.top - papel.top) / escala}px`;
     this.imagemDragWord = {
       startX: event.clientX,
       startY: event.clientY,
-      left: Number.parseFloat(imagem.style.left) || 0,
-      top: Number.parseFloat(imagem.style.top) || 0,
+      left: Number.parseFloat(imagem.style.left),
+      top: Number.parseFloat(imagem.style.top),
     };
   }
 
