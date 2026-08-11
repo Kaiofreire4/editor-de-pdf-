@@ -23,6 +23,7 @@ interface SpanItem {
   strikeThrough: boolean;
   color: string;
   destacado?: boolean;
+  fundo?: string;
   textAlign: 'left' | 'center' | 'right';
   verticalAlign: 'top' | 'middle' | 'bottom';
   novo?: boolean;
@@ -279,24 +280,23 @@ export class EditarTextoComponent {
 
   private extrairTextosLocalmente(page: any, viewport: any, numPagina: number) {
     page.getTextContent().then((textContent: any) => {
-      const alturaPagina = viewport.height;
       const spans: SpanItem[] = [];
 
       for (const item of textContent.items) {
         if (!item.str || !item.str.trim()) continue;
 
         const transform = item.transform || [1, 0, 0, 1, 0, 0];
-        const fontSize = Math.abs(transform[0]) || 12;
+        const viewportTransform = pdfjsLib.Util.transform(viewport.transform, transform);
+        const fontSize = Math.hypot(viewportTransform[2], viewportTransform[3]) || 12 * this.escala;
         const fontFamily = item.fontName || 'Arial';
         const bold = !!(fontFamily.toLowerCase().includes('bold') || (item as any).bold);
         const italic = !!(fontFamily.toLowerCase().includes('italic') || fontFamily.toLowerCase().includes('oblique') || (item as any).italic);
 
-        const x = (transform[4] || 0) * this.escala;
-        const yPdf = (transform[5] || 0) * this.escala;
+        const x = viewportTransform[4] || 0;
+        const baseline = viewportTransform[5] || 0;
         const largura = (item.width || 0) * this.escala;
-        const altura = fontSize * 1.4;
-
-        const y = alturaPagina - yPdf - altura;
+        const altura = Math.max(fontSize * 1.25, 12);
+        const y = baseline - fontSize;
         if (largura <= 0 || altura <= 0) continue;
 
         const id = `span-${++this.sequenciaId}`;
@@ -311,7 +311,7 @@ export class EditarTextoComponent {
           bbox: [x / this.escala, y / this.escala, (x + largura) / this.escala, (y + altura) / this.escala],
           modificado: false,
           fontFamily: this.mapearFonte(fontFamily),
-          fontSize: Math.round(fontSize),
+           fontSize: Math.round(fontSize / this.escala),
           bold,
           italic,
           underline: false,
@@ -368,7 +368,29 @@ export class EditarTextoComponent {
     this.modoMarcaTexto = false;
     this.imagemAtivaId = null;
     this.spanAtivoId = id;
+    const span = this.spanAtivo;
+    if (span && !span.fundo) span.fundo = this.amostrarFundoSpan(span);
     this.cdr.detectChanges();
+  }
+
+  private amostrarFundoSpan(span: SpanItem): string {
+    const canvas = this.canvasRef?.nativeElement;
+    const context = canvas?.getContext('2d');
+    if (!context) return '#ffffff';
+    const pontos = [
+      [span.x + 2, span.y + 2],
+      [span.x + span.w - 2, span.y + 2],
+      [span.x + 2, span.y + span.h - 2],
+      [span.x + span.w - 2, span.y + span.h - 2],
+    ];
+    const cores = pontos.map(([x, y]) => context.getImageData(
+      Math.max(0, Math.min(canvas.width - 1, Math.round(x))),
+      Math.max(0, Math.min(canvas.height - 1, Math.round(y))),
+      1,
+      1,
+    ).data);
+    const media = cores.reduce((total, cor) => [total[0] + cor[0], total[1] + cor[1], total[2] + cor[2]], [0, 0, 0]).map((valor) => Math.round(valor / cores.length));
+    return `rgb(${media[0]}, ${media[1]}, ${media[2]})`;
   }
 
   ativarModoAdicionarTexto() {
@@ -937,6 +959,7 @@ export class EditarTextoComponent {
       'font-style': span.italic ? 'italic' : 'normal',
       'text-decoration': [span.underline ? 'underline' : '', span.strikeThrough ? 'line-through' : ''].filter(Boolean).join(' ') || 'none',
       'color': mostrarTexto ? span.color : 'transparent',
+      'background-color': mostrarTexto ? (span.fundo || '#ffffff') : 'transparent',
       'text-align': span.textAlign,
       'align-items': span.verticalAlign === 'top' ? 'flex-start' : span.verticalAlign === 'bottom' ? 'flex-end' : 'center',
       'justify-content': span.textAlign === 'center' ? 'center' : span.textAlign === 'right' ? 'flex-end' : 'flex-start',

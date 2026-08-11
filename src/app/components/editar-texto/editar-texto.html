@@ -152,8 +152,9 @@
                   [class.modified-bg]="span.modificado && span.id !== spanAtivoId"
                   [style.left.px]="span.x"
                   [style.top.px]="span.y"
-                  [style.width.px]="span.w"
-                  [style.height.px]="span.h"
+                   [style.width.px]="span.w"
+                   [style.height.px]="span.h"
+                   [style.background]="span.id === spanAtivoId ? (span.fundo || '#fff') : null"
                   (click)="selecionarOuAdicionarTexto(span.id, $event)"
                 >
                   @if (span.id === spanAtivoId) {
