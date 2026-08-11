@@ -94,6 +94,7 @@ export class VisualizarPdfComponent {
       this.pdfCarregado = true;
       this.cdr.detectChanges();
       await this.renderizarPagina(this.paginaAtual);
+      setTimeout(() => this.aplicarZoomAutomatico(), 80);
     } catch (error: any) {
       console.error('Erro ao carregar documento:', error);
       this.pdfCarregado = false;
@@ -104,6 +105,10 @@ export class VisualizarPdfComponent {
 
   async renderizarPagina(numPagina: number): Promise<void> {
     if (!this.pdfDoc) return;
+    if (!this.canvasRef?.nativeElement) {
+      setTimeout(() => void this.renderizarPagina(numPagina), 50);
+      return;
+    }
     try {
       const page = await this.pdfDoc.getPage(numPagina);
       const canvas = this.canvasRef.nativeElement;
@@ -116,6 +121,12 @@ export class VisualizarPdfComponent {
     } catch (error) {
       console.error('Erro ao renderizar página no visualizador:', error);
     }
+  }
+
+  private aplicarZoomAutomatico(): void {
+    if (!this.pdfCarregado) return;
+    this.escala = Number(Math.min(3, this.escala + 0.01).toFixed(2));
+    void this.renderizarPagina(this.paginaAtual);
   }
 
   mudarPagina(delta: number): void {
