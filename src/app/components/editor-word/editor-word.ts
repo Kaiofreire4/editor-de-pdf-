@@ -46,6 +46,8 @@ export class EditorWordComponent {
   carregando = false;
   mensagem = '';
   zoom = 100;
+  familiaFonteWord = 'Calibri';
+  corTextoWord = '#252938';
   normaAbntAtiva = false;
   imagemAtiva: HTMLImageElement | null = null;
   larguraImagem = 0;
@@ -60,6 +62,8 @@ export class EditorWordComponent {
     { nome: 'Rosa', valor: '#ff9ec4' },
     { nome: 'Laranja', valor: '#ffb86b' },
   ];
+  readonly fontesWord = ['Arial', 'Calibri', 'Cambria', 'Comic Sans MS', 'Courier New', 'Georgia', 'Helvetica', 'Times New Roman', 'Verdana'];
+  readonly coresTextoWord = ['#252938', '#6556d9', '#2f78c4', '#2e7d32', '#d32f2f', '#8a7200'];
   private selecaoWord: Range | null = null;
   modoBorrachaWord = false;
   tracosWord: TracoWord[] = [];
@@ -370,9 +374,24 @@ export class EditorWordComponent {
   }
 
   formatar(comando: string, valor?: string): void {
+    this.salvarSelecaoWord();
+    this.restaurarSelecaoWord();
     this.editor.nativeElement.focus();
     document.execCommand(comando, false, valor);
   }
+
+  alterarFamiliaFonteWord(fonte: string): void {
+    this.familiaFonteWord = fonte;
+    this.formatar('fontName', fonte);
+  }
+
+  aplicarCorTextoWord(cor: string): void {
+    this.corTextoWord = cor;
+    this.formatar('foreColor', cor);
+  }
+
+  desfazerWord(): void { this.formatar('undo'); }
+  refazerWord(): void { this.formatar('redo'); }
 
   alterarFonte(tamanho: string): void {
     this.formatar('fontSize', tamanho);

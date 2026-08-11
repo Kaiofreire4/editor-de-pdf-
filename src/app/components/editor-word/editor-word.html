@@ -10,11 +10,16 @@
       <button class="abnt-action" [class.active]="normaAbntAtiva" type="button" (click)="alternarNormaAbnt()" title="Aplicar ou remover formatação ABNT">
         {{ normaAbntAtiva ? '✓ ABNT ativa' : 'ABNT automático' }}
       </button>
-      <button class="remove-highlight-action" type="button" (mousedown)="$event.preventDefault()" (click)="removerMarcaTextoWord()" title="Remover marca-texto da seleção">Remover marca</button>
+       <button class="remove-highlight-action" type="button" (mousedown)="$event.preventDefault()" (click)="removerMarcaTextoWord()" title="Remover marca-texto da seleção">Remover marca</button>
+       <button class="history-action" type="button" (mousedown)="$event.preventDefault()" (click)="desfazerWord()" title="Desfazer">↶</button>
+       <button class="history-action" type="button" (mousedown)="$event.preventDefault()" (click)="refazerWord()" title="Refazer">↷</button>
     </div>
     <div class="toolbar-separator"></div>
-    <div class="toolbar-group formatting-group" aria-label="Formatação">
-      <select aria-label="Tamanho da fonte" #fontSize (change)="alterarFonte(fontSize.value)">
+     <div class="toolbar-group formatting-group" aria-label="Formatação">
+       <select class="font-family-select" aria-label="Fonte" [ngModel]="familiaFonteWord" (mousedown)="salvarSelecaoWord()" (ngModelChange)="alterarFamiliaFonteWord($event)">
+         @for (fonte of fontesWord; track fonte) { <option [value]="fonte">{{ fonte }}</option> }
+       </select>
+       <select aria-label="Tamanho da fonte" #fontSize (change)="alterarFonte(fontSize.value)">
         <option value="3">Tamanho</option>
         <option value="2">12</option>
         <option value="3">14</option>
@@ -26,7 +31,14 @@
       <button type="button" (click)="formatar('italic')" title="Itálico"><i>I</i></button>
       <button type="button" (click)="formatar('underline')" title="Sublinhado"><u>U</u></button>
       <button type="button" (click)="formatar('strikeThrough')" title="Tachado"><s>S</s></button>
-      <button type="button" (click)="formatar('removeFormat')" title="Limpar formatação">Tx</button>
+       <button type="button" (click)="formatar('removeFormat')" title="Limpar formatação">Tx</button>
+       <label class="text-color-picker" title="Cor do texto">
+         <span [style.background]="corTextoWord"></span>
+         <input type="color" [ngModel]="corTextoWord" (mousedown)="salvarSelecaoWord()" (ngModelChange)="aplicarCorTextoWord($event)" aria-label="Cor do texto" />
+       </label>
+       @for (cor of coresTextoWord; track cor) {
+         <button type="button" class="text-color-swatch" [class.active]="corTextoWord === cor" [style.background]="cor" (mousedown)="salvarSelecaoWord(); $event.preventDefault()" (click)="aplicarCorTextoWord(cor)" [title]="'Texto ' + cor"></button>
+       }
        <button class="highlight-button" type="button" (mousedown)="$event.preventDefault()" (click)="marcarTextoWord()" title="Marcar texto selecionado">▰</button>
        <label class="highlight-color-picker" title="Cor do marca-texto">
          <span [style.background]="corMarcaTextoWord"></span>

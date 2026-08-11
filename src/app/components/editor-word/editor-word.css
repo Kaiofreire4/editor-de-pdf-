@@ -6,6 +6,8 @@
 .toolbar-group button, .toolbar-group select { height: 31px; min-width: 30px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #596174; cursor: pointer; font: 600 12px inherit; padding: 0 8px; }
 .toolbar-group button:hover, .toolbar-group select:hover { background: #f0efff; border-color: #d8d4ff; color: #6556d9; }
 .toolbar-group select { border-color: #e2e5ed; background: #fafbfc; min-width: 92px; }
+.font-family-select { min-width: 128px !important; }
+.history-action { width: 28px; min-width: 28px !important; padding: 0 !important; font-size: 17px !important; }
 .heading-select { min-width: 145px !important; }
 .highlight-button { color: #8a7200 !important; background: #fff8c9 !important; border-color: #f1df77 !important; }
 .highlight-button:hover { color: #624f00 !important; background: #ffe45c !important; }
@@ -35,6 +37,11 @@
 .abnt-update:hover { border-color: #d8d4ff; color: #6556d9; }
 .remove-highlight-action { height: 34px; border: 1px solid #f1df77; border-radius: 7px; padding: 0 10px; color: #8a7200; background: #fff8c9; cursor: pointer; font: 700 11px inherit; white-space: nowrap; }
 .remove-highlight-action:hover { color: #624f00; background: #ffe45c; border-color: #e2c82f; }
+.text-color-picker { position: relative; display: grid; place-items: center; width: 31px; height: 31px; border: 1px solid #d8d4ff; border-radius: 6px; background: #f0efff; cursor: pointer; overflow: hidden; }
+.text-color-picker span { width: 17px; height: 17px; border: 1px solid rgba(0, 0, 0, .2); border-radius: 50%; }
+.text-color-picker input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.text-color-swatch { width: 18px !important; min-width: 18px !important; height: 18px !important; padding: 0 !important; border: 2px solid transparent !important; border-radius: 50% !important; }
+.text-color-swatch:hover, .text-color-swatch.active { border-color: #6556d9 !important; box-shadow: 0 0 0 2px rgba(101, 86, 217, .2); }
 .toolbar-separator { width: 1px; height: 25px; background: #e7eaf1; margin: 0 4px; }
 .toolbar-spacer { flex: 1; }
 .zoom-group { color: #858b9f; font-size: 11px; }
