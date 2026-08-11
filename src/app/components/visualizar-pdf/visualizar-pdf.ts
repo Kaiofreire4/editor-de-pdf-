@@ -80,6 +80,8 @@ export class VisualizarPdfComponent {
         });
         this.docxHtml = resultado.value || '<p>Documento vazio.</p>';
         this.docxCarregado = true;
+        this.cdr.detectChanges();
+        await this.aguardarLayout();
         return;
       }
 
@@ -94,6 +96,7 @@ export class VisualizarPdfComponent {
       this.paginaAtual = 1;
       this.pdfCarregado = true;
       this.cdr.detectChanges();
+      await this.aguardarLayout();
       await this.renderizarPagina(this.paginaAtual);
       setTimeout(() => this.aplicarZoomAutomatico(), 180);
     } catch (error: any) {
@@ -130,6 +133,12 @@ export class VisualizarPdfComponent {
     if (!this.pdfCarregado) return;
     this.escala = Number(Math.min(3, this.escala + 0.01).toFixed(2));
     void this.renderizarPagina(this.paginaAtual);
+  }
+
+  private aguardarLayout(): Promise<void> {
+    return new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
   }
 
   private tentarRenderizarNovamente(numPagina: number): void {
