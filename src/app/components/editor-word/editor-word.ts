@@ -23,6 +23,7 @@ interface Modelo {
 
 interface TracoWord {
   pontos: Array<{ x: number; y: number }>;
+  cor: string;
 }
 
 @Component({
@@ -51,6 +52,7 @@ export class EditorWordComponent {
   alturaImagem = 0;
   manterProporcaoImagem = true;
   modoMarcaTextoWord = false;
+  corMarcaTextoWord = '#ffe45c';
   modoBorrachaWord = false;
   tracosWord: TracoWord[] = [];
   private tracoWordEmAndamento: TracoWord | null = null;
@@ -377,7 +379,8 @@ export class EditorWordComponent {
   }
 
   marcarTextoWord(): void {
-    this.formatar('hiliteColor', '#ffe45c');
+    this.formatar('hiliteColor', this.corMarcaTextoWord);
+    this.formatar('backColor', this.corMarcaTextoWord);
     this.desativarAnotacaoWord();
   }
 
@@ -485,7 +488,7 @@ export class EditorWordComponent {
     const svg = event.currentTarget as SVGElement;
     const ponto = this.pontoWord(event, svg);
     svg.setPointerCapture(event.pointerId);
-    this.tracoWordEmAndamento = { pontos: [ponto] };
+    this.tracoWordEmAndamento = { pontos: [ponto], cor: this.corMarcaTextoWord };
     this.tracosWord = [...this.tracosWord, this.tracoWordEmAndamento];
   }
 
@@ -806,9 +809,18 @@ export class EditorWordComponent {
       } else if (child.children.length > 0) {
         runs.push(...this.criarRuns(child));
       } else if (text) {
-        runs.push(new TextRun(text));
+        const background = this.corHtmlParaHex(child.style.backgroundColor);
+        runs.push(new TextRun({ text, shading: background ? { fill: background } : undefined }));
       }
     });
     return runs.length > 0 ? runs : [new TextRun('')];
+  }
+
+  private corHtmlParaHex(cor: string): string | null {
+    const match = /^#([0-9a-f]{6})$/i.exec(cor || '');
+    if (match) return match[1].toUpperCase();
+    const rgb = /^rgba?\((\d+),\s*(\d+),\s*(\d+)/i.exec(cor || '');
+    if (!rgb) return null;
+    return [rgb[1], rgb[2], rgb[3]].map((valor) => Number(valor).toString(16).padStart(2, '0')).join('').toUpperCase();
   }
 }

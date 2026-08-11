@@ -24,6 +24,7 @@ interface SpanItem {
   color: string;
   destacado?: boolean;
   fundo?: string;
+  corDestaque?: string;
   textAlign: 'left' | 'center' | 'right';
   verticalAlign: 'top' | 'middle' | 'bottom';
   novo?: boolean;
@@ -85,6 +86,7 @@ export class EditarTextoComponent {
   imagemPendente: string | null = null;
   miniaturasAbertas = true;
   corCaneta = '#d32f2f';
+  corMarcaTexto = '#ffe45c';
   larguraCaneta = 3;
   tracosDaPagina: TracoCaneta[] = [];
   exportandoPdf = false;
@@ -556,7 +558,7 @@ export class EditarTextoComponent {
     svg.setPointerCapture(event.pointerId);
     this.tracoEmAndamento = {
       pontos: [ponto],
-      cor: this.modoMarcaTexto ? '#ffe45c' : this.corCaneta,
+       cor: this.modoMarcaTexto ? this.corMarcaTexto : this.corCaneta,
       largura: this.modoMarcaTexto ? 16 : this.larguraCaneta,
       opacidade: this.modoMarcaTexto ? 0.38 : 1,
     };
@@ -735,6 +737,7 @@ export class EditarTextoComponent {
     const span = this.spansDaPagina.find((item) => item.id === id);
     if (!span) return;
     span.destacado = !span.destacado;
+    if (span.destacado) span.corDestaque = this.corMarcaTexto;
     this.spansPorPagina.set(this.paginaAtual - 1, this.spansDaPagina);
     event?.stopPropagation();
     this.cdr.detectChanges();
@@ -924,6 +927,19 @@ export class EditarTextoComponent {
   aplicarCor(cor: string) {
     const span = this.spanAtivo;
     if (span) { span.color = cor; this.marcarModificadoPorFormatacao(span); }
+  }
+
+  alterarCorAnotacao(cor: string) {
+    if (this.modoMarcaTexto) this.corMarcaTexto = cor;
+    else this.corCaneta = cor;
+  }
+
+  corDestaqueCss(span: SpanItem): string {
+    const cor = span.corDestaque || this.corMarcaTexto;
+    const match = /^#([0-9a-f]{6})$/i.exec(cor);
+    if (!match) return 'rgba(255, 228, 92, .42)';
+    const valor = Number.parseInt(match[1], 16);
+    return `rgba(${(valor >> 16) & 255}, ${(valor >> 8) & 255}, ${valor & 255}, .42)`;
   }
 
   aplicarAlinhamento(alinhamento: 'left' | 'center' | 'right') {
@@ -1138,7 +1154,7 @@ export class EditarTextoComponent {
 
     for (const destaque of destaques) {
       const [x0, y0, x1, y1] = destaque.bbox;
-      context.fillStyle = 'rgba(255, 228, 92, 0.42)';
+       context.fillStyle = this.corDestaqueCss(destaque);
       context.fillRect(x0, y0, x1 - x0, y1 - y0);
     }
 

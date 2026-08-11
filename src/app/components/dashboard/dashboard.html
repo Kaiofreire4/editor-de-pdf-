@@ -7,8 +7,8 @@
   </nav>
 
   <main class="content-area">
-    <app-organizar-pdf *ngIf="abaAtiva === 'organizar'"></app-organizar-pdf>
-    <app-editar-texto *ngIf="abaAtiva === 'editar'"></app-editar-texto>
-    <app-visualizar-pdf *ngIf="abaAtiva === 'visualizar'"></app-visualizar-pdf>
+    <app-organizar-pdf [hidden]="abaAtiva !== 'organizar'"></app-organizar-pdf>
+    <app-editar-texto [hidden]="abaAtiva !== 'editar'"></app-editar-texto>
+    <app-visualizar-pdf [hidden]="abaAtiva !== 'visualizar'"></app-visualizar-pdf>
   </main>
 </div>

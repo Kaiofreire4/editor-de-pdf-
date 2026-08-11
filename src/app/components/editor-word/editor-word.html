@@ -27,7 +27,11 @@
       <button type="button" (click)="formatar('underline')" title="Sublinhado"><u>U</u></button>
       <button type="button" (click)="formatar('strikeThrough')" title="Tachado"><s>S</s></button>
       <button type="button" (click)="formatar('removeFormat')" title="Limpar formatação">Tx</button>
-      <button class="highlight-button" type="button" (mousedown)="$event.preventDefault()" (click)="marcarTextoWord()" title="Marcar texto selecionado">▰</button>
+       <button class="highlight-button" type="button" (mousedown)="$event.preventDefault()" (click)="marcarTextoWord()" title="Marcar texto selecionado">▰</button>
+       <label class="highlight-color-picker" title="Cor do marca-texto">
+         <span [style.background]="corMarcaTextoWord"></span>
+         <input type="color" [(ngModel)]="corMarcaTextoWord" aria-label="Cor do marca-texto" />
+       </label>
       <button class="remove-highlight-button" type="button" (mousedown)="$event.preventDefault()" (click)="removerMarcaTextoWord()" title="Remover marca-texto da seleção">▱</button>
       <button class="highlight-button draw-highlight-button" [class.active]="modoMarcaTextoWord" type="button" (click)="alternarMarcaTextoWord()" title="Desenhar marca-texto">✎</button>
       <button class="highlight-button eraser-button" [class.active]="modoBorrachaWord" type="button" (click)="alternarBorrachaWord()" title="Apagar marca-texto desenhado">⌫</button>
@@ -107,7 +111,7 @@
         </div>
         <svg class="word-marker-layer" [class.active]="modoMarcaTextoWord || modoBorrachaWord" viewBox="0 0 800 1100" (pointerdown)="iniciarTracoWord($event)" (pointermove)="continuarTracoWord($event)" (pointerup)="finalizarTracoWord($event)" (pointercancel)="finalizarTracoWord($event)">
           @for (traco of tracosWord; track $index) {
-            <polyline [attr.points]="pontosTracoWord(traco)" fill="none" stroke="#ffe45c" stroke-opacity=".42" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></polyline>
+             <polyline [attr.points]="pontosTracoWord(traco)" fill="none" [attr.stroke]="traco.cor" stroke-opacity=".42" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></polyline>
           }
         </svg>
       </div>

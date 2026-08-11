@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterModule, Router } from '@angular/router';
 import { LocalPdfRecord, LocalPdfStorageService } from './services/local-pdf-storage';
 import { AuthService, UsuarioAutenticado } from './services/auth-service';
+import { EditorRouteReuseStrategy } from './services/editor-route-reuse-strategy';
 
 @Component({
   selector: 'app-root',
@@ -28,6 +29,7 @@ export class AppComponent implements OnInit {
   private localPdfStorage = inject(LocalPdfStorageService);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private routeReuse = inject(EditorRouteReuseStrategy);
 
   constructor(private http: HttpClient) {}
 
@@ -48,6 +50,7 @@ export class AppComponent implements OnInit {
   }
 
   sair() {
+    this.routeReuse.limpar();
     this.auth.sair();
     void this.router.navigateByUrl('/login');
   }

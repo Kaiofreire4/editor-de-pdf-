@@ -113,9 +113,9 @@
     @if (modoCaneta || modoMarcaTexto || modoBorracha) {
       <div class="format-toolbar pen-toolbar" (click)="$event.stopPropagation()">
         <span class="image-toolbar-title">{{ modoBorracha ? 'Borracha' : modoMarcaTexto ? 'Marca-texto' : 'Caneta' }}</span>
-        <label class="color-picker" title="Cor da caneta">
-          <span [style.background]="corCaneta"></span>
-          <input type="color" [(ngModel)]="corCaneta" />
+        <label class="color-picker" [title]="modoMarcaTexto ? 'Cor do marca-texto' : 'Cor da caneta'">
+          <span [style.background]="modoMarcaTexto ? corMarcaTexto : corCaneta"></span>
+          <input type="color" [ngModel]="modoMarcaTexto ? corMarcaTexto : corCaneta" (ngModelChange)="alterarCorAnotacao($event)" />
         </label>
         <label class="image-size-field" *ngIf="modoCaneta">Espessura
           <input type="number" min="1" max="20" [(ngModel)]="larguraCaneta" />
@@ -154,7 +154,7 @@
                   [style.top.px]="span.y"
                    [style.width.px]="span.w"
                    [style.height.px]="span.h"
-                   [style.background]="span.id === spanAtivoId ? (span.fundo || '#fff') : null"
+                    [style.background]="span.id === spanAtivoId ? (span.fundo || '#fff') : span.destacado ? corDestaqueCss(span) : null"
                   (click)="selecionarOuAdicionarTexto(span.id, $event)"
                 >
                   @if (span.id === spanAtivoId) {
