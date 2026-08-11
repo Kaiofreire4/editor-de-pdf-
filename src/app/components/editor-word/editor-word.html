@@ -6,7 +6,7 @@
     <div class="toolbar-group file-group">
       <button class="primary-action" type="button" (click)="abrirArquivo()">Abrir Word</button>
       <button class="secondary-action" type="button" (click)="criarDocumento()">Novo</button>
-      <button class="secondary-action page-action" type="button" [disabled]="!arquivoCarregado" (click)="adicionarPaginaWord()">＋ Página nova</button>
+      <button class="secondary-action page-action" type="button" (click)="adicionarPaginaWord()">＋ Página nova</button>
       <button class="secondary-action templates-action" type="button" (click)="abrirModelos()">🎨 Modelos</button>
       <button class="abnt-action" [class.active]="normaAbntAtiva" type="button" (click)="alternarNormaAbnt()" title="Aplicar ou remover formatação ABNT">
         {{ normaAbntAtiva ? '✓ ABNT ativa' : 'ABNT automático' }}
@@ -91,6 +91,12 @@
     <label>Altura <input type="number" min="20" [value]="alturaImagem" (input)="alterarTamanhoImagemWord('h', +$any($event.target).value)" /></label>
     <label class="image-ratio"><input type="checkbox" [(ngModel)]="manterProporcaoImagem" /> Proporção</label>
     <button type="button" class="remove-image-button" (click)="removerImagemWord()" title="Remover imagem">Remover imagem</button>
+  </div>
+
+  <div class="document-page-toolbar">
+    <strong>Organização do documento</strong>
+    <span>O conteúdo cria uma nova folha ao chegar ao fim da página.</span>
+    <button type="button" (click)="adicionarPaginaWord()">＋ Adicionar página</button>
   </div>
 
   <div class="word-body">

@@ -52,6 +52,11 @@
 .image-edit-toolbar strong { color: #34384c; }
 .image-edit-toolbar label { display: flex; align-items: center; gap: 5px; }
 .image-edit-toolbar input[type="number"] { width: 68px; height: 27px; border: 1px solid #dfe3ec; border-radius: 5px; padding: 0 5px; color: #34384c; }
+.document-page-toolbar { display: flex; align-items: center; gap: 12px; min-height: 42px; padding: 6px 18px; border-bottom: 1px solid #e6e9f0; background: #f7f6ff; color: #73788b; font-size: 11px; }
+.document-page-toolbar strong { color: #34384c; }
+.document-page-toolbar span { flex: 1; }
+.document-page-toolbar button { border: 1px solid #cfc9ff; border-radius: 6px; background: #fff; color: #6556d9; padding: 7px 12px; cursor: pointer; font: 650 11px inherit; }
+.document-page-toolbar button:hover { background: #eeeaff; }
 .remove-image-button { border: 1px solid #f0c6cc; border-radius: 5px; background: #fff4f5; color: #c33f50; padding: 6px 10px; cursor: pointer; font: 600 11px inherit; }
 .remove-image-button:hover { background: #ffe6e9; }
 .image-ratio { gap: 4px !important; }
@@ -71,7 +76,8 @@
 .word-status { max-width: 800px; margin: 0 auto 14px; padding: 9px 12px; border-radius: 7px; background: #e9f7f0; color: #27815d; font-size: 11px; }
 .word-status.loading { background: #f0efff; color: #6556d9; }
 .paper-wrap { position: relative; width: 800px; min-height: 1100px; margin: 0 auto; transition: transform .15s ease; }
-.word-paper { box-sizing: border-box; width: 800px; height: 1100px; min-height: 1100px; max-height: 1100px; margin: 0 auto 28px; padding: 76px 82px; outline: none; overflow: hidden; background: #fff; box-shadow: 0 4px 22px rgba(36, 40, 59, .12); color: #252938; font-family: Calibri, Arial, sans-serif; font-size: 15px; line-height: 1.55; }
+.word-paper { position: relative; box-sizing: border-box; width: 800px; height: 1100px; min-height: 1100px; max-height: 1100px; margin: 0 auto 42px; padding: 76px 82px; outline: none; overflow: hidden; background: #fff; box-shadow: 0 4px 22px rgba(36, 40, 59, .12); color: #252938; font-family: Calibri, Arial, sans-serif; font-size: 15px; line-height: 1.55; }
+.word-paper::after { content: 'FIM DA PÁGINA'; position: absolute; right: 16px; bottom: 14px; color: #c1bdcf; font-size: 9px; letter-spacing: .6px; pointer-events: none; }
 .page-action:disabled { cursor: not-allowed; opacity: .45; }
 .word-paper:focus { box-shadow: 0 4px 22px rgba(101, 86, 217, .16); }
 .word-paper img { cursor: grab; touch-action: none; }

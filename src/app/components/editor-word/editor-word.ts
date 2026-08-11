@@ -416,7 +416,7 @@ export class EditorWordComponent {
   }
 
   adicionarPaginaWord(): void {
-    if (!this.arquivoCarregado) return;
+    if (!this.arquivoCarregado) this.criarDocumento();
     const pagina = this.criarPaginaWord();
     this.paperWrap.nativeElement.insertBefore(pagina, this.paperWrap.nativeElement.querySelector('.word-marker-layer'));
     pagina.focus();
