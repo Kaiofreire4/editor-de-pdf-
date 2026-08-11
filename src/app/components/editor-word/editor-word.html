@@ -133,6 +133,37 @@
     </main>
   </div>
 
+  <div class="dialog-overlay" *ngIf="dialogoAberto" (click)="fecharDialogo()">
+    <form class="editor-dialog" (click)="$event.stopPropagation()" (submit)="$event.preventDefault(); confirmarDialogo()">
+      <div class="editor-dialog-header">
+        <div>
+          <h2>{{ tipoDialogo === 'tabela' ? 'Inserir tabela' : tipoDialogo === 'grafico' ? 'Inserir gráfico' : 'Inserir link' }}</h2>
+          <p>{{ tipoDialogo === 'tabela' ? 'Configure o tamanho da tabela.' : tipoDialogo === 'grafico' ? 'Informe os dados separados por vírgula.' : 'Cole um endereço começando com http:// ou https://.' }}</p>
+        </div>
+        <button type="button" class="editor-dialog-close" (click)="fecharDialogo()" aria-label="Fechar">×</button>
+      </div>
+
+      <div class="editor-dialog-fields" *ngIf="tipoDialogo === 'tabela'">
+        <label>Linhas <input type="number" name="tabelaLinhas" min="1" max="20" [(ngModel)]="tabelaLinhas" /></label>
+        <label>Colunas <input type="number" name="tabelaColunas" min="1" max="20" [(ngModel)]="tabelaColunas" /></label>
+      </div>
+      <label class="editor-dialog-field" *ngIf="tipoDialogo === 'grafico'">Título
+        <input type="text" name="dialogoTitulo" [(ngModel)]="dialogoTitulo" maxlength="100" />
+      </label>
+      <label class="editor-dialog-field" *ngIf="tipoDialogo === 'grafico'">Dados
+        <textarea name="dialogoDados" [(ngModel)]="dialogoDados" rows="3"></textarea>
+      </label>
+      <label class="editor-dialog-field" *ngIf="tipoDialogo === 'link'">Endereço
+        <input type="url" name="dialogoUrl" [(ngModel)]="dialogoUrl" placeholder="https://exemplo.com" />
+      </label>
+
+      <div class="editor-dialog-actions">
+        <button type="button" class="dialog-cancel" (click)="fecharDialogo()">Cancelar</button>
+        <button type="submit" class="dialog-confirm">Inserir</button>
+      </div>
+    </form>
+  </div>
+
   <!-- MODAL DE MODELOS (estilo Canva) -->
   <div class="modelos-modal-overlay" *ngIf="mostrarModelos" (click)="fecharModelos()">
     <div class="modelos-modal" (click)="$event.stopPropagation()">

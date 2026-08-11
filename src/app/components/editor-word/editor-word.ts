@@ -72,6 +72,13 @@ export class EditorWordComponent {
 
   // ---------- Modelos (estilo Canva) ----------
   mostrarModelos = false;
+  dialogoAberto = false;
+  tipoDialogo: 'tabela' | 'grafico' | 'link' = 'tabela';
+  tabelaLinhas = 3;
+  tabelaColunas = 3;
+  dialogoTitulo = '';
+  dialogoDados = '';
+  dialogoUrl = '';
 
   modelos: Modelo[] = [
     {
@@ -262,27 +269,61 @@ export class EditorWordComponent {
   }
 
   inserirTabela(): void {
-    const linhas = this.lerNumero('Quantas linhas?', 3);
-    const colunas = this.lerNumero('Quantas colunas?', 3);
-    if (!linhas || !colunas) return;
+    this.salvarSelecaoWord();
+    this.tipoDialogo = 'tabela';
+    this.tabelaLinhas = 3;
+    this.tabelaColunas = 3;
+    this.dialogoAberto = true;
+  }
 
-    let html = '<table class="tpl-tabela"><thead><tr>';
-    for (let coluna = 1; coluna <= colunas; coluna++) html += `<th>Coluna ${coluna}</th>`;
-    html += '</tr></thead><tbody>';
-    for (let linha = 1; linha < linhas; linha++) {
-      html += '<tr>';
-      for (let coluna = 1; coluna <= colunas; coluna++) html += `<td>Texto ${linha}</td>`;
-      html += '</tr>';
+  abrirDialogoGrafico(): void {
+    this.salvarSelecaoWord();
+    this.tipoDialogo = 'grafico';
+    this.dialogoTitulo = 'Gráfico';
+    this.dialogoDados = 'Janeiro:10, Fevereiro:20';
+    this.dialogoAberto = true;
+  }
+
+  abrirDialogoLink(): void {
+    this.salvarSelecaoWord();
+    this.tipoDialogo = 'link';
+    this.dialogoUrl = 'https://';
+    this.dialogoAberto = true;
+  }
+
+  fecharDialogo(): void {
+    this.dialogoAberto = false;
+  }
+
+  confirmarDialogo(): void {
+    if (this.tipoDialogo === 'tabela') {
+      const linhas = Math.max(1, Math.min(20, Math.trunc(Number(this.tabelaLinhas))));
+      const colunas = Math.max(1, Math.min(20, Math.trunc(Number(this.tabelaColunas))));
+
+      let html = '<table class="tpl-tabela"><thead><tr>';
+      for (let coluna = 1; coluna <= colunas; coluna++) html += `<th>Coluna ${coluna}</th>`;
+      html += '</tr></thead><tbody>';
+      for (let linha = 1; linha < linhas; linha++) {
+        html += '<tr>';
+        for (let coluna = 1; coluna <= colunas; coluna++) html += `<td>Texto ${linha}</td>`;
+        html += '</tr>';
+      }
+      html += '</tbody></table><p><br></p>';
+      this.inserirHtml(html);
+    } else if (this.tipoDialogo === 'grafico') {
+      this.inserirGraficoComDados(this.dialogoTitulo, this.dialogoDados);
+    } else {
+      this.inserirLinkComUrl(this.dialogoUrl);
     }
-    html += '</tbody></table><p><br></p>';
-    this.inserirHtml(html);
+    this.fecharDialogo();
   }
 
   inserirGrafico(): void {
-    const titulo = window.prompt('Título do gráfico:', 'Gráfico');
-    if (titulo === null) return;
-    const dados = window.prompt('Informe os dados no formato: Janeiro:10, Fevereiro:20', 'Janeiro:10, Fevereiro:20');
-    if (!dados) return;
+    this.abrirDialogoGrafico();
+  }
+
+  private inserirGraficoComDados(titulo: string, dados: string): void {
+    if (!titulo.trim() || !dados.trim()) return;
 
     const itens = dados.split(',').map((item) => {
       const [rotulo, valor] = item.split(':');
@@ -292,12 +333,16 @@ export class EditorWordComponent {
     if (itens.length === 0) return;
 
     const barras = itens.map((item) => `<div class="chart-row"><span>${item.rotulo}</span><i style="width:${Math.max(3, item.valor / maiorValor * 100)}%"></i><b>${item.valor}</b></div>`).join('');
-    this.inserirHtml(`<div class="word-chart" contenteditable="false"><strong>${titulo}</strong>${barras}</div><p><br></p>`);
+    this.inserirHtml(`<div class="word-chart" contenteditable="false"><strong>${titulo.trim()}</strong>${barras}</div><p><br></p>`);
   }
 
   inserirLink(): void {
-    const url = window.prompt('Cole o endereço do link:', 'https://');
+    this.abrirDialogoLink();
+  }
+
+  private inserirLinkComUrl(url: string): void {
     if (!url || !/^https?:\/\//i.test(url)) return;
+    this.restaurarSelecaoWord();
     this.editor.nativeElement.focus();
     const selecao = window.getSelection()?.toString().trim();
     if (selecao) document.execCommand('createLink', false, url);
@@ -307,13 +352,6 @@ export class EditorWordComponent {
   private inserirHtml(html: string): void {
     this.editor.nativeElement.focus();
     document.execCommand('insertHTML', false, html);
-  }
-
-  private lerNumero(mensagem: string, padrao: number): number | null {
-    const valor = window.prompt(mensagem, String(padrao));
-    if (valor === null) return null;
-    const numero = Number.parseInt(valor, 10);
-    return Number.isInteger(numero) && numero > 0 && numero <= 20 ? numero : null;
   }
 
   async selecionarArquivo(event: Event): Promise<void> {

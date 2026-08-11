@@ -124,6 +124,22 @@
 .empty-actions { display: flex; gap: 10px; }
 .empty-actions .templates-action { background: #2f78c4; }
 
+.dialog-overlay { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 20px; background: rgba(25, 28, 45, .5); backdrop-filter: blur(3px); }
+.editor-dialog { width: min(430px, 100%); padding: 22px; border: 1px solid #e1e3ed; border-radius: 14px; background: #fff; box-shadow: 0 22px 55px rgba(25, 28, 45, .25); color: #202438; }
+.editor-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 20px; }
+.editor-dialog-header h2 { margin: 0; color: #34384c; font-size: 18px; }
+.editor-dialog-header p { margin: 6px 0 0; color: #858b9f; font-size: 12px; line-height: 1.4; }
+.editor-dialog-close { width: 30px; height: 30px; border: 0; border-radius: 50%; background: #f0efff; color: #6556d9; cursor: pointer; font-size: 20px; line-height: 1; }
+.editor-dialog-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.editor-dialog-field, .editor-dialog-fields label { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; color: #596174; font-size: 12px; font-weight: 700; }
+.editor-dialog input, .editor-dialog textarea { width: 100%; border: 1px solid #dfe3ec; border-radius: 7px; padding: 9px 10px; background: #fbfcfe; color: #202438; font: 13px inherit; resize: vertical; }
+.editor-dialog input:focus, .editor-dialog textarea:focus { outline: 0; border-color: #6556d9; box-shadow: 0 0 0 3px rgba(101, 86, 217, .13); }
+.editor-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+.dialog-cancel, .dialog-confirm { min-height: 34px; padding: 0 15px; border-radius: 7px; cursor: pointer; font: 700 12px inherit; }
+.dialog-cancel { border: 1px solid #dfe3ec; background: #fff; color: #596174; }
+.dialog-confirm { border: 0; background: #6556d9; color: #fff; }
+.dialog-confirm:hover { background: #5545c8; }
+
 /* ---------- Botão de modelos ---------- */
 .templates-action { background: #2f78c4 !important; border-color: #2f78c4 !important; }
 .templates-action:hover { background: #2668ad !important; color: #fff !important; }
