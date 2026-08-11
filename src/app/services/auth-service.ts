@@ -153,7 +153,9 @@ export class AuthService {
           this._acessoSubject.next(true);
         }),
       ),
-    ).then(() => undefined);
+    ).then(async () => {
+      await this.carregarIcone();
+    });
   }
 
   private limpar(): void {
