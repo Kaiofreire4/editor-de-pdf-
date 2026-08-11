@@ -82,7 +82,7 @@
       <span>{{ zoom }}%</span>
       <button type="button" (click)="aumentarZoom()">+</button>
     </div>
-    <button class="export-action" type="button" [disabled]="!arquivoCarregado || carregando" (click)="exportar()">Baixar .docx</button>
+    <button class="export-action" type="button" [disabled]="!arquivoCarregado || carregando" (click)="exportar()">Salvar .docx</button>
   </div>
 
   <div class="image-edit-toolbar" *ngIf="imagemAtiva" (click)="$event.stopPropagation()">

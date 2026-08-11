@@ -856,8 +856,13 @@ export class EditorWordComponent {
       this.atualizarSumarioAbnt();
       this.atualizarReferenciasAbnt();
     }
-    const paragraphs = Array.from(this.paperWrap.nativeElement.querySelectorAll<HTMLElement>('.word-paper'))
-      .flatMap((pagina) => this.criarParagrafos(pagina));
+    const paginasWord = Array.from(this.paperWrap.nativeElement.querySelectorAll<HTMLElement>('.word-paper'));
+    const paragraphs = paginasWord.flatMap((pagina, indice) => {
+      const paragrafos = this.criarParagrafos(pagina);
+      return indice === 0
+        ? paragrafos
+        : [new Paragraph({ pageBreakBefore: true, children: [new TextRun('')] }), ...paragrafos];
+    });
     const documento = new Document({
       sections: [{
         properties: this.normaAbntAtiva ? {
@@ -894,7 +899,7 @@ export class EditorWordComponent {
     link.download = `${this.nomeArquivo || 'documento'}.docx`;
     link.click();
     URL.revokeObjectURL(url);
-    this.mensagem = 'Documento exportado com sucesso.';
+    this.mensagem = 'Documento salvo com sucesso.';
   }
 
   private criarParagrafos(container: HTMLElement): Paragraph[] {
