@@ -14,6 +14,18 @@
   display: block;
 }
 
+.docx-page { width: min(800px, calc(100vw - 48px)); min-height: 1100px; }
+.docx-content { box-sizing: border-box; min-height: 1100px; padding: 76px 82px; color: #252938; font: 15px/1.55 Calibri, Arial, sans-serif; overflow-wrap: anywhere; }
+.docx-content h1, .docx-content h2, .docx-content h3 { color: #202438; line-height: 1.2; }
+.docx-content h1 { font-size: 30px; }
+.docx-content h2 { font-size: 23px; }
+.docx-content h3 { font-size: 18px; }
+.docx-content p { margin: 0 0 13px; }
+.docx-content img { max-width: 100%; height: auto; }
+.docx-content table { width: 100%; border-collapse: collapse; margin: 14px 0; }
+.docx-content td, .docx-content th { padding: 6px 8px; border: 1px solid #dfe3ec; vertical-align: top; }
+.docx-content th { background: #f5f7fb; }
+
 /* ---------- ESTADO VAZIO ---------- */
 .empty-state {
   position: absolute;

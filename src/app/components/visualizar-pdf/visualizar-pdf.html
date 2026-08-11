@@ -4,8 +4,8 @@
   <div class="word-ribbon">
     <div class="ribbon-group">
       <div class="ribbon-row">
-        <button class="ribbon-btn big" title="Abrir PDF" (click)="fileInputVis.click()"><span class="ico">📂</span><span class="lbl">Abrir</span></button>
-        <button class="ribbon-btn big" title="Imprimir" (click)="imprimir()" [disabled]="!pdfCarregado"><span class="ico">🖨️</span><span class="lbl">Imprimir</span></button>
+        <button class="ribbon-btn big" title="Abrir PDF ou DOCX" (click)="fileInputVis.click()"><span class="ico">📂</span><span class="lbl">Abrir</span></button>
+        <button class="ribbon-btn big" title="Imprimir" (click)="imprimir()" [disabled]="!documentoCarregado"><span class="ico">🖨️</span><span class="lbl">Imprimir</span></button>
       </div>
       <span class="ribbon-label">Documento</span>
     </div>
@@ -23,12 +23,13 @@
 
   <!-- ÁREA DA PÁGINA -->
   <div class="word-canvas-area">
-    <div class="word-page">
-      <canvas #pdfCanvasVis class="pdf-canvas-vis" [style.display]="pdfCarregado ? 'block' : 'none'"></canvas>
-      <div *ngIf="!pdfCarregado" class="empty-state">
-        <div class="empty-icon">👁️</div>
-        <p class="empty-title">Nenhum PDF selecionado para visualização</p>
-        <p class="empty-hint">Clique em <strong>Abrir</strong> na faixa de opções para carregar o documento em modo de leitura.</p>
+       <div class="word-page" [class.docx-page]="docxCarregado">
+       <canvas #pdfCanvasVis class="pdf-canvas-vis" [style.display]="pdfCarregado ? 'block' : 'none'"></canvas>
+       <article *ngIf="docxCarregado" class="docx-content" [innerHTML]="docxHtml"></article>
+       <div *ngIf="!documentoCarregado" class="empty-state">
+         <div class="empty-icon">👁️</div>
+         <p class="empty-title">Nenhum documento selecionado para visualização</p>
+         <p class="empty-hint">Abra um arquivo <strong>PDF ou DOCX</strong> para ler o documento.</p>
       </div>
     </div>
   </div>
@@ -37,7 +38,7 @@
   <div class="word-statusbar">
     <div class="status-left">
       <button class="status-btn" [disabled]="!pdfCarregado || paginaAtual <= 1" (click)="mudarPagina(-1)">‹</button>
-      <span class="status-item">{{ pdfCarregado ? 'Página ' + paginaAtual + ' de ' + totalPaginas : 'Pronto' }}</span>
+       <span class="status-item">{{ pdfCarregado ? 'Página ' + paginaAtual + ' de ' + totalPaginas : docxCarregado ? nomeArquivo : 'Pronto' }}</span>
       <button class="status-btn" [disabled]="!pdfCarregado || paginaAtual >= totalPaginas" (click)="mudarPagina(1)">›</button>
     </div>
     <div class="status-right">
@@ -47,5 +48,5 @@
     </div>
   </div>
 
-  <input type="file" #fileInputVis style="display: none" accept=".pdf" (change)="onFileSelected($event)" />
+   <input type="file" #fileInputVis style="display: none" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" (change)="onFileSelected($event)" />
 </div>
