@@ -47,10 +47,14 @@ export function resposta(statusCode: number, body: unknown) {
 }
 
 export function corpoJson(event: { body: string | null; isBase64Encoded?: boolean }): Record<string, unknown> {
-  const corpo = event.body
-    ? Buffer.from(event.body, event.isBase64Encoded ? 'base64' : 'utf8').toString('utf8')
-    : '{}';
-  return JSON.parse(corpo) as Record<string, unknown>;
+  if (!event.body) return {};
+  const tentativas = event.isBase64Encoded
+    ? [Buffer.from(event.body, 'base64').toString('utf8')]
+    : [event.body, Buffer.from(event.body, 'base64').toString('utf8')];
+  for (const corpo of tentativas) {
+    try { return JSON.parse(corpo) as Record<string, unknown>; } catch { /* tenta o formato seguinte */ }
+  }
+  throw new Error('Corpo JSON inválido');
 }
 
 export async function salvarSessao(email: string): Promise<string> {
