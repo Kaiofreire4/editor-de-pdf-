@@ -142,6 +142,13 @@ export class EditarTextoComponent {
     { nome: 'Azul', valor: '#1565c0' },
     { nome: 'Verde', valor: '#2e7d32' },
   ];
+  readonly coresMarcaTexto = [
+    { nome: 'Amarelo', valor: '#ffe45c' },
+    { nome: 'Verde', valor: '#8ee6a8' },
+    { nome: 'Azul', valor: '#8fd3ff' },
+    { nome: 'Rosa', valor: '#ff9ec4' },
+    { nome: 'Laranja', valor: '#ffb86b' },
+  ];
 
   get zoomPercent(): number {
     return Math.round(this.escala * 100);
@@ -932,6 +939,11 @@ export class EditarTextoComponent {
   alterarCorAnotacao(cor: string) {
     if (this.modoMarcaTexto) this.corMarcaTexto = cor;
     else this.corCaneta = cor;
+  }
+
+  aplicarCorMarcaTexto(cor: string) {
+    this.corMarcaTexto = cor;
+    this.cdr.detectChanges();
   }
 
   corDestaqueCss(span: SpanItem): string {

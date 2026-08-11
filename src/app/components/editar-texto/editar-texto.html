@@ -117,6 +117,11 @@
           <span [style.background]="modoMarcaTexto ? corMarcaTexto : corCaneta"></span>
           <input type="color" [ngModel]="modoMarcaTexto ? corMarcaTexto : corCaneta" (ngModelChange)="alterarCorAnotacao($event)" />
         </label>
+        <ng-container *ngIf="modoMarcaTexto">
+          @for (cor of coresMarcaTexto; track cor.valor) {
+            <button type="button" class="fmt-color-btn" [class.active]="corMarcaTexto === cor.valor" [style.background]="cor.valor" (click)="aplicarCorMarcaTexto(cor.valor)" [title]="cor.nome"></button>
+          }
+        </ng-container>
         <label class="image-size-field" *ngIf="modoCaneta">Espessura
           <input type="number" min="1" max="20" [(ngModel)]="larguraCaneta" />
         </label>

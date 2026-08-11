@@ -53,6 +53,14 @@ export class EditorWordComponent {
   manterProporcaoImagem = true;
   modoMarcaTextoWord = false;
   corMarcaTextoWord = '#ffe45c';
+  readonly coresMarcaTextoWord = [
+    { nome: 'Amarelo', valor: '#ffe45c' },
+    { nome: 'Verde', valor: '#8ee6a8' },
+    { nome: 'Azul', valor: '#8fd3ff' },
+    { nome: 'Rosa', valor: '#ff9ec4' },
+    { nome: 'Laranja', valor: '#ffb86b' },
+  ];
+  private selecaoWord: Range | null = null;
   modoBorrachaWord = false;
   tracosWord: TracoWord[] = [];
   private tracoWordEmAndamento: TracoWord | null = null;
@@ -379,9 +387,30 @@ export class EditorWordComponent {
   }
 
   marcarTextoWord(): void {
+    this.restaurarSelecaoWord();
     this.formatar('hiliteColor', this.corMarcaTextoWord);
     this.formatar('backColor', this.corMarcaTextoWord);
     this.desativarAnotacaoWord();
+  }
+
+  salvarSelecaoWord(): void {
+    const selecao = window.getSelection();
+    if (!selecao || selecao.rangeCount === 0 || selecao.isCollapsed) return;
+    this.selecaoWord = selecao.getRangeAt(0).cloneRange();
+  }
+
+  restaurarSelecaoWord(): void {
+    if (!this.selecaoWord) return;
+    this.editor.nativeElement.focus();
+    const selecao = window.getSelection();
+    selecao?.removeAllRanges();
+    selecao?.addRange(this.selecaoWord);
+  }
+
+  aplicarCorMarcaTextoWord(cor: string): void {
+    this.corMarcaTextoWord = cor;
+    this.restaurarSelecaoWord();
+    this.marcarTextoWord();
   }
 
   removerMarcaTextoWord(): void {

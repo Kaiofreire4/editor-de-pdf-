@@ -30,8 +30,11 @@
        <button class="highlight-button" type="button" (mousedown)="$event.preventDefault()" (click)="marcarTextoWord()" title="Marcar texto selecionado">▰</button>
        <label class="highlight-color-picker" title="Cor do marca-texto">
          <span [style.background]="corMarcaTextoWord"></span>
-         <input type="color" [(ngModel)]="corMarcaTextoWord" aria-label="Cor do marca-texto" />
+         <input type="color" [(ngModel)]="corMarcaTextoWord" (mousedown)="salvarSelecaoWord()" aria-label="Cor do marca-texto" />
        </label>
+       @for (cor of coresMarcaTextoWord; track cor.valor) {
+         <button type="button" class="word-highlight-color" [class.active]="corMarcaTextoWord === cor.valor" [style.background]="cor.valor" (mousedown)="salvarSelecaoWord(); $event.preventDefault()" (click)="aplicarCorMarcaTextoWord(cor.valor)" [title]="cor.nome"></button>
+       }
       <button class="remove-highlight-button" type="button" (mousedown)="$event.preventDefault()" (click)="removerMarcaTextoWord()" title="Remover marca-texto da seleção">▱</button>
       <button class="highlight-button draw-highlight-button" [class.active]="modoMarcaTextoWord" type="button" (click)="alternarMarcaTextoWord()" title="Desenhar marca-texto">✎</button>
       <button class="highlight-button eraser-button" [class.active]="modoBorrachaWord" type="button" (click)="alternarBorrachaWord()" title="Apagar marca-texto desenhado">⌫</button>

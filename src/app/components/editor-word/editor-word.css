@@ -12,6 +12,8 @@
 .highlight-color-picker { position: relative; display: grid; place-items: center; width: 31px; height: 31px; border: 1px solid #f1df77; border-radius: 6px; background: #fff8c9; cursor: pointer; overflow: hidden; }
 .highlight-color-picker span { width: 17px; height: 17px; border: 1px solid rgba(0, 0, 0, .2); border-radius: 50%; }
 .highlight-color-picker input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.word-highlight-color { width: 18px !important; min-width: 18px !important; height: 18px !important; padding: 0 !important; border: 2px solid transparent !important; border-radius: 50% !important; }
+.word-highlight-color:hover, .word-highlight-color.active { border-color: #6556d9 !important; box-shadow: 0 0 0 2px rgba(101, 86, 217, .2); }
 .remove-highlight-button { color: #8a7200 !important; background: #fff !important; border-color: #f1df77 !important; }
 .remove-highlight-button:hover { color: #624f00 !important; background: #fff8c9 !important; }
 .draw-highlight-button.active { color: #624f00 !important; background: #ffe45c !important; border-color: #e2c82f !important; }
