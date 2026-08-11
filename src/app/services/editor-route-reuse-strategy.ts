@@ -1,6 +1,8 @@
+import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, DetachedRouteHandle, RouteReuseStrategy } from '@angular/router';
 
 /** Keeps editor screens alive while the user moves between the main tools. */
+@Injectable({ providedIn: 'root' })
 export class EditorRouteReuseStrategy implements RouteReuseStrategy {
   private readonly routesToKeep = new Set([
     'editar-texto',
