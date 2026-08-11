@@ -28,6 +28,7 @@
       <button type="button" (click)="formatar('removeFormat')" title="Limpar formatação">Tx</button>
       <button class="highlight-button" type="button" (mousedown)="$event.preventDefault()" (click)="marcarTextoWord()" title="Marcar texto selecionado">▰</button>
       <button class="highlight-button draw-highlight-button" [class.active]="modoMarcaTextoWord" type="button" (click)="alternarMarcaTextoWord()" title="Desenhar marca-texto">✎</button>
+      <button class="highlight-button eraser-button" [class.active]="modoBorrachaWord" type="button" (click)="alternarBorrachaWord()" title="Apagar marca-texto desenhado">⌫</button>
       <select class="heading-select" aria-label="Nível do título" (change)="aplicarNivelTitulo($any($event.target).value)">
         <option value="">Título</option>
         <option value="1">Título primário</option>
@@ -86,7 +87,7 @@
     </aside>
 
     <main class="word-canvas-area">
-      <div class="paper-wrap" [style.transform]="'scale(' + (zoom / 100) + ')'" [style.transform-origin]="'top center'">
+      <div #paperWrap class="paper-wrap" [class.marker-mode]="modoMarcaTextoWord || modoBorrachaWord" [style.transform]="'scale(' + (zoom / 100) + ')'" [style.transform-origin]="'top center'">
         <article #editor class="word-paper" contenteditable="true" spellcheck="true" aria-label="Editor de documento Word" (click)="selecionarElementoWord($event)">
           <div class="empty-document">
             <div class="empty-word-icon">W</div>
@@ -98,7 +99,10 @@
             </div>
           </div>
         </article>
-        <svg class="word-marker-layer" [class.active]="modoMarcaTextoWord" viewBox="0 0 800 1100" (pointerdown)="iniciarTracoWord($event)" (pointermove)="continuarTracoWord($event)" (pointerup)="finalizarTracoWord($event)" (pointercancel)="finalizarTracoWord($event)">
+        <div *ngIf="imagemAtiva && imagemBoundsWord as bounds" class="image-selection-overlay" [style.left.px]="bounds.left" [style.top.px]="bounds.top" [style.width.px]="bounds.width" [style.height.px]="bounds.height">
+          <span class="image-corner-handle" (pointerdown)="iniciarResizeImagemWord($event)"></span>
+        </div>
+        <svg class="word-marker-layer" [class.active]="modoMarcaTextoWord || modoBorrachaWord" viewBox="0 0 800 1100" (pointerdown)="iniciarTracoWord($event)" (pointermove)="continuarTracoWord($event)" (pointerup)="finalizarTracoWord($event)" (pointercancel)="finalizarTracoWord($event)">
           @for (traco of tracosWord; track $index) {
             <polyline [attr.points]="pontosTracoWord(traco)" fill="none" stroke="#ffe45c" stroke-opacity=".42" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></polyline>
           }

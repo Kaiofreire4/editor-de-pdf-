@@ -286,6 +286,8 @@
 .button.quick-tool:hover:not(:disabled), .button.quick-tool.active { color: #fff; background: #6556d9; border-color: #6556d9; }
 .button.quick-tool.marker { color: #8a7200; background: #fff8c9; border-color: #f1df77; }
 .button.quick-tool.marker:hover:not(:disabled), .button.quick-tool.marker.active { color: #624f00; background: #ffe45c; border-color: #e2c82f; }
+.button.quick-tool.eraser { color: #b3362e; background: #fff0ef; border-color: #f2c5c1; }
+.button.quick-tool.eraser:hover:not(:disabled), .button.quick-tool.eraser.active { color: #fff; background: #c54b43; border-color: #c54b43; }
 
 .editor-body { display: flex; flex: 1; min-height: 0; min-width: 0; }
 

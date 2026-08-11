@@ -5,6 +5,7 @@
     <button class="tool-item" [class.selected]="modoAdicionarImagem" (click)="fileInputImagem.click()" title="Adicionar imagem"><span class="tool-icon">▧</span><span>Imagem</span></button>
     <button class="tool-item" [class.selected]="modoCaneta" (click)="ativarModoCaneta()" title="Rabiscar com caneta"><span class="tool-icon">✎</span><span>Caneta</span></button>
     <button class="tool-item" [class.selected]="modoMarcaTexto" (click)="ativarModoMarcaTexto()" title="Marcar texto"><span class="tool-icon">▰</span><span>Marca-texto</span></button>
+    <button class="tool-item" [class.selected]="modoBorracha" (click)="ativarBorracha()" title="Apagar desenhos"><span class="tool-icon">⌫</span><span>Borracha</span></button>
   </aside>
 
   <aside class="thumbnail-panel" *ngIf="pdfDisponivel">
@@ -33,6 +34,7 @@
         <button class="button secondary" (click)="fileInputWord.click()">＋ Abrir PDF</button>
         <button class="button quick-tool" [class.active]="modoCaneta" [disabled]="!pdfDisponivel" (click)="ativarModoCaneta()">✎ Caneta</button>
         <button class="button quick-tool marker" [class.active]="modoMarcaTexto" [disabled]="!pdfDisponivel" (click)="ativarModoMarcaTexto()">▰ Marca-texto</button>
+        <button class="button quick-tool eraser" [class.active]="modoBorracha" [disabled]="!pdfDisponivel" (click)="ativarBorracha()">⌫ Borracha</button>
         <button class="button primary" [disabled]="!pdfDisponivel || exportandoPdf" (click)="exportarPdf()">
            <span class="button-spinner" *ngIf="exportandoPdf"></span>
            {{ exportandoPdf ? 'Processando...' : 'Baixar PDF' }}
@@ -108,9 +110,9 @@
       </div>
     }
 
-    @if (modoCaneta || modoMarcaTexto) {
+    @if (modoCaneta || modoMarcaTexto || modoBorracha) {
       <div class="format-toolbar pen-toolbar" (click)="$event.stopPropagation()">
-        <span class="image-toolbar-title">{{ modoMarcaTexto ? 'Marca-texto' : 'Caneta' }}</span>
+        <span class="image-toolbar-title">{{ modoBorracha ? 'Borracha' : modoMarcaTexto ? 'Marca-texto' : 'Caneta' }}</span>
         <label class="color-picker" title="Cor da caneta">
           <span [style.background]="corCaneta"></span>
           <input type="color" [(ngModel)]="corCaneta" />
@@ -119,18 +121,19 @@
           <input type="number" min="1" max="20" [(ngModel)]="larguraCaneta" />
         </label>
         <button type="button" class="fmt-btn clear" (click)="desfazerUltimoTraco()" title="Desfazer último rabisco">↶</button>
+        <button type="button" class="fmt-btn close" (click)="desativarAnotacao()" title="Desativar ferramenta">×</button>
       </div>
     }
 
     <div class="editor-body" (click)="deselecionarSpan($event)">
       <div class="page-stage">
         <div class="stage-topbar">
-           <span>{{ modoCaneta || modoMarcaTexto ? 'Passe o marca-texto ou desenhe livremente na página' : modoAdicionarTexto ? 'Clique na página para inserir um texto' : pdfDisponivel ? spansDaPagina.length + ' blocos de texto · clique para editar' : 'Seu arquivo fica no seu dispositivo' }}</span>
+           <span>{{ modoBorracha ? 'Clique sobre um desenho para apagá-lo' : modoCaneta || modoMarcaTexto ? 'Passe o marca-texto ou desenhe livremente na página' : modoAdicionarTexto ? 'Clique na página para inserir um texto' : pdfDisponivel ? spansDaPagina.length + ' blocos de texto · clique para editar' : 'Seu arquivo fica no seu dispositivo' }}</span>
           <div class="zoom-controls">
             <button (click)="alterarZoom(-0.1)" [disabled]="!pdfDisponivel">−</button><span>{{ zoomPercent }}%</span><button (click)="alterarZoom(0.1)" [disabled]="!pdfDisponivel">＋</button>
           </div>
         </div>
-        <div class="word-canvas-area" [class.add-mode]="modoAdicionarTexto || modoAdicionarImagem" [class.pen-mode]="modoCaneta || modoMarcaTexto" [class.marker-mode]="modoMarcaTexto" (click)="interagirComPagina($event)">
+        <div class="word-canvas-area" [class.add-mode]="modoAdicionarTexto || modoAdicionarImagem" [class.pen-mode]="modoCaneta || modoMarcaTexto || modoBorracha" [class.marker-mode]="modoMarcaTexto" (click)="interagirComPagina($event)">
           <div class="word-page" [class.has-pdf]="pdfDisponivel">
              <canvas #pdfCanvas class="pdf-canvas"></canvas>
 

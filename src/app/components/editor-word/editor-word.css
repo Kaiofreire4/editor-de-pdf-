@@ -10,6 +10,7 @@
 .highlight-button { color: #8a7200 !important; background: #fff8c9 !important; border-color: #f1df77 !important; }
 .highlight-button:hover { color: #624f00 !important; background: #ffe45c !important; }
 .draw-highlight-button.active { color: #624f00 !important; background: #ffe45c !important; border-color: #e2c82f !important; }
+.eraser-button.active { color: #fff !important; background: #c54b43 !important; border-color: #c54b43 !important; }
 .insert-select { height: 31px; border: 1px solid #e2e5ed; border-radius: 6px; background: #fafbfc; color: #596174; cursor: pointer; font: 600 12px inherit; padding: 0 8px; }
 .insert-select:hover { border-color: #d8d4ff; color: #6556d9; }
 .primary-action, .export-action { height: 34px; border: 0; border-radius: 7px; padding: 0 14px; color: #fff; background: #6556d9; cursor: pointer; font: 700 12px inherit; }
@@ -55,6 +56,8 @@
 .word-paper img:hover { outline: 2px solid rgba(101, 86, 217, .45); outline-offset: 2px; }
 .word-marker-layer { position: absolute; inset: 0; z-index: 10; width: 100%; height: 100%; pointer-events: none; }
 .word-marker-layer.active { pointer-events: auto; touch-action: none; cursor: crosshair; }
+.image-selection-overlay { position: absolute; z-index: 25; border: 2px solid #6556d9; pointer-events: none; box-shadow: 0 0 0 2px rgba(101, 86, 217, .16); }
+.image-corner-handle { position: absolute; right: -8px; bottom: -8px; width: 14px; height: 14px; border: 2px solid #fff; border-radius: 50%; background: #6556d9; cursor: nwse-resize; pointer-events: auto; }
 .word-paper h1, .word-paper h2, .word-paper h3 { color: #202438; line-height: 1.2; }
 .word-paper h1 { font-size: 30px; }
 .word-paper h2 { font-size: 23px; }

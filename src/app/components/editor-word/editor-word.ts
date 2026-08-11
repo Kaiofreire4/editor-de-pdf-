@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, HostListener, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import * as mammoth from 'mammoth';
@@ -36,6 +36,7 @@ export class EditorWordComponent {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
   @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
   @ViewChild('editor') editor!: ElementRef<HTMLDivElement>;
+  @ViewChild('paperWrap') paperWrap!: ElementRef<HTMLDivElement>;
 
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -50,8 +51,10 @@ export class EditorWordComponent {
   alturaImagem = 0;
   manterProporcaoImagem = true;
   modoMarcaTextoWord = false;
+  modoBorrachaWord = false;
   tracosWord: TracoWord[] = [];
   private tracoWordEmAndamento: TracoWord | null = null;
+  private imagemResizeWord: { startX: number; startY: number; width: number; height: number } | null = null;
 
   // ---------- Modelos (estilo Canva) ----------
   mostrarModelos = false;
@@ -379,8 +382,25 @@ export class EditorWordComponent {
 
   alternarMarcaTextoWord(): void {
     this.modoMarcaTextoWord = !this.modoMarcaTextoWord;
+    this.modoBorrachaWord = false;
     this.imagemAtiva = null;
   }
+
+  alternarBorrachaWord(): void {
+    this.modoBorrachaWord = !this.modoBorrachaWord;
+    this.modoMarcaTextoWord = false;
+    this.imagemAtiva = null;
+  }
+
+  desativarAnotacaoWord(): void {
+    this.modoMarcaTextoWord = false;
+    this.modoBorrachaWord = false;
+    this.tracoWordEmAndamento = null;
+    this.cdr.detectChanges();
+  }
+
+  @HostListener('document:keydown.escape')
+  sairDoModoAnotacaoWord(): void { this.desativarAnotacaoWord(); }
 
   selecionarImagemWord(event: MouseEvent): void {
     event.stopPropagation();
@@ -411,7 +431,47 @@ export class EditorWordComponent {
     this.imagemAtiva.style.height = `${this.alturaImagem}px`;
   }
 
+  get imagemBoundsWord(): { left: number; top: number; width: number; height: number } | null {
+    if (!this.imagemAtiva || !this.paperWrap) return null;
+    const imagem = this.imagemAtiva.getBoundingClientRect();
+    const papel = this.paperWrap.nativeElement.getBoundingClientRect();
+    const escala = this.zoom / 100;
+    return { left: (imagem.left - papel.left) / escala, top: (imagem.top - papel.top) / escala, width: imagem.width / escala, height: imagem.height / escala };
+  }
+
+  iniciarResizeImagemWord(event: PointerEvent): void {
+    if (!this.imagemAtiva) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.imagemResizeWord = { startX: event.clientX, startY: event.clientY, width: this.larguraImagem, height: this.alturaImagem };
+  }
+
+  @HostListener('document:pointermove', ['$event'])
+  redimensionarImagemWord(event: PointerEvent): void {
+    const estado = this.imagemResizeWord;
+    if (!estado) return;
+    const dx = event.clientX - estado.startX;
+    const dy = event.clientY - estado.startY;
+    const proporcao = estado.width / Math.max(estado.height, 1);
+    let largura = Math.max(20, estado.width + dx);
+    let altura = Math.max(20, estado.height + dy);
+    if (this.manterProporcaoImagem) {
+      if (Math.abs(dx) >= Math.abs(dy)) altura = largura / proporcao;
+      else largura = altura * proporcao;
+    }
+    this.alterarTamanhoImagemWord('w', largura);
+    if (!this.manterProporcaoImagem) this.alterarTamanhoImagemWord('h', altura);
+    this.cdr.detectChanges();
+  }
+
+  @HostListener('document:pointerup')
+  finalizarResizeImagemWord(): void { this.imagemResizeWord = null; }
+
   iniciarTracoWord(event: PointerEvent): void {
+    if (this.modoBorrachaWord) {
+      this.apagarTracoWord(event);
+      return;
+    }
     if (!this.modoMarcaTextoWord) return;
     event.preventDefault();
     const svg = event.currentTarget as SVGElement;
@@ -419,6 +479,21 @@ export class EditorWordComponent {
     svg.setPointerCapture(event.pointerId);
     this.tracoWordEmAndamento = { pontos: [ponto] };
     this.tracosWord = [...this.tracosWord, this.tracoWordEmAndamento];
+  }
+
+  private apagarTracoWord(event: PointerEvent): void {
+    const svg = event.currentTarget as SVGElement;
+    const ponto = this.pontoWord(event, svg);
+    let indice = -1;
+    let menorDistancia = 18;
+    this.tracosWord.forEach((traco, tracoIndex) => traco.pontos.forEach((item) => {
+      const distancia = Math.hypot(item.x - ponto.x, item.y - ponto.y);
+      if (distancia < menorDistancia) { menorDistancia = distancia; indice = tracoIndex; }
+    }));
+    if (indice >= 0) {
+      this.tracosWord = this.tracosWord.filter((_, index) => index !== indice);
+      this.cdr.detectChanges();
+    }
   }
 
   continuarTracoWord(event: PointerEvent): void {

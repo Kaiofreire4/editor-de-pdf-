@@ -80,6 +80,7 @@ export class EditarTextoComponent {
   modoAdicionarImagem = false;
   modoCaneta = false;
   modoMarcaTexto = false;
+  modoBorracha = false;
   imagemPendente: string | null = null;
   miniaturasAbertas = true;
   corCaneta = '#d32f2f';
@@ -394,6 +395,7 @@ export class EditarTextoComponent {
     if (!this.pdfDoc || !this.canvasRef?.nativeElement?.width) return;
     this.modoCaneta = !this.modoCaneta || this.modoMarcaTexto;
     this.modoMarcaTexto = false;
+    this.modoBorracha = false;
     this.modoAdicionarTexto = false;
     this.modoAdicionarImagem = false;
     this.spanAtivoId = null;
@@ -405,12 +407,36 @@ export class EditarTextoComponent {
     if (!this.pdfDoc || !this.canvasRef?.nativeElement?.width) return;
     this.modoMarcaTexto = !this.modoMarcaTexto;
     this.modoCaneta = false;
+    this.modoBorracha = false;
     this.modoAdicionarTexto = false;
     this.modoAdicionarImagem = false;
     this.spanAtivoId = null;
     this.imagemAtivaId = null;
     this.cdr.detectChanges();
   }
+
+  ativarBorracha() {
+    if (!this.pdfDoc) return;
+    this.modoBorracha = !this.modoBorracha;
+    this.modoCaneta = false;
+    this.modoMarcaTexto = false;
+    this.modoAdicionarTexto = false;
+    this.modoAdicionarImagem = false;
+    this.spanAtivoId = null;
+    this.imagemAtivaId = null;
+    this.cdr.detectChanges();
+  }
+
+  desativarAnotacao() {
+    this.modoCaneta = false;
+    this.modoMarcaTexto = false;
+    this.modoBorracha = false;
+    this.tracoEmAndamento = null;
+    this.cdr.detectChanges();
+  }
+
+  @HostListener('document:keydown.escape')
+  sairDoModoAnotacao() { this.desativarAnotacao(); }
 
   desfazerUltimoTraco() {
     if (this.tracosDaPagina.length === 0) return;
@@ -495,6 +521,10 @@ export class EditarTextoComponent {
   }
 
   iniciarTraco(event: PointerEvent) {
+    if (this.modoBorracha) {
+      this.apagarTracoMaisProximo(event);
+      return;
+    }
     if ((!this.modoCaneta && !this.modoMarcaTexto) || !this.pdfDoc) return;
     event.preventDefault();
     event.stopPropagation();
@@ -509,6 +539,22 @@ export class EditarTextoComponent {
       opacidade: this.modoMarcaTexto ? 0.38 : 1,
     };
     this.tracosDaPagina = [...this.tracosDaPagina, this.tracoEmAndamento];
+  }
+
+  private apagarTracoMaisProximo(event: PointerEvent) {
+    const ponto = this.obterPontoDaCaneta(event);
+    if (!ponto) return;
+    const limite = 18 / this.escala;
+    let indice = -1;
+    let menorDistancia = limite;
+    this.tracosDaPagina.forEach((traco, tracoIndex) => traco.pontos.forEach((item) => {
+      const distancia = Math.hypot(item.x - ponto.x, item.y - ponto.y);
+      if (distancia < menorDistancia) { menorDistancia = distancia; indice = tracoIndex; }
+    }));
+    if (indice < 0) return;
+    this.tracosDaPagina = this.tracosDaPagina.filter((_, index) => index !== indice);
+    this.tracosPorPagina.set(this.paginaAtual - 1, this.tracosDaPagina);
+    this.cdr.detectChanges();
   }
 
   continuarTraco(event: PointerEvent) {
