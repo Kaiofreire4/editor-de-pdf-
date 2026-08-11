@@ -444,6 +444,8 @@
 .page-controls button:hover:not(:disabled) { background: #f0efff; border-color: #6556d9; color: #6556d9; }
 
 .page-controls button:disabled { opacity: .4; cursor: not-allowed; }
+.new-page-button { width: auto !important; padding: 0 10px; color: #6556d9 !important; border-color: #d8d4ff !important; }
+.new-page-button:hover:not(:disabled) { background: #f0efff; }
 .help-panel { width: 220px; background: #fff; border-left: 1px solid #e8ebf2; padding: 25px 20px; flex-shrink: 0; overflow-y: auto; }
 .panel-title { color: #34384c; font-weight: 700; font-size: 13px; margin-bottom: 22px; }
 .help-step { display: flex; gap: 10px; margin-bottom: 17px; }

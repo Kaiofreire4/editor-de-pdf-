@@ -35,7 +35,7 @@
         <button class="button quick-tool" [class.active]="modoCaneta" [disabled]="!pdfDisponivel" (click)="ativarModoCaneta()">✎ Caneta</button>
         <button class="button quick-tool marker" [class.active]="modoMarcaTexto" [disabled]="!pdfDisponivel" (click)="ativarModoMarcaTexto()">▰ Marca-texto</button>
         <button class="button quick-tool eraser" [class.active]="modoBorracha" [disabled]="!pdfDisponivel" (click)="ativarBorracha()">⌫ Borracha</button>
-        <button class="button quick-tool" [disabled]="!pdfDisponivel" (click)="adicionarPagina()">＋ Nova página</button>
+        <button class="button quick-tool" [disabled]="!pdfDisponivel" (click)="adicionarPagina()">＋ Página nova</button>
         <button class="button primary" [disabled]="!pdfDisponivel || exportandoPdf" (click)="exportarPdf()">
            <span class="button-spinner" *ngIf="exportandoPdf"></span>
            {{ exportandoPdf ? 'Processando...' : 'Baixar PDF' }}
@@ -228,6 +228,7 @@
           <button (click)="mudarPagina(-1)" [disabled]="!pdfDisponivel || paginaAtual <= 1">‹</button>
           <span>{{ pdfDisponivel ? paginaAtual + ' / ' + totalPaginas : '1 / 1' }}</span>
           <button (click)="mudarPagina(1)" [disabled]="!pdfDisponivel || paginaAtual >= totalPaginas">›</button>
+          <button class="new-page-button" (click)="adicionarPagina()" [disabled]="!pdfDisponivel" title="Adicionar uma quebra de página">＋ Página nova</button>
         </div>
       </div>
       <aside class="help-panel" *ngIf="pdfDisponivel">
