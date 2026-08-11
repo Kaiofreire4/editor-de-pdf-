@@ -158,13 +158,14 @@
   min-height: 0;
 }
 
-@media (max-width: 700px) {
-  .app-header { height: 60px; padding: 0 12px; gap: 14px; overflow-x: auto; }
-  .brand { font-size: 16px; gap: 7px; }
-  .main-nav { flex: 1 0 auto; gap: 16px; }
+@media (max-width: 900px) {
+  .app-header { display: grid; grid-template-columns: auto 1fr; height: auto; min-height: 60px; padding: 0 12px; gap: 0 14px; overflow: hidden; }
+  .brand { min-width: 0; font-size: 16px; gap: 7px; }
+  .main-nav { grid-column: 1 / -1; width: 100%; min-width: 0; height: 42px; gap: 20px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
   .main-nav a { flex-shrink: 0; white-space: nowrap; font-size: 12px; }
   .secure-label { display: none; }
   .local-files-button span { display: none; }
+  .document-workspace { width: 100%; min-width: 0; }
 }
 
 @media (max-width: 480px) {

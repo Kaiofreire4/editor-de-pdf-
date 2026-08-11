@@ -1,7 +1,8 @@
 :host { display: flex; min-height: 0; }
 
-.word-editor { display: flex; flex: 1; flex-direction: column; min-height: 0; background: #f5f7fb; color: #202438; }
-.word-toolbar { display: flex; align-items: center; gap: 8px; min-height: 54px; padding: 8px 18px; background: #fff; border-bottom: 1px solid #e6e9f0; box-shadow: 0 2px 7px rgba(36, 40, 59, .04); flex-wrap: wrap; z-index: 2; }
+.word-editor { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; width: 100%; overflow: hidden; background: #f5f7fb; color: #202438; }
+.word-toolbar { display: flex; align-items: center; gap: 8px; min-width: 0; max-width: 100%; min-height: 54px; padding: 8px 18px; background: #fff; border-bottom: 1px solid #e6e9f0; box-shadow: 0 2px 7px rgba(36, 40, 59, .04); flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; z-index: 2; scrollbar-width: thin; }
+.word-toolbar > * { flex: 0 0 auto; }
 .toolbar-group { display: flex; align-items: center; gap: 4px; }
 .toolbar-group button, .toolbar-group select { height: 31px; min-width: 30px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #596174; cursor: pointer; font: 600 12px inherit; padding: 0 8px; }
 .toolbar-group button:hover, .toolbar-group select:hover { background: #f0efff; border-color: #d8d4ff; color: #6556d9; }
@@ -46,7 +47,7 @@
 .toolbar-spacer { flex: 1; }
 .zoom-group { color: #858b9f; font-size: 11px; }
 .zoom-group button { min-width: 24px; padding: 0; }
-.word-body { display: flex; flex: 1; min-height: 0; overflow: hidden; }
+.word-body { display: flex; flex: 1; min-width: 0; min-height: 0; overflow: hidden; }
 .image-edit-toolbar { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 6px 18px; border-bottom: 1px solid #e6e9f0; background: #fafbfe; color: #596174; font-size: 11px; }
 .image-edit-toolbar strong { color: #34384c; }
 .image-edit-toolbar label { display: flex; align-items: center; gap: 5px; }
@@ -64,7 +65,7 @@
 .sidebar-help { margin-top: 30px; padding: 14px; border-radius: 9px; background: #f0efff; color: #6556d9; }
 .sidebar-help strong { font-size: 12px; }
 .sidebar-help p { color: #73788b; font-size: 11px; line-height: 1.5; margin: 9px 0 0; }
-.word-canvas-area { flex: 1; overflow: auto; padding: 30px 24px 60px; background: #eef1f6; }
+.word-canvas-area { flex: 1; min-width: 0; overflow: auto; padding: 30px 24px 60px; background: #eef1f6; }
 .word-status { max-width: 800px; margin: 0 auto 14px; padding: 9px 12px; border-radius: 7px; background: #e9f7f0; color: #27815d; font-size: 11px; }
 .word-status.loading { background: #f0efff; color: #6556d9; }
 .paper-wrap { position: relative; width: 800px; min-height: 1100px; margin: 0 auto; transition: transform .15s ease; }
@@ -166,16 +167,26 @@
 }
 
 @media (max-width: 900px) {
-  .word-sidebar { width: 190px; }
-  .paper-wrap, .word-paper { width: min(800px, calc(100vw - 260px)); }
+  .word-sidebar { display: none; }
+  .word-toolbar { gap: 6px; padding: 7px 12px; }
+  .word-toolbar .toolbar-spacer { display: none; }
+  .word-canvas-area { width: 100%; padding: 20px 12px 48px; }
+  .paper-wrap, .word-paper { width: min(800px, calc(100vw - 32px)); }
   .word-paper { padding: 50px; }
 }
 @media (max-width: 650px) {
-  .word-sidebar { display: none; }
-  .word-canvas-area { padding: 20px 10px 40px; }
-  .paper-wrap, .word-paper { width: calc(100vw - 20px); min-height: 800px; }
-  .word-paper { padding: 35px 24px; }
+  .word-toolbar { gap: 5px; padding: 7px 10px; }
+  .word-toolbar .toolbar-separator { display: block; flex: 0 0 1px; }
+  .word-toolbar .formatting-group { display: flex; }
+  .word-toolbar .toolbar-spacer { display: none; }
+  .word-toolbar .file-group { gap: 5px; }
+  .word-toolbar .primary-action, .word-toolbar .secondary-action, .word-toolbar .abnt-action, .word-toolbar .remove-highlight-action, .word-toolbar .export-action { padding: 0 10px; }
+  .word-canvas-area { width: 100%; padding: 16px 10px 40px; }
+  .paper-wrap, .word-paper { width: 100%; max-width: 100%; min-height: 800px; }
+  .word-paper { padding: 35px 24px; font-size: 14px; }
   .word-paper.abnt-document { padding: 50px 24px; }
-  .toolbar-separator, .formatting-group { display: none; }
-  .word-toolbar { padding: 8px 10px; }
+  .word-paper h1 { font-size: 25px; }
+  .word-paper h2 { font-size: 20px; }
+  .word-paper h3 { font-size: 17px; }
+  .editor-dialog-fields { grid-template-columns: 1fr 1fr; }
 }

@@ -207,6 +207,13 @@
   padding: 0;
 }
 
+@media (max-width: 900px) {
+  .login-page { box-sizing: border-box; width: 100%; max-width: 100vw; min-width: 0; overflow-x: hidden; padding: 16px; }
+  .login-card { box-sizing: border-box; width: 100% !important; max-width: 100% !important; min-width: 0; }
+  .login-tabs, .field, .login-divider, .login-hint, .guest-hint { min-width: 0; max-width: 100%; }
+  .login-card input, .login-submit, .guest-button { max-width: 100%; }
+}
+
 .loading-overlay {
   position: fixed;
   z-index: 20;
@@ -297,6 +304,8 @@
     max-width: none;
     border-radius: 14px;
     padding: 24px 18px;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   .login-brand {
