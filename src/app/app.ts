@@ -40,7 +40,10 @@ export class AppComponent implements OnInit {
     if (!this.auth.isAuthenticated) {
       await this.auth.restaurar();
     }
-    this.auth.user$.subscribe((user) => (this.usuarioAtual = user));
+    this.auth.user$.subscribe((user) => {
+      this.usuarioAtual = user;
+      if (user) void this.auth.carregarIcone();
+    });
     this.auth.icone$.subscribe((icone) => (this.iconePerfil = icone));
     this.auth.acesso$.subscribe((temAcesso) => (this.autenticado = temAcesso));
     this.autenticado = this.auth.isAuthenticated;

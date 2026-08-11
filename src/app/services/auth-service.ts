@@ -121,7 +121,7 @@ export class AuthService {
       return;
     }
     try {
-      const blob = await firstValueFrom(this.http.get(`${API_BASE_URL}/profile-icon`, { headers: this.headers(), responseType: 'blob' }).pipe(timeout({ first: 10000 })));
+      const blob = await firstValueFrom(this.http.get(`${API_BASE_URL}/profile-icon?v=${Date.now()}`, { headers: this.headers(), responseType: 'blob' }).pipe(timeout({ first: 10000 })));
       this.limparIcone();
       this.iconeObjectUrl = URL.createObjectURL(blob);
       this._iconeSubject.next(this.iconeObjectUrl);

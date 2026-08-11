@@ -30,12 +30,13 @@ export default async (request: Request) => {
 
   const formData = await request.formData();
   const arquivo = formData.get('icon');
-  if (!(arquivo instanceof File)) return resposta(400, { error: 'Ícone ausente' });
-  if (!ALLOWED_TYPES.has(arquivo.type)) return resposta(400, { error: 'Use PNG, JPG ou WebP' });
-  if (arquivo.size === 0 || arquivo.size > MAX_ICON_SIZE) return resposta(400, { error: 'O ícone deve ter até 1 MB' });
+  if (!arquivo || typeof (arquivo as File).arrayBuffer !== 'function') return resposta(400, { error: 'Ícone ausente' });
+  const imagem = arquivo as File;
+  if (!ALLOWED_TYPES.has(imagem.type)) return resposta(400, { error: 'Use PNG, JPG ou WebP' });
+  if (imagem.size === 0 || imagem.size > MAX_ICON_SIZE) return resposta(400, { error: 'O ícone deve ter até 1 MB' });
 
-  await icons().set(usuario.id, await arquivo.arrayBuffer(), {
-    metadata: { contentType: arquivo.type },
+  await icons().set(usuario.id, await imagem.arrayBuffer(), {
+    metadata: { contentType: imagem.type },
   });
   return resposta(200, { saved: true });
 };
