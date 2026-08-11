@@ -60,7 +60,7 @@
           <span class="card-icon">✂️</span>
           <div>
             <h3>Cortar Páginas</h3>
-            <p>Escolha um PDF e defina o intervalo de páginas a extrair.</p>
+             <p>Escolha um PDF e informe quais páginas deseja apagar.</p>
           </div>
         </div>
 
@@ -69,26 +69,26 @@
         <p class="arquivo-hint" *ngIf="!arquivoParaCortar">Nenhum arquivo selecionado.</p>
 
          <div class="inputs-intervalo">
-          <label>Da página:
+           <label>Remover da página:
             <input type="number" [(ngModel)]="paginaDe" (ngModelChange)="onIntervaloAlterado()" min="1" [max]="totalPaginasCortar || null" />
           </label>
-          <label>até:
+           <label>até a página:
             <input type="number" [(ngModel)]="paginaAte" (ngModelChange)="onIntervaloAlterado()" min="1" [max]="totalPaginasCortar || null" />
            </label>
          </div>
-         <label class="paginas-especificas">Páginas específicas:
+         <label class="paginas-especificas">Páginas para apagar:
            <input type="text" [(ngModel)]="paginasEspecificas" (ngModelChange)="onPaginasEspecificasAlteradas()" placeholder="Ex.: 5 ou 1,3,5-7" aria-label="Páginas específicas" />
          </label>
-         <small class="paginas-ajuda">Use números, vírgulas e intervalos. Exemplo: <strong>5</strong> extrai somente a página 5.</small>
+         <small class="paginas-ajuda">Use números, vírgulas e intervalos. Exemplo: <strong>5</strong> apaga somente a página 5.</small>
 
         <div class="preview-panel cut-preview" *ngIf="paginasPreviewCortar.length > 0">
-          <div class="preview-title">Prévia das páginas selecionadas ({{ paginasPreviewCortar.length }})</div>
+           <div class="preview-title">Páginas que serão apagadas ({{ paginasPreviewCortar.length }})</div>
           <div class="preview-grid">
             @for (pagina of paginasPreviewCortar; track pagina) {
               <div class="preview-page selected-preview">
                 <canvas #previewCortarCanvas></canvas>
                 <span>{{ pagina }}</span>
-                <small>Página selecionada</small>
+                 <small>Será apagada</small>
               </div>
             }
           </div>

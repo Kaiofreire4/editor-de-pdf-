@@ -192,7 +192,7 @@ export class OrganizarPdfComponent {
       this.pdfPreviewCortar = await pdfjsLib.getDocument({ data: new Uint8Array(await this.arquivoParaCortar!.arrayBuffer()) }).promise;
       this.totalPaginasCortar = this.pdfPreviewCortar.numPages;
       this.paginaDe = 1;
-      this.paginaAte = this.totalPaginasCortar;
+       this.paginaAte = 1;
       this.cdr.detectChanges();
       setTimeout(() => this.renderizarPreviewCortar());
     } catch (error) {
@@ -233,25 +233,31 @@ export class OrganizarPdfComponent {
       const pdfOriginal = await PDFDocument.load(fileArrayBuffer);
       const totalPaginas = pdfOriginal.getPageCount();
 
-      const paginasSelecionadas = this.paginasEspecificas.trim()
+      const paginasParaRemover = this.paginasEspecificas.trim()
         ? this.interpretarPaginas(this.paginasEspecificas)
         : this.paginasPreviewCortar;
-      if (paginasSelecionadas.length === 0 || paginasSelecionadas.some((pagina) => pagina < 1 || pagina > totalPaginas)) {
-        alert(`Insira páginas válidas! O PDF possui ${totalPaginas} páginas.`);
+      if (paginasParaRemover.length === 0 || paginasParaRemover.some((pagina) => pagina < 1 || pagina > totalPaginas)) {
+        alert(`Insira páginas válidas para remover! O PDF possui ${totalPaginas} páginas.`);
+        return;
+      }
+      if (paginasParaRemover.length >= totalPaginas) {
+        alert('Não é possível remover todas as páginas do PDF. Mantenha pelo menos uma página.');
         return;
       }
 
       const novoPdf = await PDFDocument.create();
 
       // Criando o array de índices (ex: de 1 até 3 vira os índices 0, 1, 2)
-      const indicesParaCopiar = paginasSelecionadas.map((pagina) => pagina - 1);
+      const paginasRemoverSet = new Set(paginasParaRemover);
+      const indicesParaCopiar = Array.from({ length: totalPaginas }, (_, index) => index)
+        .filter((index) => !paginasRemoverSet.has(index + 1));
 
       const paginasRecortadas = await novoPdf.copyPages(pdfOriginal, indicesParaCopiar);
       paginasRecortadas.forEach((page) => novoPdf.addPage(page));
 
       const pdfBytes = await novoPdf.save();
       this.fazerDownload(pdfBytes, 'pdf_recortado_master.pdf');
-      this.mensagemStatus = `Páginas ${paginasSelecionadas.join(', ')} extraídas com sucesso.`;
+      this.mensagemStatus = `Páginas ${paginasParaRemover.join(', ')} removidas com sucesso.`;
       alert('✅ PDF cortado com sucesso!');
     } catch (error) {
       console.error(error);
