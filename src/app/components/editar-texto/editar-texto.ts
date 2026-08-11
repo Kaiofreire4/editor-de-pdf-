@@ -2,6 +2,7 @@ import { Component, ViewChild, ViewChildren, ElementRef, QueryList, ChangeDetect
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import * as pdfjsLib from 'pdfjs-dist';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { LocalPdfStorageService } from '../../services/local-pdf-storage';
 
 interface SpanItem {
@@ -964,35 +965,67 @@ export class EditarTextoComponent {
     this.mensagemExportacao = 'Enviando alterações...';
     this.cdr.detectChanges();
 
-    const formData = new FormData();
-    formData.append('file', this.arquivoSelecionado);
-    formData.append('modificacoes', JSON.stringify(modificacoes));
-
     try {
-      const resposta = await fetch('/salvar-pdf', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (resposta.ok) {
-        this.mensagemExportacao = 'Preparando seu download...';
-        const blob = await resposta.blob();
-        await this.localPdfStorage.savePdf(blob, 'pdf_editado_master.pdf');
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'pdf_editado_master.pdf';
-        link.click();
-        URL.revokeObjectURL(link.href);
-      } else {
-        const erro = await resposta.json().catch(() => null);
-        alert(erro?.error || 'Erro ao processar o salvamento.');
-      }
-    } catch {
-      alert('Erro ao conectar com o servidor. Verifique se a API está rodando na porta 8000.');
+      this.mensagemExportacao = 'Processando no seu dispositivo...';
+      const blob = await this.gerarPdfLocal(modificacoes);
+      await this.localPdfStorage.savePdf(blob, 'pdf_editado_master.pdf');
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'pdf_editado_master.pdf';
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erro ao gerar PDF localmente:', error);
+      alert('Não foi possível gerar o PDF no navegador. Tente novamente com um arquivo menor.');
     } finally {
       this.exportandoPdf = false;
       this.cdr.detectChanges();
     }
+  }
+
+  private async gerarPdfLocal(modificacoes: Array<Record<string, any>>): Promise<Blob> {
+    const documento = await PDFDocument.load(await this.arquivoSelecionado!.arrayBuffer());
+    const fonte = await documento.embedFont(StandardFonts.Helvetica);
+    const paginas = documento.getPages();
+
+    for (const modificacao of modificacoes) {
+      const pagina = paginas[modificacao['pageIndex'] ?? 0];
+      const bbox = modificacao['bbox'] as number[] | undefined;
+      if (!pagina || !bbox || bbox.length !== 4) continue;
+      const [x0, y0, x1, y1] = bbox;
+      const alturaPagina = pagina.getHeight();
+      if (modificacao['tipo'] === 'imagem' && typeof modificacao['imagemData'] === 'string') {
+        const imagem = /^data:image\/(png|jpeg|jpg);base64,(.+)$/i.exec(modificacao['imagemData']);
+        if (!imagem) continue;
+        const bytes = Uint8Array.from(atob(imagem[2]), (caractere) => caractere.charCodeAt(0));
+        const incorporada = imagem[1].toLowerCase() === 'png' ? await documento.embedPng(bytes) : await documento.embedJpg(bytes);
+        pagina.drawImage(incorporada, { x: x0, y: alturaPagina - y1, width: x1 - x0, height: y1 - y0 });
+        continue;
+      }
+
+      const texto = String(modificacao['text'] || '').trim();
+      if (!texto) continue;
+      pagina.drawRectangle({ x: x0, y: alturaPagina - y1, width: x1 - x0, height: y1 - y0, color: rgb(1, 1, 1) });
+      pagina.drawText(texto, {
+        x: x0,
+        y: alturaPagina - y1 + 2,
+        size: Math.min(144, Math.max(1, Number(modificacao['fontSize']) || 11)),
+        font: fonte,
+        color: this.corPdf(modificacao['color']),
+        maxWidth: x1 - x0,
+      });
+    }
+
+    const bytes = await documento.save();
+    return new Blob([bytes as any], { type: 'application/pdf' });
+  }
+
+  private corPdf(cor: unknown) {
+    const match = typeof cor === 'string' ? /^#([0-9a-f]{6})$/i.exec(cor) : null;
+    if (!match) return rgb(0, 0, 0);
+    const valor = Number.parseInt(match[1], 16);
+    return rgb(((valor >> 16) & 255) / 255, ((valor >> 8) & 255) / 255, (valor & 255) / 255);
   }
 
   mudarPagina(delta: number) {

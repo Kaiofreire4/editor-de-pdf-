@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import * as mammoth from 'mammoth';
 import JSZip from 'jszip';
 import {
@@ -20,10 +21,14 @@ interface Modelo {
   html: string;
 }
 
+interface TracoWord {
+  pontos: Array<{ x: number; y: number }>;
+}
+
 @Component({
   selector: 'app-editor-word',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './editor-word.html',
   styleUrl: './editor-word.css',
 })
@@ -40,6 +45,13 @@ export class EditorWordComponent {
   mensagem = '';
   zoom = 100;
   normaAbntAtiva = false;
+  imagemAtiva: HTMLImageElement | null = null;
+  larguraImagem = 0;
+  alturaImagem = 0;
+  manterProporcaoImagem = true;
+  modoMarcaTextoWord = false;
+  tracosWord: TracoWord[] = [];
+  private tracoWordEmAndamento: TracoWord | null = null;
 
   // ---------- Modelos (estilo Canva) ----------
   mostrarModelos = false;
@@ -363,6 +375,73 @@ export class EditorWordComponent {
 
   marcarTextoWord(): void {
     this.formatar('hiliteColor', '#ffe45c');
+  }
+
+  alternarMarcaTextoWord(): void {
+    this.modoMarcaTextoWord = !this.modoMarcaTextoWord;
+    this.imagemAtiva = null;
+  }
+
+  selecionarImagemWord(event: MouseEvent): void {
+    event.stopPropagation();
+    const imagem = event.currentTarget as HTMLImageElement;
+    this.imagemAtiva = imagem;
+    this.larguraImagem = Math.round(imagem.getBoundingClientRect().width);
+    this.alturaImagem = Math.round(imagem.getBoundingClientRect().height);
+    this.modoMarcaTextoWord = false;
+  }
+
+  selecionarElementoWord(event: MouseEvent): void {
+    const alvo = event.target as HTMLElement;
+    if (alvo.tagName.toLowerCase() === 'img') this.selecionarImagemWord(event);
+    else this.imagemAtiva = null;
+  }
+
+  alterarTamanhoImagemWord(dimensao: 'w' | 'h', valor: number): void {
+    if (!this.imagemAtiva || !Number.isFinite(valor) || valor < 20) return;
+    const proporcao = this.larguraImagem / Math.max(this.alturaImagem, 1);
+    if (dimensao === 'w') {
+      this.larguraImagem = valor;
+      if (this.manterProporcaoImagem) this.alturaImagem = Math.round(valor / proporcao);
+    } else {
+      this.alturaImagem = valor;
+      if (this.manterProporcaoImagem) this.larguraImagem = Math.round(valor * proporcao);
+    }
+    this.imagemAtiva.style.width = `${this.larguraImagem}px`;
+    this.imagemAtiva.style.height = `${this.alturaImagem}px`;
+  }
+
+  iniciarTracoWord(event: PointerEvent): void {
+    if (!this.modoMarcaTextoWord) return;
+    event.preventDefault();
+    const svg = event.currentTarget as SVGElement;
+    const ponto = this.pontoWord(event, svg);
+    svg.setPointerCapture(event.pointerId);
+    this.tracoWordEmAndamento = { pontos: [ponto] };
+    this.tracosWord = [...this.tracosWord, this.tracoWordEmAndamento];
+  }
+
+  continuarTracoWord(event: PointerEvent): void {
+    if (!this.tracoWordEmAndamento) return;
+    event.preventDefault();
+    const ponto = this.pontoWord(event, event.currentTarget as SVGElement);
+    this.tracoWordEmAndamento.pontos.push(ponto);
+    this.cdr.detectChanges();
+  }
+
+  finalizarTracoWord(event: PointerEvent): void {
+    if (!this.tracoWordEmAndamento) return;
+    event.preventDefault();
+    this.tracoWordEmAndamento = null;
+  }
+
+  pontosTracoWord(traco: TracoWord): string {
+    return traco.pontos.map((ponto) => `${ponto.x},${ponto.y}`).join(' ');
+  }
+
+  private pontoWord(event: PointerEvent, svg: SVGElement): { x: number; y: number } {
+    const rect = svg.getBoundingClientRect();
+    return { x: event.clientX - rect.left, y: event.clientY - rect.top };
   }
 
   alternarNormaAbnt(): void {
