@@ -28,6 +28,8 @@
 .abnt-action:hover, .abnt-action.active { color: #fff; background: #6556d9; }
 .abnt-update { border: 1px solid #dfe3ec; background: #fff; color: #596174; }
 .abnt-update:hover { border-color: #d8d4ff; color: #6556d9; }
+.remove-highlight-action { height: 34px; border: 1px solid #f1df77; border-radius: 7px; padding: 0 10px; color: #8a7200; background: #fff8c9; cursor: pointer; font: 700 11px inherit; white-space: nowrap; }
+.remove-highlight-action:hover { color: #624f00; background: #ffe45c; border-color: #e2c82f; }
 .toolbar-separator { width: 1px; height: 25px; background: #e7eaf1; margin: 0 4px; }
 .toolbar-spacer { flex: 1; }
 .zoom-group { color: #858b9f; font-size: 11px; }

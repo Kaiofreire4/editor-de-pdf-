@@ -10,6 +10,7 @@
       <button class="abnt-action" [class.active]="normaAbntAtiva" type="button" (click)="alternarNormaAbnt()" title="Aplicar ou remover formatação ABNT">
         {{ normaAbntAtiva ? '✓ ABNT ativa' : 'ABNT automático' }}
       </button>
+      <button class="remove-highlight-action" type="button" (mousedown)="$event.preventDefault()" (click)="removerMarcaTextoWord()" title="Remover marca-texto da seleção">Remover marca</button>
     </div>
     <div class="toolbar-separator"></div>
     <div class="toolbar-group formatting-group" aria-label="Formatação">
