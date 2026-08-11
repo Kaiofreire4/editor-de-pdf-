@@ -531,6 +531,194 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   border-color: #3b4052;
 }
 
+/* ---------- Ajustes finos do tema escuro ---------- */
+.pdf-app.dark-theme {
+  --pm-dark-bg: #11131c;
+  --pm-dark-surface: #1b1e2b;
+  --pm-dark-raised: #25293a;
+  --pm-dark-border: #353b50;
+  --pm-dark-text: #f1f3f8;
+  --pm-dark-muted: #aeb5c8;
+  --pm-dark-accent: #8e85ff;
+  background: var(--pm-dark-bg);
+  color-scheme: dark;
+}
+
+.pdf-app.dark-theme .document-workspace,
+.pdf-app.dark-theme .editor-main,
+.pdf-app.dark-theme .word-editor,
+.pdf-app.dark-theme .word-canvas-area,
+.pdf-app.dark-theme .organizar-workspace,
+.pdf-app.dark-theme .converter-page,
+.pdf-app.dark-theme .word-visualizar {
+  background: var(--pm-dark-bg);
+}
+
+.pdf-app.dark-theme .app-header,
+.pdf-app.dark-theme .editor-toolbar,
+.pdf-app.dark-theme .word-toolbar,
+.pdf-app.dark-theme .word-ribbon,
+.pdf-app.dark-theme .tool-sidebar,
+.pdf-app.dark-theme .thumbnail-panel,
+.pdf-app.dark-theme .help-panel,
+.pdf-app.dark-theme .word-statusbar,
+.pdf-app.dark-theme .viewer-statusbar {
+  background: var(--pm-dark-surface);
+  border-color: var(--pm-dark-border);
+  color: var(--pm-dark-text);
+}
+
+.pdf-app.dark-theme .main-nav a:hover,
+.pdf-app.dark-theme .main-nav a.active,
+.pdf-app.dark-theme .tool-item:hover,
+.pdf-app.dark-theme .tool-item.selected {
+  color: var(--pm-dark-accent);
+}
+
+.pdf-app.dark-theme .header-tool,
+.pdf-app.dark-theme .button.secondary,
+.pdf-app.dark-theme .word-toolbar .secondary-action,
+.pdf-app.dark-theme .word-toolbar .abnt-update,
+.pdf-app.dark-theme .toolbar-group select,
+.pdf-app.dark-theme .insert-select,
+.pdf-app.dark-theme .fmt-select,
+.pdf-app.dark-theme .fmt-size-input,
+.pdf-app.dark-theme .image-size-field input,
+.pdf-app.dark-theme .viewer-nav-btn,
+.pdf-app.dark-theme .viewer-zoom-btn {
+  background: var(--pm-dark-raised);
+  border-color: var(--pm-dark-border);
+  color: var(--pm-dark-text);
+}
+
+.pdf-app.dark-theme .header-tool:hover,
+.pdf-app.dark-theme .button.secondary:hover,
+.pdf-app.dark-theme .word-toolbar .secondary-action:hover,
+.pdf-app.dark-theme .word-toolbar .abnt-update:hover,
+.pdf-app.dark-theme .viewer-nav-btn:hover:not(:disabled),
+.pdf-app.dark-theme .viewer-zoom-btn:hover {
+  background: #303052;
+  border-color: var(--pm-dark-accent);
+  color: #fff;
+}
+
+.pdf-app.dark-theme .format-toolbar,
+.pdf-app.dark-theme .editor-dialog,
+.pdf-app.dark-theme .modelos-modal {
+  background: var(--pm-dark-surface);
+  border-color: var(--pm-dark-border);
+  color: var(--pm-dark-text);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, .42);
+}
+
+.pdf-app.dark-theme .editor-dialog-header h2,
+.pdf-app.dark-theme .editor-dialog-field,
+.pdf-app.dark-theme .editor-dialog-fields label,
+.pdf-app.dark-theme .editor-dialog-close,
+.pdf-app.dark-theme .image-toolbar-title,
+.pdf-app.dark-theme .viewer-page-indicator strong {
+  color: var(--pm-dark-text);
+}
+
+.pdf-app.dark-theme .editor-dialog-header p,
+.pdf-app.dark-theme .editor-dialog-field,
+.pdf-app.dark-theme .editor-dialog-fields label,
+.pdf-app.dark-theme .viewer-page-indicator .page-total {
+  color: var(--pm-dark-muted);
+}
+
+.pdf-app.dark-theme .editor-dialog input,
+.pdf-app.dark-theme .editor-dialog textarea {
+  background: #141722;
+  border-color: var(--pm-dark-border);
+  color: var(--pm-dark-text);
+}
+
+.pdf-app.dark-theme .dialog-cancel {
+  background: var(--pm-dark-raised);
+  border-color: var(--pm-dark-border);
+  color: var(--pm-dark-text);
+}
+
+.pdf-app.dark-theme .dialog-confirm,
+.pdf-app.dark-theme .button.primary,
+.pdf-app.dark-theme .primary-action {
+  background: #7068e8;
+}
+
+.pdf-app.dark-theme .text-color-picker,
+.pdf-app.dark-theme .highlight-color-picker,
+.pdf-app.dark-theme .color-picker {
+  background: #303052;
+  border-color: #5552a1;
+}
+
+.pdf-app.dark-theme .viewer-statusbar {
+  box-shadow: 0 -5px 18px rgba(0, 0, 0, .28);
+}
+
+.pdf-app.dark-theme .viewer-page-indicator small,
+.pdf-app.dark-theme .zoom-value,
+.pdf-app.dark-theme .word-toolbar .toolbar-group button,
+.pdf-app.dark-theme .word-toolbar .toolbar-group select,
+.pdf-app.dark-theme .insert-select {
+  color: var(--pm-dark-muted);
+}
+
+/* A página do documento continua clara para manter fidelidade e leitura. */
+.pdf-app.dark-theme .word-paper,
+.pdf-app.dark-theme .docx-page,
+.pdf-app.dark-theme .word-page.has-pdf {
+  background: #fdfdfd;
+  color: #202438;
+}
+
+.pdf-app.dark-theme .login-page {
+  background: radial-gradient(circle at 20% 10%, #29274f 0, transparent 38%), #11131c;
+}
+
+.pdf-app.dark-theme .login-card {
+  background: var(--pm-dark-surface);
+  border-color: var(--pm-dark-border);
+  box-shadow: 0 20px 55px rgba(0, 0, 0, .38);
+}
+
+.pdf-app.dark-theme .login-title,
+.pdf-app.dark-theme .brand-name,
+.pdf-app.dark-theme .field,
+.pdf-app.dark-theme .login-hint,
+.pdf-app.dark-theme .login-card input {
+  color: var(--pm-dark-text);
+}
+
+.pdf-app.dark-theme .brand-tag,
+.pdf-app.dark-theme .guest-hint,
+.pdf-app.dark-theme .login-divider,
+.pdf-app.dark-theme .login-hint {
+  color: var(--pm-dark-muted);
+}
+
+.pdf-app.dark-theme .field input {
+  background: #141722;
+  border-color: var(--pm-dark-border);
+  color: var(--pm-dark-text);
+}
+
+.pdf-app.dark-theme .login-tabs {
+  background: #141722;
+}
+
+.pdf-app.dark-theme .login-tabs button.active {
+  background: var(--pm-dark-raised);
+  color: var(--pm-dark-accent);
+}
+
+.pdf-app.dark-theme .guest-button {
+  background: var(--pm-dark-raised);
+  border-color: var(--pm-dark-border);
+  color: var(--pm-dark-text);
+}
+
 /* ============ Modelos estilo Canva (estilos dos templates) ============ */
 .tpl-titulo { font-size: 34px; font-weight: 800; letter-spacing: .3px; color: #1c1f29; margin: 0 0 4px; }
 .tpl-cargo { font-size: 16px; color: #6556d9; font-weight: 600; margin-bottom: 6px; }
