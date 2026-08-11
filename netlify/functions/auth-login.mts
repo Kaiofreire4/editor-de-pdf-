@@ -1,4 +1,4 @@
-import { corpoJson, gerarHash, resposta, salvarSessao, usuarioPorEmail } from './_auth';
+import { corpoJson, gerarHash, resposta, salvarSessao, usuarioPorEmail } from './_auth.mjs';
 
 export default async (request: Request) => {
   let dados: Record<string, unknown>;

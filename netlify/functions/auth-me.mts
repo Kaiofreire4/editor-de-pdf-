@@ -1,4 +1,4 @@
-import { resposta, tokenDoRequest, usuarioPorToken } from './_auth';
+import { resposta, tokenDoRequest, usuarioPorToken } from './_auth.mjs';
 
 export default async (request: Request) => {
   const usuario = await usuarioPorToken(tokenDoRequest(request));

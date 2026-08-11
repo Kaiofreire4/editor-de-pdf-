@@ -1,5 +1,5 @@
 import * as crypto from 'node:crypto';
-import { corpoJson, gerarHash, resposta, salvarSessao, usuarioPorEmail, type Usuario } from './_auth';
+import { corpoJson, gerarHash, resposta, salvarSessao, usuarioPorEmail, type Usuario } from './_auth.mjs';
 import { getStore } from '@netlify/blobs';
 
 export default async (request: Request) => {

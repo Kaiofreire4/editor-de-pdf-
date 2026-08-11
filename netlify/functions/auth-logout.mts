@@ -1,5 +1,5 @@
 import { getStore } from '@netlify/blobs';
-import { resposta, tokenDoRequest } from './_auth';
+import { resposta, tokenDoRequest } from './_auth.mjs';
 
 export default async (request: Request) => {
   const token = tokenDoRequest(request);
