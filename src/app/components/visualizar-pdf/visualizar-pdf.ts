@@ -21,6 +21,7 @@ export class VisualizarPdfComponent {
   pdfCarregado = false;
   docxCarregado = false;
   docxHtml = '';
+  docxPaginas: string[] = [];
   nomeArquivo = '';
   paginaAtual = 1;
   totalPaginas = 0;
@@ -70,6 +71,7 @@ export class VisualizarPdfComponent {
     this.docxCarregado = false;
     this.pdfDoc = null;
     this.docxHtml = '';
+    this.docxPaginas = [];
     this.nomeArquivo = file.name;
 
     try {
@@ -82,6 +84,10 @@ export class VisualizarPdfComponent {
         this.docxCarregado = true;
         this.cdr.detectChanges();
         await this.aguardarLayout();
+        this.paginarDocx();
+        this.totalPaginas = this.docxPaginas.length;
+        this.paginaAtual = 1;
+        this.cdr.detectChanges();
         return;
       }
 
@@ -139,6 +145,30 @@ export class VisualizarPdfComponent {
     return new Promise((resolve) => {
       requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
     });
+  }
+
+  private paginarDocx(): void {
+    const origem = document.createElement('div');
+    origem.innerHTML = this.docxHtml;
+    const medida = document.createElement('div');
+    medida.style.cssText = 'position:fixed;left:-10000px;top:0;width:636px;height:948px;box-sizing:border-box;padding:0;overflow:hidden;visibility:hidden;font:15px/1.55 Calibri,Arial,sans-serif;';
+    document.body.appendChild(medida);
+
+    const paginas: string[] = [];
+    let itensDaPagina: string[] = [];
+    for (const filho of Array.from(origem.children)) {
+      const html = filho.outerHTML;
+      medida.innerHTML = [...itensDaPagina, html].join('');
+      if (itensDaPagina.length > 0 && medida.scrollHeight > medida.clientHeight) {
+        paginas.push(itensDaPagina.join(''));
+        itensDaPagina = [html];
+      } else {
+        itensDaPagina.push(html);
+      }
+    }
+    if (itensDaPagina.length > 0) paginas.push(itensDaPagina.join(''));
+    document.body.removeChild(medida);
+    this.docxPaginas = paginas.length > 0 ? paginas : ['<p>Documento vazio.</p>'];
   }
 
   private tentarRenderizarNovamente(numPagina: number): void {

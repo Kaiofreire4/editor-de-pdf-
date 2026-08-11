@@ -25,7 +25,14 @@
    <div class="word-canvas-area" (touchstart)="iniciarToque($event)" (touchend)="finalizarToque($event)">
        <div class="word-page" [class.docx-page]="docxCarregado">
        <canvas #pdfCanvasVis class="pdf-canvas-vis" [style.display]="pdfCarregado ? 'block' : 'none'"></canvas>
-       <article *ngIf="docxCarregado" class="docx-content" [innerHTML]="docxHtml"></article>
+        <ng-container *ngIf="docxCarregado">
+          @for (pagina of docxPaginas; track $index) {
+            <article class="docx-page-sheet">
+              <div class="docx-content" [innerHTML]="pagina"></div>
+              <span class="docx-page-label">Página {{ $index + 1 }}</span>
+            </article>
+          }
+        </ng-container>
        <div *ngIf="!documentoCarregado" class="empty-state">
          <div class="empty-icon">👁️</div>
          <p class="empty-title">Nenhum documento selecionado para visualização</p>
