@@ -48,9 +48,9 @@ export function resposta(statusCode: number, body: unknown) {
 
 export function corpoJson(event: { body: string | null; isBase64Encoded?: boolean }): Record<string, unknown> {
   if (!event.body) return {};
-  const tentativas = event.isBase64Encoded
-    ? [Buffer.from(event.body, 'base64').toString('utf8')]
-    : [event.body, Buffer.from(event.body, 'base64').toString('utf8')];
+  const normal = event.body;
+  const base64 = Buffer.from(event.body, 'base64').toString('utf8');
+  const tentativas = event.isBase64Encoded ? [base64, normal] : [normal, base64];
   for (const corpo of tentativas) {
     try { return JSON.parse(corpo) as Record<string, unknown>; } catch { /* tenta o formato seguinte */ }
   }
