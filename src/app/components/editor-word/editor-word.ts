@@ -262,7 +262,7 @@ export class EditorWordComponent {
     const colunas = this.lerNumero('Quantas colunas?', 3);
     if (!linhas || !colunas) return;
 
-    let html = '<table><thead><tr>';
+    let html = '<table class="tpl-tabela"><thead><tr>';
     for (let coluna = 1; coluna <= colunas; coluna++) html += `<th>Coluna ${coluna}</th>`;
     html += '</tr></thead><tbody>';
     for (let linha = 1; linha < linhas; linha++) {

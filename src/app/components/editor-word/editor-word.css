@@ -80,6 +80,9 @@
 .word-paper table { width: 100%; max-width: 100%; border-collapse: collapse; margin: 14px 0; table-layout: fixed; }
 .word-paper td, .word-paper th { padding: 6px 8px; border: 1px solid #dfe3ec; vertical-align: top; overflow-wrap: anywhere; }
 .word-paper th { background: #f5f7fb; font-weight: 700; }
+.word-paper .tpl-tabela { color: #3d68c5; border-color: #d9dbea; }
+.word-paper .tpl-tabela th { background: #f0efff; color: #3d68c5; text-align: left; }
+.word-paper .tpl-tabela td { color: #3d68c5; }
 .word-paper a { color: #3d68c5; text-decoration: underline; }
 .word-paper.abnt-document { padding: 113px 76px 76px 113px; font-family: 'Times New Roman', Times, serif; font-size: 16px; line-height: 1.5; }
 .word-paper.abnt-document p { margin: 0; text-align: justify; text-indent: 1.25cm; line-height: 1.5; }
