@@ -8,6 +8,7 @@ import {
   Document,
   ExternalHyperlink,
   HeadingLevel,
+  ImageRun,
   LevelFormat,
   Packer,
   Paragraph,
@@ -989,8 +990,8 @@ export class EditorWordComponent {
     }
   }
 
-  private criarRuns(element: Node): Array<TextRun | ExternalHyperlink> {
-    const runs: Array<TextRun | ExternalHyperlink> = [];
+  private criarRuns(element: Node): Array<TextRun | ExternalHyperlink | ImageRun> {
+    const runs: Array<TextRun | ExternalHyperlink | ImageRun> = [];
     element.childNodes.forEach((node) => {
       if (node.nodeType === Node.TEXT_NODE) {
         if (node.textContent) runs.push(new TextRun(node.textContent));
@@ -1005,6 +1006,20 @@ export class EditorWordComponent {
       }
       if (tag === 'a') {
         runs.push(this.criarLink(child as HTMLAnchorElement));
+        return;
+      }
+      if (tag === 'img') {
+        const imagem = child as HTMLImageElement;
+        const correspondencia = /^data:image\/(png|jpeg|jpg);base64,(.+)$/i.exec(imagem.getAttribute('src') || '');
+        if (!correspondencia) return;
+        const bytes = Uint8Array.from(atob(correspondencia[2]), (caractere) => caractere.charCodeAt(0));
+        const largura = Number.parseFloat(imagem.style.width) || imagem.naturalWidth || 400;
+        const altura = Number.parseFloat(imagem.style.height) || imagem.naturalHeight || 300;
+        runs.push(new ImageRun({
+          data: bytes,
+          type: correspondencia[1].toLowerCase() === 'png' ? 'png' : 'jpg',
+          transformation: { width: Math.max(20, Math.round(largura)), height: Math.max(20, Math.round(altura)) },
+        }));
         return;
       }
       const text = child.textContent || '';

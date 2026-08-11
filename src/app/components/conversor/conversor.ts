@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFDocument, PDFFont, StandardFonts } from 'pdf-lib';
 import * as mammoth from 'mammoth';
-import { Document, Packer, Paragraph, TextRun } from 'docx';
+import { Document, ImageRun, Packer, Paragraph, TextRun } from 'docx';
 
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
@@ -30,26 +30,26 @@ export class ConversorComponent {
     const file = input.files?.[0];
     input.value = '';
     if (!file) return;
-    this.iniciar('Extraindo o texto do PDF...');
+    this.iniciar('Convertendo páginas do PDF...');
     try {
       const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
       const paragrafos: Paragraph[] = [];
       for (let pagina = 1; pagina <= pdf.numPages; pagina++) {
         const page = await pdf.getPage(pagina);
-        const content = await page.getTextContent();
-        const itens = content.items as Array<{ str?: string; transform?: number[] }>;
-        const linhas = new Map<number, string[]>();
-        for (const item of itens) {
-          const texto = item.str?.trim();
-          if (!texto) continue;
-          const y = Math.round(item.transform?.[5] || 0);
-          const chave = Array.from(linhas.keys()).find((valor) => Math.abs(valor - y) <= 3) ?? y;
-          linhas.set(chave, [...(linhas.get(chave) || []), texto]);
-        }
-        [...linhas.entries()].sort((a, b) => b[0] - a[0]).forEach(([, textos]) => {
-          paragrafos.push(new Paragraph({ children: [new TextRun(textos.join(' '))] }));
-        });
-        if (pagina < pdf.numPages) paragrafos.push(new Paragraph(''));
+        const viewport = page.getViewport({ scale: 1.35 });
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.ceil(viewport.width);
+        canvas.height = Math.ceil(viewport.height);
+        const context = canvas.getContext('2d');
+        if (!context) throw new Error('Não foi possível criar a imagem da página');
+        await page.render({ canvasContext: context, viewport }).promise;
+        const imagem = await this.dataUrlParaBytes(canvas.toDataURL('image/png'));
+        const largura = 590;
+        const altura = Math.round(largura * (viewport.height / viewport.width));
+        paragrafos.push(new Paragraph({
+          pageBreakBefore: pagina > 1,
+          children: [new ImageRun({ data: imagem, type: 'png', transformation: { width: largura, height: altura } })],
+        }));
         this.mensagem = `Lendo página ${pagina} de ${pdf.numPages}...`;
       }
       const documento = new Document({ sections: [{ children: paragrafos.length ? paragrafos : [new Paragraph('')] }] });
@@ -124,11 +124,35 @@ export class ConversorComponent {
       const elemento = node as HTMLElement;
       const tag = elemento.tagName.toLowerCase();
       const texto = elemento.textContent || '';
+      const imagens = Array.from(elemento.tagName.toLowerCase() === 'img' ? [elemento as HTMLImageElement] : elemento.querySelectorAll('img'));
+      for (const imagem of imagens) await desenharImagem(imagem as HTMLImageElement);
       if (!texto.trim()) { y -= 12; continue; }
       const titulo = /^h[1-6]$/.test(tag);
       desenharTexto(texto, titulo ? 15 : 11, titulo || tag === 'strong', titulo ? 0 : 0);
     }
     return new Blob([await pdf.save() as any], { type: 'application/pdf' });
+
+    async function desenharImagem(imagem: HTMLImageElement): Promise<void> {
+      const src = imagem.getAttribute('src') || '';
+      const correspondencia = /^data:image\/(png|jpeg|jpg);base64,(.+)$/i.exec(src);
+      if (!correspondencia) return;
+      const bytes = Uint8Array.from(atob(correspondencia[2]), (caractere) => caractere.charCodeAt(0));
+      const incorporada = correspondencia[1].toLowerCase() === 'png'
+        ? await pdf.embedPng(bytes)
+        : await pdf.embedJpg(bytes);
+      const larguraOriginal = Number(imagem.getAttribute('width')) || incorporada.width;
+      const alturaOriginal = Number(imagem.getAttribute('height')) || incorporada.height;
+      const larguraImagem = Math.min(largura - margem * 2, larguraOriginal);
+      const alturaImagem = larguraImagem * (alturaOriginal / Math.max(larguraOriginal, 1));
+      if (y < margem + alturaImagem) novaPagina();
+      page.drawImage(incorporada, { x: margem, y: y - alturaImagem, width: larguraImagem, height: alturaImagem });
+      y -= alturaImagem + 12;
+    }
+  }
+
+  private async dataUrlParaBytes(dataUrl: string): Promise<Uint8Array> {
+    const base64 = dataUrl.split(',')[1] || '';
+    return Uint8Array.from(atob(base64), (caractere) => caractere.charCodeAt(0));
   }
 
   private iniciar(mensagem: string): void {
