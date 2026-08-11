@@ -14,7 +14,7 @@ interface AuthResponse {
   user: UsuarioAutenticado;
 }
 
-export const API_BASE_URL = '';
+export const API_BASE_URL = '/.netlify/functions';
 const TOKEN_KEY = 'pdfmaster_token';
 const GUEST_KEY = 'pdfmaster_convidado';
 
@@ -48,13 +48,13 @@ export class AuthService {
 
   registrar(nome: string, email: string, senha: string): Promise<void> {
     return this.executar(
-      this.http.post<AuthResponse>(`${API_BASE_URL}/api/auth/register`, { nome, email, senha }),
+      this.http.post<AuthResponse>(`${API_BASE_URL}/auth-register`, { nome, email, senha }),
     );
   }
 
   entrar(email: string, senha: string): Promise<void> {
     return this.executar(
-      this.http.post<AuthResponse>(`${API_BASE_URL}/api/auth/login`, { email, senha }),
+      this.http.post<AuthResponse>(`${API_BASE_URL}/auth-login`, { email, senha }),
     );
   }
 
@@ -86,7 +86,7 @@ export class AuthService {
     try {
       return firstValueFrom(
         this.http
-          .get<{ user: UsuarioAutenticado }>(`${API_BASE_URL}/api/auth/me`, { headers: this.headers() })
+          .get<{ user: UsuarioAutenticado }>(`${API_BASE_URL}/auth-me`, { headers: this.headers() })
           .pipe(timeout({ first: 15000 }))
           .pipe(tap(({ user }) => {
             this._userSubject.next(user);
@@ -105,7 +105,7 @@ export class AuthService {
     const token = this.token;
     if (token) {
       this.http
-        .post(`${API_BASE_URL}/api/auth/logout`, null, { headers: this.headers() })
+        .post(`${API_BASE_URL}/auth-logout`, null, { headers: this.headers() })
         .subscribe({ error: () => undefined });
     }
     this.limpar();
