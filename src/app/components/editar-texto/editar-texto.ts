@@ -48,6 +48,11 @@ interface TracoCaneta {
   opacidade: number;
 }
 
+interface PaginaEmBranco {
+  width: number;
+  height: number;
+}
+
 type HandlePosition = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
 
 @Component({
@@ -74,6 +79,7 @@ export class EditarTextoComponent {
   imagensDaPagina: ImagemItem[] = [];
   private imagensPorPagina = new Map<number, ImagemItem[]>();
   private tracosPorPagina = new Map<number, TracoCaneta[]>();
+  private paginasEmBranco = new Map<number, PaginaEmBranco>();
   spanAtivoId: string | null = null;
   imagemAtivaId: string | null = null;
   manterProporcaoImagem = true;
@@ -201,6 +207,7 @@ export class EditarTextoComponent {
     this.spansPorPagina.clear();
     this.imagensPorPagina.clear();
     this.tracosPorPagina.clear();
+    this.paginasEmBranco.clear();
     this.spansDaPagina = [];
     this.imagensDaPagina = [];
     this.tracosDaPagina = [];
@@ -258,6 +265,11 @@ export class EditarTextoComponent {
   }
 
   private async renderizarApenasCanvas(numPagina: number) {
+    if (this.paginaEhEmBranco(numPagina)) {
+      this.renderizarPaginaEmBranco(numPagina);
+      this.reposicionarSpansDaPagina();
+      return;
+    }
     const page = await this.pdfDoc.getPage(numPagina);
     const canvas = this.canvasRef.nativeElement;
     const context = canvas.getContext('2d');
@@ -272,6 +284,16 @@ export class EditarTextoComponent {
 
   async renderizarPagina(numPagina: number) {
     if (!this.pdfDoc) return;
+
+    if (this.paginaEhEmBranco(numPagina)) {
+      this.renderizarPaginaEmBranco(numPagina);
+      this.spansDaPagina = this.spansPorPagina.get(numPagina - 1) || [];
+      this.imagensDaPagina = this.imagensPorPagina.get(numPagina - 1) || [];
+      this.tracosDaPagina = this.tracosPorPagina.get(numPagina - 1) || [];
+      this.reposicionarSpansDaPagina();
+      this.cdr.detectChanges();
+      return;
+    }
 
     try {
       this.salvarEstadoDaPaginaAtual();
@@ -499,6 +521,15 @@ export class EditarTextoComponent {
     const canvases = this.thumbnailCanvases.toArray();
 
     for (let index = 0; index < canvases.length; index++) {
+      if (this.paginaEhEmBranco(index + 1)) {
+        const dimensoes = this.paginasEmBranco.get(index);
+        const canvas = canvases[index].nativeElement;
+        canvas.width = Math.round((dimensoes?.width || 595) * Math.min(170 / (dimensoes?.width || 595), 225 / (dimensoes?.height || 842)));
+        canvas.height = Math.round((dimensoes?.height || 842) * (canvas.width / (dimensoes?.width || 595)));
+        const context = canvas.getContext('2d');
+        context?.clearRect(0, 0, canvas.width, canvas.height);
+        continue;
+      }
       const page = await this.pdfDoc.getPage(index + 1);
       const originalViewport = page.getViewport({ scale: 1 });
       const escalaMiniatura = Math.min(170 / originalViewport.width, 225 / originalViewport.height);
@@ -556,6 +587,54 @@ export class EditarTextoComponent {
     event.stopPropagation();
     this.cdr.detectChanges();
     setTimeout(() => (document.querySelector('.inline-text-input') as HTMLInputElement | null)?.focus());
+  }
+
+  async adicionarPagina(): Promise<void> {
+    if (!this.pdfDoc || !this.canvasRef?.nativeElement?.width) return;
+    this.salvarEstadoDaPaginaAtual();
+    const paginaIndex = this.totalPaginas;
+    const dimensoes = {
+      width: this.canvasRef.nativeElement.width / this.escala,
+      height: this.canvasRef.nativeElement.height / this.escala,
+    };
+    this.paginasEmBranco.set(paginaIndex, dimensoes);
+    this.spansPorPagina.set(paginaIndex, []);
+    this.imagensPorPagina.set(paginaIndex, []);
+    this.tracosPorPagina.set(paginaIndex, []);
+    this.totalPaginas++;
+    this.paginaAtual = this.totalPaginas;
+    this.spansDaPagina = [];
+    this.imagensDaPagina = [];
+    this.tracosDaPagina = [];
+    this.spanAtivoId = null;
+    this.imagemAtivaId = null;
+    await this.carregarOuRenderizarPagina(this.paginaAtual);
+    this.cdr.detectChanges();
+    setTimeout(() => this.renderizarMiniaturas());
+  }
+
+  async verificarOverflowTexto(span: SpanItem, event: Event): Promise<void> {
+    this.marcarModificado(span);
+    if (!span.novo) return;
+    const input = event.target as HTMLTextAreaElement;
+    span.h = Math.max(30, input.scrollHeight);
+    const alturaPagina = this.canvasRef?.nativeElement?.height || 0;
+    if (!alturaPagina || span.y + span.h <= alturaPagina - 18) return;
+
+    const texto = span.text;
+    this.spansDaPagina = this.spansDaPagina.filter((item) => item.id !== span.id);
+    this.spansPorPagina.set(this.paginaAtual - 1, this.spansDaPagina);
+    await this.adicionarPagina();
+    span.text = texto;
+    span.x = 24;
+    span.y = 24;
+    span.h = Math.min(120, Math.max(30, input.scrollHeight));
+    this.atualizarBboxSpan(span);
+    this.spansDaPagina = [span];
+    this.spansPorPagina.set(this.paginaAtual - 1, this.spansDaPagina);
+    this.spanAtivoId = span.id;
+    this.cdr.detectChanges();
+    setTimeout(() => (document.querySelector('.inline-text-input') as HTMLTextAreaElement | null)?.focus());
   }
 
   iniciarTraco(event: PointerEvent) {
@@ -1065,8 +1144,7 @@ export class EditarTextoComponent {
       if (tracos.length === 0 && destaques.length === 0) continue;
       const imagemData = await this.gerarImagemAnotacoes(pageIndex, tracos, destaques);
       if (!imagemData) continue;
-      const page = await this.pdfDoc.getPage(pageIndex + 1);
-      const viewport = page.getViewport({ scale: 1 });
+       const viewport = await this.obterDimensoesPagina(pageIndex);
       rabiscosModificados.push({
         tipo: 'imagem',
         text: '',
@@ -1109,7 +1187,10 @@ export class EditarTextoComponent {
   private async gerarPdfLocal(modificacoes: Array<Record<string, any>>): Promise<Blob> {
     const documento = await PDFDocument.load(await this.arquivoSelecionado!.arrayBuffer());
     const fonte = await documento.embedFont(StandardFonts.Helvetica);
-    const paginas = documento.getPages();
+    let paginas = documento.getPages();
+    for (const [pageIndex, dimensoes] of this.paginasEmBranco) {
+      if (pageIndex >= paginas.length) paginas.push(documento.addPage([dimensoes.width, dimensoes.height]));
+    }
 
     for (const modificacao of modificacoes) {
       const pagina = paginas[modificacao['pageIndex'] ?? 0];
@@ -1129,14 +1210,15 @@ export class EditarTextoComponent {
       const texto = String(modificacao['text'] || '').trim();
       if (!texto) continue;
       pagina.drawRectangle({ x: x0, y: alturaPagina - y1, width: x1 - x0, height: y1 - y0, color: rgb(1, 1, 1) });
-      pagina.drawText(texto, {
+      const tamanho = Math.min(144, Math.max(1, Number(modificacao['fontSize']) || 11));
+      texto.split(/\r?\n/).forEach((linha, indice) => pagina.drawText(linha, {
         x: x0,
-        y: alturaPagina - y1 + 2,
-        size: Math.min(144, Math.max(1, Number(modificacao['fontSize']) || 11)),
+        y: alturaPagina - y1 + 2 + (tamanho * 1.2 * (texto.split(/\r?\n/).length - indice - 1)),
+        size: tamanho,
         font: fonte,
         color: this.corPdf(modificacao['color']),
         maxWidth: x1 - x0,
-      });
+      }));
     }
 
     const bytes = await documento.save();
@@ -1181,8 +1263,7 @@ export class EditarTextoComponent {
   }
 
   private async gerarImagemAnotacoes(pageIndex: number, tracos: TracoCaneta[], destaques: SpanItem[]): Promise<string | null> {
-    const page = await this.pdfDoc.getPage(pageIndex + 1);
-    const viewport = page.getViewport({ scale: 1 });
+    const viewport = await this.obterDimensoesPagina(pageIndex);
     const canvas = document.createElement('canvas');
     canvas.width = Math.ceil(viewport.width);
     canvas.height = Math.ceil(viewport.height);
@@ -1225,6 +1306,38 @@ export class EditarTextoComponent {
       imagem.w = (imagem.bbox[2] - imagem.bbox[0]) * this.escala;
       imagem.h = (imagem.bbox[3] - imagem.bbox[1]) * this.escala;
     }
+  }
+
+  private paginaEhEmBranco(numPagina: number): boolean {
+    return !!this.pdfDoc && numPagina > this.pdfDoc.numPages && this.paginasEmBranco.has(numPagina - 1);
+  }
+
+  private renderizarPaginaEmBranco(numPagina: number): void {
+    const canvas = this.canvasRef.nativeElement;
+    const dimensoes = this.paginasEmBranco.get(numPagina - 1) || { width: 595, height: 842 };
+    canvas.width = Math.round(dimensoes.width * this.escala);
+    canvas.height = Math.round(dimensoes.height * this.escala);
+    const context = canvas.getContext('2d');
+    if (!context) return;
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  private async obterDimensoesPagina(pageIndex: number): Promise<{ width: number; height: number }> {
+    const paginaEmBranco = this.paginasEmBranco.get(pageIndex);
+    if (paginaEmBranco) return paginaEmBranco;
+    const page = await this.pdfDoc.getPage(pageIndex + 1);
+    const viewport = page.getViewport({ scale: 1 });
+    return { width: viewport.width, height: viewport.height };
+  }
+
+  private atualizarBboxSpan(span: SpanItem): void {
+    span.bbox = [
+      span.x / this.escala,
+      span.y / this.escala,
+      (span.x + span.w) / this.escala,
+      (span.y + span.h) / this.escala,
+    ];
   }
 
   private limparCanvas() {

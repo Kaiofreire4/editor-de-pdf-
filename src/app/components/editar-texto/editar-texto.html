@@ -35,6 +35,7 @@
         <button class="button quick-tool" [class.active]="modoCaneta" [disabled]="!pdfDisponivel" (click)="ativarModoCaneta()">✎ Caneta</button>
         <button class="button quick-tool marker" [class.active]="modoMarcaTexto" [disabled]="!pdfDisponivel" (click)="ativarModoMarcaTexto()">▰ Marca-texto</button>
         <button class="button quick-tool eraser" [class.active]="modoBorracha" [disabled]="!pdfDisponivel" (click)="ativarBorracha()">⌫ Borracha</button>
+        <button class="button quick-tool" [disabled]="!pdfDisponivel" (click)="adicionarPagina()">＋ Nova página</button>
         <button class="button primary" [disabled]="!pdfDisponivel || exportandoPdf" (click)="exportarPdf()">
            <span class="button-spinner" *ngIf="exportandoPdf"></span>
            {{ exportandoPdf ? 'Processando...' : 'Baixar PDF' }}
@@ -163,14 +164,13 @@
                   (click)="selecionarOuAdicionarTexto(span.id, $event)"
                 >
                   @if (span.id === spanAtivoId) {
-                    <input
-                      [(ngModel)]="span.text"
-                      (input)="marcarModificado(span)"
-                      (keydown.enter)="deselecionarSpan()"
-                      (keydown.escape)="deselecionarSpan()"
-                      class="inline-text-input"
+                     <textarea
+                       [(ngModel)]="span.text"
+                       (input)="verificarOverflowTexto(span, $event)"
+                       (keydown.escape)="deselecionarSpan()"
+                       class="inline-text-input"
                       [ngStyle]="getEstiloSpan(span)"
-                      autofocus />
+                       autofocus></textarea>
                     <span class="selection-handle handle-nw" (pointerdown)="iniciarRedimensionamentoSpan($event, span, 'nw')"></span>
                     <span class="selection-handle handle-n" (pointerdown)="iniciarRedimensionamentoSpan($event, span, 'n')"></span>
                     <span class="selection-handle handle-ne" (pointerdown)="iniciarRedimensionamentoSpan($event, span, 'ne')"></span>

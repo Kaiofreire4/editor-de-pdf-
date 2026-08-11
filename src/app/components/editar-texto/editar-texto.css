@@ -399,6 +399,9 @@
   padding: 0 3px;
   margin: 0;
   min-width: 40px;
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
 }
 
 .text-block-label {
