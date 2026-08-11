@@ -32,7 +32,11 @@
           </div>
         </div>
       </div>
-      <span class="avatar" [title]="usuarioAtual?.nome || 'Usuário'">{{ inicialDoNome() }}</span>
+       <label class="avatar avatar-upload" [title]="'Alterar ícone de ' + (usuarioAtual?.nome || 'usuário')">
+         <img *ngIf="iconePerfil" [src]="iconePerfil" alt="Ícone do perfil" />
+         <span *ngIf="!iconePerfil">{{ inicialDoNome() }}</span>
+         <input type="file" accept="image/png,image/jpeg,image/webp" (change)="onIconeSelecionado($event)" />
+       </label>
       <button class="header-tool" type="button" (click)="sair()" title="Sair da conta">Sair</button>
     </div>
   </header>

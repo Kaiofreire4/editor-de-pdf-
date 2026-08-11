@@ -23,12 +23,15 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly _userSubject = new BehaviorSubject<UsuarioAutenticado | null>(null);
   private readonly _acessoSubject = new BehaviorSubject<boolean>(false);
+  private readonly _iconeSubject = new BehaviorSubject<string | null>(null);
+  private iconeObjectUrl: string | null = null;
   private restauracaoEmAndamento: Promise<boolean> | null = null;
 
   readonly user$: Observable<UsuarioAutenticado | null> = this._userSubject.asObservable();
 
   /** Reage a qualquer modo que permita entrar no app (login real ou convidado). */
   readonly acesso$: Observable<boolean> = this._acessoSubject.asObservable();
+  readonly icone$: Observable<string | null> = this._iconeSubject.asObservable();
 
   get user(): UsuarioAutenticado | null {
     return this._userSubject.value;
@@ -62,6 +65,7 @@ export class AuthService {
     localStorage.setItem(GUEST_KEY, '1');
     localStorage.removeItem(TOKEN_KEY);
     this._userSubject.next(null);
+    this.limparIcone();
     this._acessoSubject.next(true);
   }
 
@@ -111,6 +115,28 @@ export class AuthService {
     this.limpar();
   }
 
+  async carregarIcone(): Promise<void> {
+    if (!this.token || this.isConvidado) {
+      this.limparIcone();
+      return;
+    }
+    try {
+      const blob = await firstValueFrom(this.http.get(`${API_BASE_URL}/profile-icon`, { headers: this.headers(), responseType: 'blob' }).pipe(timeout({ first: 10000 })));
+      this.limparIcone();
+      this.iconeObjectUrl = URL.createObjectURL(blob);
+      this._iconeSubject.next(this.iconeObjectUrl);
+    } catch {
+      this.limparIcone();
+    }
+  }
+
+  async salvarIcone(arquivo: File): Promise<void> {
+    const dados = new FormData();
+    dados.append('icon', arquivo, arquivo.name);
+    await firstValueFrom(this.http.put(`${API_BASE_URL}/profile-icon`, dados, { headers: this.headers() }).pipe(timeout({ first: 10000 })));
+    await this.carregarIcone();
+  }
+
   private headers(): Record<string, string> {
     const token = this.token;
     return token ? { Authorization: `Bearer ${token}` } : {};
@@ -135,5 +161,12 @@ export class AuthService {
     localStorage.removeItem(GUEST_KEY);
     this._userSubject.next(null);
     this._acessoSubject.next(false);
+    this.limparIcone();
+  }
+
+  private limparIcone(): void {
+    if (this.iconeObjectUrl) URL.revokeObjectURL(this.iconeObjectUrl);
+    this.iconeObjectUrl = null;
+    this._iconeSubject.next(null);
   }
 }

@@ -25,6 +25,7 @@ export class AppComponent implements OnInit {
   arquivosLocaisAbertos = false;
   arquivosLocais: LocalPdfRecord[] = [];
   usuarioAtual: UsuarioAutenticado | null = null;
+  iconePerfil: string | null = null;
   autenticado = false;
   private localPdfStorage = inject(LocalPdfStorageService);
   private auth = inject(AuthService);
@@ -40,8 +41,10 @@ export class AppComponent implements OnInit {
       await this.auth.restaurar();
     }
     this.auth.user$.subscribe((user) => (this.usuarioAtual = user));
+    this.auth.icone$.subscribe((icone) => (this.iconePerfil = icone));
     this.auth.acesso$.subscribe((temAcesso) => (this.autenticado = temAcesso));
     this.autenticado = this.auth.isAuthenticated;
+    if (this.autenticado) await this.auth.carregarIcone();
     await this.carregarArquivosLocais();
   }
 
@@ -53,6 +56,22 @@ export class AppComponent implements OnInit {
     this.routeReuse.limpar();
     this.auth.sair();
     void this.router.navigateByUrl('/login');
+  }
+
+  async onIconeSelecionado(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const arquivo = input.files?.[0];
+    input.value = '';
+    if (!arquivo) return;
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(arquivo.type) || arquivo.size > 1024 * 1024) {
+      alert('Escolha uma imagem PNG, JPG ou WebP de até 1 MB.');
+      return;
+    }
+    try {
+      await this.auth.salvarIcone(arquivo);
+    } catch {
+      alert('Não foi possível salvar o ícone na sua conta.');
+    }
   }
 
   alternarTema() {
