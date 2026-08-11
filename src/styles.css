@@ -730,6 +730,36 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   color: var(--pm-dark-text);
 }
 
+/* Ribbon icons and groups must not fall back to the light theme. */
+.pdf-app.dark-theme .ribbon-group,
+.pdf-app.dark-theme .ribbon-group:hover {
+  background: transparent;
+}
+
+.pdf-app.dark-theme .ribbon-btn {
+  color: var(--pm-dark-text);
+}
+
+.pdf-app.dark-theme .ribbon-btn:hover:not(:disabled) {
+  background: #302d5c;
+  border-color: #6556d9;
+  color: #fff;
+}
+
+.pdf-app.dark-theme .ribbon-btn:disabled {
+  color: #70778b;
+  opacity: .65;
+}
+
+.pdf-app.dark-theme .ribbon-label {
+  color: var(--pm-dark-muted);
+  border-color: var(--pm-dark-border);
+}
+
+.pdf-app.dark-theme .ribbon-sep {
+  background: var(--pm-dark-border);
+}
+
 /* ============ Modelos estilo Canva (estilos dos templates) ============ */
 .tpl-titulo { font-size: 34px; font-weight: 800; letter-spacing: .3px; color: #1c1f29; margin: 0 0 4px; }
 .tpl-cargo { font-size: 16px; color: #6556d9; font-weight: 600; margin-bottom: 6px; }

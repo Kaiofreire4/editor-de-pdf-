@@ -93,6 +93,27 @@
 .word-visualizar .viewer-zoom-btn:hover { border-color: #6556d9; background: #f0efff; color: #6556d9; }
 .word-visualizar .viewer-zoom-nav .zoom-value { min-width: 42px; justify-content: center; color: #6556d9; font-weight: 700; font-size: 11px; }
 
+:host-context(.dark-theme) .viewer-statusbar {
+  background: rgba(27, 30, 43, .97);
+  border-color: #353b50;
+  box-shadow: 0 -5px 18px rgba(0, 0, 0, .32);
+}
+:host-context(.dark-theme) .viewer-nav-btn,
+:host-context(.dark-theme) .viewer-zoom-btn {
+  background: #25293a;
+  border-color: #353b50;
+  color: #f1f3f8;
+}
+:host-context(.dark-theme) .viewer-nav-btn:hover:not(:disabled),
+:host-context(.dark-theme) .viewer-zoom-btn:hover {
+  background: #303052;
+  border-color: #8e85ff;
+  color: #fff;
+}
+:host-context(.dark-theme) .viewer-page-indicator strong { color: #f1f3f8; }
+:host-context(.dark-theme) .viewer-page-indicator small,
+:host-context(.dark-theme) .viewer-page-indicator .page-total { color: #aeb5c8; }
+
 @media (max-width: 900px) {
   .word-visualizar .word-canvas-area { max-height: calc(100dvh - 190px); padding: 14px 10px 30px; align-items: flex-start; }
   .word-visualizar .word-page { width: min(800px, calc(100vw - 20px)); }
