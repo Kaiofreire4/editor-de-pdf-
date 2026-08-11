@@ -451,6 +451,24 @@ export class EditorWordComponent {
   private criarPaginaWord(): HTMLElement {
     const pagina = document.createElement('article');
     pagina.className = 'word-paper';
+    pagina.style.cssText = [
+      'position:relative',
+      'box-sizing:border-box',
+      'width:800px',
+      'height:1100px',
+      'min-height:1100px',
+      'max-height:1100px',
+      'margin:0 auto 42px',
+      'padding:76px 82px',
+      'outline:none',
+      'overflow:hidden',
+      'background:#fff',
+      'box-shadow:0 4px 22px rgba(36,40,59,.12)',
+      'color:#252938',
+      'font-family:Calibri,Arial,sans-serif',
+      'font-size:15px',
+      'line-height:1.55',
+    ].join(';');
     pagina.contentEditable = 'true';
     pagina.spellcheck = true;
     pagina.setAttribute('aria-label', 'Editor de página Word');
