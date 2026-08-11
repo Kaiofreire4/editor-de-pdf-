@@ -223,6 +223,7 @@ export class EditorWordComponent {
   }
 
   aplicarModelo(modelo: Modelo): void {
+    this.removerPaginasExtrasWord();
     this.editor.nativeElement.innerHTML = modelo.html;
     this.nomeArquivo = modelo.nome;
     this.arquivoCarregado = true;
@@ -386,7 +387,8 @@ export class EditorWordComponent {
           ],
         },
       );
-      this.editor.nativeElement.innerHTML = resultado.value || '<p><br></p>';
+       this.removerPaginasExtrasWord();
+       this.editor.nativeElement.innerHTML = resultado.value || '<p><br></p>';
       await this.aplicarDimensoesOriginais(arrayBuffer);
       this.nomeArquivo = file.name.replace(/\.docx$/i, '');
       this.arquivoCarregado = true;
@@ -405,11 +407,63 @@ export class EditorWordComponent {
   }
 
   criarDocumento(): void {
+    this.removerPaginasExtrasWord();
     this.editor.nativeElement.innerHTML = '<h1>Novo documento</h1><p>Comece a escrever aqui...</p>';
     this.nomeArquivo = 'Novo documento';
     this.arquivoCarregado = true;
     this.mensagem = 'Novo documento criado.';
     this.editor.nativeElement.focus();
+  }
+
+  adicionarPaginaWord(): void {
+    if (!this.arquivoCarregado) return;
+    const pagina = this.criarPaginaWord();
+    this.paperWrap.nativeElement.insertBefore(pagina, this.paperWrap.nativeElement.querySelector('.word-marker-layer'));
+    pagina.focus();
+    this.mensagem = 'Nova página criada.';
+  }
+
+  @HostListener('document:input', ['$event'])
+  ajustarPaginasAoDigitar(event: Event): void {
+    const alvo = event.target as HTMLElement | null;
+    if (!alvo?.closest('.word-paper')) return;
+    requestAnimationFrame(() => this.ajustarPaginasWord());
+  }
+
+  private ajustarPaginasWord(): void {
+    if (!this.paperWrap) return;
+    const paginas = Array.from(this.paperWrap.nativeElement.querySelectorAll<HTMLElement>('.word-paper'));
+    for (let indice = 0; indice < paginas.length; indice++) {
+      const pagina = paginas[indice];
+      while (pagina.scrollHeight > pagina.clientHeight && pagina.lastElementChild) {
+        const ultimo = pagina.lastElementChild as HTMLElement;
+        if (ultimo.getBoundingClientRect().height >= pagina.clientHeight) break;
+        const proxima = paginas[indice + 1] || this.criarPaginaWord();
+        if (!paginas[indice + 1]) {
+          paginas.splice(indice + 1, 0, proxima);
+          this.paperWrap.nativeElement.insertBefore(proxima, this.paperWrap.nativeElement.querySelector('.word-marker-layer'));
+        }
+        proxima.insertBefore(ultimo, proxima.firstChild);
+      }
+    }
+  }
+
+  private criarPaginaWord(): HTMLElement {
+    const pagina = document.createElement('article');
+    pagina.className = 'word-paper';
+    pagina.contentEditable = 'true';
+    pagina.spellcheck = true;
+    pagina.setAttribute('aria-label', 'Editor de página Word');
+    pagina.addEventListener('pointerdown', (event) => this.iniciarArrasteSeImagem(event));
+    pagina.addEventListener('click', (event) => this.selecionarElementoWord(event));
+    return pagina;
+  }
+
+  private removerPaginasExtrasWord(): void {
+    if (!this.paperWrap) return;
+    this.paperWrap.nativeElement.querySelectorAll('.word-paper').forEach((pagina, indice) => {
+      if (indice > 0) pagina.remove();
+    });
   }
 
   formatar(comando: string, valor?: string): void {
@@ -784,7 +838,8 @@ export class EditorWordComponent {
       this.atualizarSumarioAbnt();
       this.atualizarReferenciasAbnt();
     }
-    const paragraphs = this.criarParagrafos(this.editor.nativeElement);
+    const paragraphs = Array.from(this.paperWrap.nativeElement.querySelectorAll<HTMLElement>('.word-paper'))
+      .flatMap((pagina) => this.criarParagrafos(pagina));
     const documento = new Document({
       sections: [{
         properties: this.normaAbntAtiva ? {

@@ -71,7 +71,8 @@
 .word-status { max-width: 800px; margin: 0 auto 14px; padding: 9px 12px; border-radius: 7px; background: #e9f7f0; color: #27815d; font-size: 11px; }
 .word-status.loading { background: #f0efff; color: #6556d9; }
 .paper-wrap { position: relative; width: 800px; min-height: 1100px; margin: 0 auto; transition: transform .15s ease; }
-.word-paper { box-sizing: border-box; width: 800px; min-height: 1100px; padding: 76px 82px; outline: none; background: #fff; box-shadow: 0 4px 22px rgba(36, 40, 59, .12); color: #252938; font-family: Calibri, Arial, sans-serif; font-size: 15px; line-height: 1.55; }
+.word-paper { box-sizing: border-box; width: 800px; height: 1100px; min-height: 1100px; max-height: 1100px; margin: 0 auto 28px; padding: 76px 82px; outline: none; overflow: hidden; background: #fff; box-shadow: 0 4px 22px rgba(36, 40, 59, .12); color: #252938; font-family: Calibri, Arial, sans-serif; font-size: 15px; line-height: 1.55; }
+.page-action:disabled { cursor: not-allowed; opacity: .45; }
 .word-paper:focus { box-shadow: 0 4px 22px rgba(101, 86, 217, .16); }
 .word-paper img { cursor: grab; touch-action: none; }
 .word-paper img:active { cursor: grabbing; }
