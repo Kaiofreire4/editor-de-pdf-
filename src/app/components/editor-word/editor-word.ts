@@ -69,6 +69,7 @@ export class EditorWordComponent {
   tracosWord: TracoWord[] = [];
   private tracoWordEmAndamento: TracoWord | null = null;
   private imagemResizeWord: { startX: number; startY: number; width: number; height: number } | null = null;
+  private imagemDragWord: { startX: number; startY: number; left: number; top: number } | null = null;
 
   // ---------- Modelos (estilo Canva) ----------
   mostrarModelos = false;
@@ -508,10 +509,30 @@ export class EditorWordComponent {
     this.modoMarcaTextoWord = false;
   }
 
+  iniciarArrasteImagemWord(event: PointerEvent): void {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.selecionarImagemWord(event);
+    const imagem = this.imagemAtiva;
+    if (!imagem) return;
+    imagem.style.position = 'relative';
+    this.imagemDragWord = {
+      startX: event.clientX,
+      startY: event.clientY,
+      left: Number.parseFloat(imagem.style.left) || 0,
+      top: Number.parseFloat(imagem.style.top) || 0,
+    };
+  }
+
   selecionarElementoWord(event: MouseEvent): void {
     const alvo = event.target as HTMLElement;
     if (alvo.tagName.toLowerCase() === 'img') this.selecionarImagemWord(event);
     else this.imagemAtiva = null;
+  }
+
+  iniciarArrasteSeImagem(event: PointerEvent): void {
+    if ((event.target as HTMLElement).tagName.toLowerCase() === 'img') this.iniciarArrasteImagemWord(event);
   }
 
   alterarTamanhoImagemWord(dimensao: 'w' | 'h', valor: number): void {
@@ -545,6 +566,13 @@ export class EditorWordComponent {
 
   @HostListener('document:pointermove', ['$event'])
   redimensionarImagemWord(event: PointerEvent): void {
+    if (this.imagemDragWord && this.imagemAtiva) {
+      const estado = this.imagemDragWord;
+      this.imagemAtiva.style.left = `${estado.left + event.clientX - estado.startX}px`;
+      this.imagemAtiva.style.top = `${estado.top + event.clientY - estado.startY}px`;
+      this.cdr.detectChanges();
+      return;
+    }
     const estado = this.imagemResizeWord;
     if (!estado) return;
     const dx = event.clientX - estado.startX;
@@ -562,7 +590,10 @@ export class EditorWordComponent {
   }
 
   @HostListener('document:pointerup')
-  finalizarResizeImagemWord(): void { this.imagemResizeWord = null; }
+  finalizarResizeImagemWord(): void {
+    this.imagemResizeWord = null;
+    this.imagemDragWord = null;
+  }
 
   iniciarTracoWord(event: PointerEvent): void {
     if (this.modoBorrachaWord) {

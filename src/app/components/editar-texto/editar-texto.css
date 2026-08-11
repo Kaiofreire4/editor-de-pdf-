@@ -318,7 +318,8 @@
 .pdf-text-layer { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
 .pdf-image-layer { position: absolute; inset: 0; pointer-events: none; z-index: 8; }
 .pdf-image-selection { position: absolute; pointer-events: auto; }
-.pdf-image-item { display: block; width: 100%; height: 100%; object-fit: fill; cursor: move; border: 1px solid transparent; }
+.pdf-image-item { display: block; width: 100%; height: 100%; object-fit: fill; cursor: grab; border: 1px solid transparent; touch-action: none; }
+.pdf-image-item:active { cursor: grabbing; }
 .pdf-image-selection:hover .pdf-image-item { border-color: #6556d9; box-shadow: 0 0 0 2px rgba(101, 86, 217, .18); }
 .pdf-image-selection.active .pdf-image-item { border: 2px solid #6556d9; }
 .image-selection-handle { position: absolute; z-index: 3; width: 12px; height: 12px; border-radius: 50%; background: #6556d9; border: 2px solid #6556d9; pointer-events: auto; }

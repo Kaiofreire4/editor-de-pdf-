@@ -110,7 +110,7 @@
 
     <main class="word-canvas-area">
       <div #paperWrap class="paper-wrap" [class.marker-mode]="modoMarcaTextoWord || modoBorrachaWord" [style.transform]="'scale(' + (zoom / 100) + ')'" [style.transform-origin]="'top center'">
-        <article #editor class="word-paper" contenteditable="true" spellcheck="true" aria-label="Editor de documento Word" (click)="selecionarElementoWord($event)">
+        <article #editor class="word-paper" contenteditable="true" spellcheck="true" aria-label="Editor de documento Word" (pointerdown)="iniciarArrasteSeImagem($event)" (click)="selecionarElementoWord($event)">
           <div class="empty-document">
             <div class="empty-word-icon">W</div>
             <h1>Seu documento Word</h1>

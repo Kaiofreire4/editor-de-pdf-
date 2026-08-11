@@ -115,6 +115,13 @@ export class EditarTextoComponent {
     startLeft: number;
     startTop: number;
   } | null = null;
+  private imageDragState: {
+    imagem: ImagemItem;
+    startX: number;
+    startY: number;
+    startLeft: number;
+    startTop: number;
+  } | null = null;
   private tracoEmAndamento: TracoCaneta | null = null;
 
   readonly fontesDisponiveis = [
@@ -690,6 +697,14 @@ export class EditarTextoComponent {
     this.cdr.detectChanges();
   }
 
+  iniciarArrasteImagem(event: PointerEvent, imagem: ImagemItem): void {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.selecionarImagem(imagem, event as unknown as MouseEvent);
+    this.imageDragState = { imagem, startX: event.clientX, startY: event.clientY, startLeft: imagem.x, startTop: imagem.y };
+  }
+
   alterarTamanhoImagem(dimensao: 'w' | 'h', valor: number) {
     const imagem = this.imagemAtiva;
     if (!imagem || !Number.isFinite(valor) || valor < 10) return;
@@ -794,6 +809,15 @@ export class EditarTextoComponent {
       this.redimensionarImagemComAlca(event);
       return;
     }
+    if (this.imageDragState) {
+      const state = this.imageDragState;
+      const larguraPagina = this.canvasRef.nativeElement.width;
+      const alturaPagina = this.canvasRef.nativeElement.height;
+      state.imagem.x = Math.max(0, Math.min(larguraPagina - state.imagem.w, state.startLeft + event.clientX - state.startX));
+      state.imagem.y = Math.max(0, Math.min(alturaPagina - state.imagem.h, state.startTop + event.clientY - state.startY));
+      this.atualizarBboxImagem(state.imagem);
+      return;
+    }
     const state = this.resizeState;
     if (!state) return;
 
@@ -834,6 +858,7 @@ export class EditarTextoComponent {
     if (this.imageResizeState && this.imagemAtiva) this.atualizarBboxImagem(this.imagemAtiva);
     this.resizeState = null;
     this.imageResizeState = null;
+    this.imageDragState = null;
   }
 
   iniciarRedimensionamentoImagem(event: PointerEvent, imagem: ImagemItem, handle: HandlePosition) {

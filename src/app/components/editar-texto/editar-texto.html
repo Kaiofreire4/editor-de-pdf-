@@ -198,7 +198,7 @@
             <div class="pdf-image-layer" *ngIf="imagensDaPagina.length > 0">
               @for (imagem of imagensDaPagina; track imagem.id) {
                 <div class="pdf-image-selection" [class.active]="imagem.id === imagemAtivaId" [style.left.px]="imagem.x" [style.top.px]="imagem.y" [style.width.px]="imagem.w" [style.height.px]="imagem.h">
-                  <img class="pdf-image-item" [src]="imagem.dataUrl" alt="Imagem adicionada" (click)="selecionarImagem(imagem, $event)" />
+                   <img class="pdf-image-item" [src]="imagem.dataUrl" alt="Imagem adicionada" (pointerdown)="iniciarArrasteImagem($event, imagem)" (click)="selecionarImagem(imagem, $event)" />
                   @if (imagem.id === imagemAtivaId) {
                     <span class="image-selection-handle image-handle-nw" (pointerdown)="iniciarRedimensionamentoImagem($event, imagem, 'nw')"></span>
                     <span class="image-selection-handle image-handle-n" (pointerdown)="iniciarRedimensionamentoImagem($event, imagem, 'n')"></span>

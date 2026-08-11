@@ -71,7 +71,8 @@
 .paper-wrap { position: relative; width: 800px; min-height: 1100px; margin: 0 auto; transition: transform .15s ease; }
 .word-paper { box-sizing: border-box; width: 800px; min-height: 1100px; padding: 76px 82px; outline: none; background: #fff; box-shadow: 0 4px 22px rgba(36, 40, 59, .12); color: #252938; font-family: Calibri, Arial, sans-serif; font-size: 15px; line-height: 1.55; }
 .word-paper:focus { box-shadow: 0 4px 22px rgba(101, 86, 217, .16); }
-.word-paper img { cursor: pointer; }
+.word-paper img { cursor: grab; touch-action: none; }
+.word-paper img:active { cursor: grabbing; }
 .word-paper img:hover { outline: 2px solid rgba(101, 86, 217, .45); outline-offset: 2px; }
 .word-marker-layer { position: absolute; inset: 0; z-index: 10; width: 100%; height: 100%; pointer-events: none; }
 .word-marker-layer.active { pointer-events: auto; touch-action: none; cursor: crosshair; }
