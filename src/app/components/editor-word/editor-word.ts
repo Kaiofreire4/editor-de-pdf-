@@ -378,6 +378,7 @@ export class EditorWordComponent {
 
   marcarTextoWord(): void {
     this.formatar('hiliteColor', '#ffe45c');
+    this.desativarAnotacaoWord();
   }
 
   alternarMarcaTextoWord(): void {
