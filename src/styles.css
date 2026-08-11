@@ -665,6 +665,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   color: var(--pm-dark-muted);
 }
 
+.pdf-app.dark-theme .paginas-especificas,
+.pdf-app.dark-theme .paginas-ajuda {
+  color: var(--pm-dark-muted);
+}
+
+.pdf-app.dark-theme .paginas-especificas input {
+  background: #141722;
+  border-color: var(--pm-dark-border);
+  color: var(--pm-dark-text);
+}
+
 /* A página do documento continua clara para manter fidelidade e leitura. */
 .pdf-app.dark-theme .word-paper,
 .pdf-app.dark-theme .docx-page,

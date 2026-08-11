@@ -28,6 +28,7 @@ export class OrganizarPdfComponent {
   arquivoParaCortar: File | null = null;
   paginaDe: number = 1;
   paginaAte: number = 1;
+  paginasEspecificas = '';
 
   mensagemStatus: string = 'Pronto';
   previewsJuntar: PreviewJuntarItem[] = [];
@@ -57,6 +58,7 @@ export class OrganizarPdfComponent {
     this.arquivoParaCortar = null;
     this.paginaDe = 1;
     this.paginaAte = 1;
+    this.paginasEspecificas = '';
     this.previewsJuntar = [];
     this.documentosPreviewJuntar = [];
     this.pdfPreviewCortar = null;
@@ -109,12 +111,39 @@ export class OrganizarPdfComponent {
 
   get paginasPreviewCortar(): number[] {
     if (!this.totalPaginasCortar) return [];
+    const especificas = this.paginasEspecificas.trim();
+    if (especificas) return this.interpretarPaginas(especificas);
     const inicio = Math.max(1, Math.min(this.paginaDe, this.totalPaginasCortar));
     const fim = Math.max(inicio, Math.min(this.paginaAte, this.totalPaginasCortar));
     return Array.from({ length: fim - inicio + 1 }, (_, index) => inicio + index);
   }
 
+  private interpretarPaginas(valor: string): number[] {
+    const paginas = new Set<number>();
+    for (const parte of valor.split(',')) {
+      const intervalo = parte.trim().match(/^(\d+)\s*-\s*(\d+)$/);
+      if (intervalo) {
+        const inicio = Number(intervalo[1]);
+        const fim = Number(intervalo[2]);
+        for (let pagina = Math.min(inicio, fim); pagina <= Math.max(inicio, fim); pagina++) {
+          if (pagina >= 1 && pagina <= this.totalPaginasCortar) paginas.add(pagina);
+        }
+      } else if (/^\d+$/.test(parte.trim())) {
+        const pagina = Number(parte.trim());
+        if (pagina >= 1 && pagina <= this.totalPaginasCortar) paginas.add(pagina);
+      }
+    }
+    return [...paginas].sort((a, b) => a - b);
+  }
+
   onIntervaloAlterado() {
+    if (this.totalPaginasCortar) {
+      this.cdr.detectChanges();
+      setTimeout(() => this.renderizarPreviewCortar());
+    }
+  }
+
+  onPaginasEspecificasAlteradas(): void {
     if (this.totalPaginasCortar) {
       this.cdr.detectChanges();
       setTimeout(() => this.renderizarPreviewCortar());
@@ -204,26 +233,25 @@ export class OrganizarPdfComponent {
       const pdfOriginal = await PDFDocument.load(fileArrayBuffer);
       const totalPaginas = pdfOriginal.getPageCount();
 
-      // Validação dos inputs de página (igual você fazia no Python)
-      if (this.paginaDe < 1 || this.paginaAte > totalPaginas || this.paginaDe > this.paginaAte) {
-        alert(`Insira números válidos! O PDF possui ${totalPaginas} páginas.`);
+      const paginasSelecionadas = this.paginasEspecificas.trim()
+        ? this.interpretarPaginas(this.paginasEspecificas)
+        : this.paginasPreviewCortar;
+      if (paginasSelecionadas.length === 0 || paginasSelecionadas.some((pagina) => pagina < 1 || pagina > totalPaginas)) {
+        alert(`Insira páginas válidas! O PDF possui ${totalPaginas} páginas.`);
         return;
       }
 
       const novoPdf = await PDFDocument.create();
 
       // Criando o array de índices (ex: de 1 até 3 vira os índices 0, 1, 2)
-      const indicesParaCopiar = [];
-      for (let i = this.paginaDe - 1; i < this.paginaAte; i++) {
-        indicesParaCopiar.push(i);
-      }
+      const indicesParaCopiar = paginasSelecionadas.map((pagina) => pagina - 1);
 
       const paginasRecortadas = await novoPdf.copyPages(pdfOriginal, indicesParaCopiar);
       paginasRecortadas.forEach((page) => novoPdf.addPage(page));
 
       const pdfBytes = await novoPdf.save();
       this.fazerDownload(pdfBytes, 'pdf_recortado_master.pdf');
-      this.mensagemStatus = `Páginas ${this.paginaDe} a ${this.paginaAte} extraídas com sucesso.`;
+      this.mensagemStatus = `Páginas ${paginasSelecionadas.join(', ')} extraídas com sucesso.`;
       alert('✅ PDF cortado com sucesso!');
     } catch (error) {
       console.error(error);
