@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFDocument, PDFFont, StandardFonts } from 'pdf-lib';
 import * as mammoth from 'mammoth';
-import { Document, ImageRun, Packer, Paragraph, TextRun } from 'docx';
+import { Document, ImageRun, PageBreak, Packer, Paragraph } from 'docx';
 
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
@@ -45,11 +45,19 @@ export class ConversorComponent {
         await page.render({ canvasContext: context, viewport }).promise;
         const imagem = await this.dataUrlParaBytes(canvas.toDataURL('image/png'));
         const largura = 590;
-        const altura = Math.round(largura * (viewport.height / viewport.width));
+        const alturaMaxima = 720;
+        const escala = Math.min(largura / viewport.width, alturaMaxima / viewport.height);
         paragrafos.push(new Paragraph({
-          pageBreakBefore: pagina > 1,
-          children: [new ImageRun({ data: imagem, type: 'png', transformation: { width: largura, height: altura } })],
+          children: [new ImageRun({
+            data: imagem,
+            type: 'png',
+            transformation: {
+              width: Math.round(viewport.width * escala),
+              height: Math.round(viewport.height * escala),
+            },
+          })],
         }));
+        if (pagina < pdf.numPages) paragrafos.push(new Paragraph({ children: [new PageBreak()] }));
         this.mensagem = `Lendo página ${pagina} de ${pdf.numPages}...`;
       }
       const documento = new Document({ sections: [{ children: paragrafos.length ? paragrafos : [new Paragraph('')] }] });

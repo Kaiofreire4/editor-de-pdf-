@@ -1005,6 +1005,12 @@ export class EditorWordComponent {
         return;
       }
       if (tag === 'a') {
+        // Alguns conversores encapsulam imagens em um hyperlink. Nesse caso,
+        // preserve a imagem em vez de transformá-la no texto do endereço.
+        if (child.querySelector('img')) {
+          runs.push(...this.criarRuns(child));
+          return;
+        }
         runs.push(this.criarLink(child as HTMLAnchorElement));
         return;
       }
